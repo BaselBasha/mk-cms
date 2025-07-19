@@ -29,6 +29,7 @@ import {
 import Link from "next/link";
 import { useDispatch, useSelector } from 'react-redux';
 import { createProject } from '@/redux/projectsSlice';
+import { uploadMultipleFiles } from "@/shared/uploadMultipleFiles";
 
 // --- Particle Background Component ---
 const ParticleBackground = () => {
@@ -121,7 +122,8 @@ const ParticleBackground = () => {
         top: 0,
         left: 0,
         zIndex: -1,
-        background: "linear-gradient(135deg, #0f1419 0%, #1a2d27 50%, #0f1419 100%)",
+        background:
+          "linear-gradient(135deg, #0f1419 0%, #1a2d27 50%, #0f1419 100%)",
       }}
     />
   );
@@ -143,7 +145,9 @@ const AdminHeader = () => {
                 className="h-10 w-auto"
               />
               <div className="hidden md:block">
-                <h1 className="text-xl font-bold text-white">Admin Dashboard</h1>
+                <h1 className="text-xl font-bold text-white">
+                  Admin Dashboard
+                </h1>
                 <p className="text-sm text-gray-400">Add New Project</p>
               </div>
             </Link>
@@ -157,7 +161,7 @@ const AdminHeader = () => {
               <ArrowLeft className="h-4 w-4" />
               <span className="hidden sm:inline">Back to Dashboard</span>
             </Link>
-            
+
             <div className="relative">
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -166,7 +170,9 @@ const AdminHeader = () => {
                 <div className="w-8 h-8 bg-[#65a30d]/20 rounded-full flex items-center justify-center">
                   <User className="h-4 w-4 text-[#65a30d]" />
                 </div>
-                <span className="text-white font-medium hidden sm:block">Admin</span>
+                <span className="text-white font-medium hidden sm:block">
+                  Admin
+                </span>
               </button>
 
               <AnimatePresence>
@@ -197,7 +203,15 @@ const AdminHeader = () => {
 };
 
 // --- Form Input Component ---
-const FormInput = ({ label, name, type = "text", placeholder, formik, icon, required = false }) => {
+const FormInput = ({
+  label,
+  name,
+  type = "text",
+  placeholder,
+  formik,
+  icon,
+  required = false,
+}) => {
   return (
     <div className="space-y-2">
       <label className="block text-sm font-medium text-gray-300">
@@ -216,10 +230,12 @@ const FormInput = ({ label, name, type = "text", placeholder, formik, icon, requ
           value={formik.values[name]}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          className={`w-full ${icon ? 'pl-10' : 'pl-4'} pr-4 py-3 bg-white/5 border rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#65a30d] focus:border-transparent transition-all ${
+          className={`w-full ${
+            icon ? "pl-10" : "pl-4"
+          } pr-4 py-3 bg-white/5 border rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#65a30d] focus:border-transparent transition-all ${
             formik.touched[name] && formik.errors[name]
-              ? 'border-red-500'
-              : 'border-white/10 hover:border-white/20'
+              ? "border-red-500"
+              : "border-white/10 hover:border-white/20"
           }`}
         />
       </div>
@@ -238,7 +254,14 @@ const FormInput = ({ label, name, type = "text", placeholder, formik, icon, requ
 };
 
 // --- Form Textarea Component ---
-const FormTextarea = ({ label, name, placeholder, formik, required = false, rows = 4 }) => {
+const FormTextarea = ({
+  label,
+  name,
+  placeholder,
+  formik,
+  required = false,
+  rows = 4,
+}) => {
   return (
     <div className="space-y-2">
       <label className="block text-sm font-medium text-gray-300">
@@ -253,8 +276,8 @@ const FormTextarea = ({ label, name, placeholder, formik, required = false, rows
         rows={rows}
         className={`w-full px-4 py-3 bg-white/5 border rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#65a30d] focus:border-transparent transition-all resize-none ${
           formik.touched[name] && formik.errors[name]
-            ? 'border-red-500'
-            : 'border-white/10 hover:border-white/20'
+            ? "border-red-500"
+            : "border-white/10 hover:border-white/20"
         }`}
       />
       {formik.touched[name] && formik.errors[name] && (
@@ -285,13 +308,19 @@ const FormSelect = ({ label, name, options, formik, required = false }) => {
         onBlur={formik.handleBlur}
         className={`w-full px-4 py-3 bg-white/5 border rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#65a30d] focus:border-transparent transition-all ${
           formik.touched[name] && formik.errors[name]
-            ? 'border-red-500'
-            : 'border-white/10 hover:border-white/20'
+            ? "border-red-500"
+            : "border-white/10 hover:border-white/20"
         }`}
       >
-        <option value="" className="bg-gray-800">Select {label}</option>
+        <option value="" className="bg-gray-800">
+          Select {label}
+        </option>
         {options.map((option) => (
-          <option key={option.value} value={option.value} className="bg-gray-800">
+          <option
+            key={option.value}
+            value={option.value}
+            className="bg-gray-800"
+          >
             {option.label}
           </option>
         ))}
@@ -328,7 +357,7 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
       formik.setFieldValue(name, multiple ? files : files[0]);
@@ -344,14 +373,12 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-300">
-        {label}
-      </label>
+      <label className="block text-sm font-medium text-gray-300">{label}</label>
       <div
         className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-all ${
           dragActive
-            ? 'border-[#65a30d] bg-[#65a30d]/10'
-            : 'border-white/20 hover:border-white/40'
+            ? "border-[#65a30d] bg-[#65a30d]/10"
+            : "border-white/20 hover:border-white/40"
         }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -373,24 +400,29 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
             Drag & drop files here or click to browse
           </p>
           <p className="text-gray-400 text-sm">
-            {accept.includes('image') && 'Images: JPG, PNG, GIF'}
-            {accept.includes('video') && 'Videos: MP4, MOV, AVI'}
-            {accept.includes('pdf') && 'Documents: PDF, DOC, DOCX'}
+            {accept.includes("image") && "Images: JPG, PNG, GIF"}
+            {accept.includes("video") && "Videos: MP4, MOV, AVI"}
+            {accept.includes("pdf") && "Documents: PDF, DOC, DOCX"}
           </p>
         </div>
       </div>
-      
+
       {formik.values[name] && (
         <div className="mt-2">
           {multiple ? (
             <div className="space-y-2">
               {formik.values[name].map((file, index) => (
-                <div key={index} className="flex items-center justify-between bg-white/5 rounded-lg p-2">
+                <div
+                  key={index}
+                  className="flex items-center justify-between bg-white/5 rounded-lg p-2"
+                >
                   <span className="text-white text-sm">{file.name}</span>
                   <button
                     type="button"
                     onClick={() => {
-                      const newFiles = formik.values[name].filter((_, i) => i !== index);
+                      const newFiles = formik.values[name].filter(
+                        (_, i) => i !== index
+                      );
                       formik.setFieldValue(name, newFiles);
                     }}
                     className="text-red-400 hover:text-red-300"
@@ -402,7 +434,9 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
             </div>
           ) : (
             <div className="flex items-center justify-between bg-white/5 rounded-lg p-2">
-              <span className="text-white text-sm">{formik.values[name].name}</span>
+              <span className="text-white text-sm">
+                {formik.values[name].name}
+              </span>
               <button
                 type="button"
                 onClick={() => formik.setFieldValue(name, null)}
@@ -427,7 +461,10 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
 
   const removeItem = (index) => {
     const currentItems = formik.values[name] || [];
-    formik.setFieldValue(name, currentItems.filter((_, i) => i !== index));
+    formik.setFieldValue(
+      name,
+      currentItems.filter((_, i) => i !== index)
+    );
   };
 
   const updateItem = (index, value) => {
@@ -439,9 +476,7 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-300">
-        {label}
-      </label>
+      <label className="block text-sm font-medium text-gray-300">{label}</label>
       <div className="space-y-2">
         {(formik.values[name] || []).map((item, index) => (
           <div key={index} className="flex items-center space-x-2">
@@ -477,39 +512,41 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
 // --- Main Project Form Component ---
 export default function AdminProjectForm() {
   const dispatch = useDispatch();
-  const { loading: reduxLoading, error: reduxError } = useSelector(state => state.projects);
+  const { loading: reduxLoading, error: reduxError } = useSelector(
+    (state) => state.projects
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
 
   // Validation schema
   const validationSchema = Yup.object({
-    title: Yup.string().required('Project title is required'),
-    summary: Yup.string().required('Project summary is required'),
-    description: Yup.string().required('Project description is required'),
-    budget: Yup.string().required('Project budget is required'),
-    location: Yup.string().required('Project location is required'),
-    area: Yup.string().required('Project area is required'),
-    startDate: Yup.date().required('Start date is required'),
-    endDate: Yup.date().required('End date is required'),
-    status: Yup.string().required('Project status is required'),
-    priority: Yup.string().required('Project priority is required'),
+    title: Yup.string().required("Project title is required"),
+    summary: Yup.string().required("Project summary is required"),
+    description: Yup.string().required("Project description is required"),
+    budget: Yup.string().required("Project budget is required"),
+    location: Yup.string().required("Project location is required"),
+    area: Yup.string().required("Project area is required"),
+    startDate: Yup.date().required("Start date is required"),
+    endDate: Yup.date().required("End date is required"),
+    status: Yup.string().required("Project status is required"),
+    priority: Yup.string().required("Project priority is required"),
     successPartner: Yup.string(),
   });
 
   // Form configuration
   const formik = useFormik({
     initialValues: {
-      title: '',
-      summary: '',
-      description: '',
-      budget: '',
-      location: '',
-      area: '',
-      startDate: '',
-      endDate: '',
-      status: '',
-      priority: '',
-      successPartner: '',
+      title: "",
+      summary: "",
+      description: "",
+      budget: "",
+      location: "",
+      area: "",
+      startDate: "",
+      endDate: "",
+      status: "",
+      priority: "",
+      successPartner: "",
       images: [],
       videos: [],
       documents: [],
@@ -520,15 +557,26 @@ export default function AdminProjectForm() {
     onSubmit: async (values) => {
       setIsSubmitting(true);
       try {
-        await dispatch(createProject(values)).unwrap();
-        setSubmitStatus('success');
+        const imageUploads = await uploadMultipleFiles(values.images);
+        const videoUploads = await uploadMultipleFiles(values.videos);
+        const documentUploads = await uploadMultipleFiles(values.documents);
+
+        const projectData = {
+          ...values,
+          images: imageUploads.map((f) => f.url),
+          videos: videoUploads.map((f) => f.url),
+          documents: documentUploads.map((f) => f.url),
+        };
+
+        await dispatch(createProject(projectData)).unwrap();
+        setSubmitStatus("success");
         setTimeout(() => {
           formik.resetForm();
           setSubmitStatus(null);
         }, 3000);
       } catch (error) {
-        setSubmitStatus('error');
-        console.error('Submission error:', error);
+        setSubmitStatus("error");
+        console.error("Submission error:", error);
       } finally {
         setIsSubmitting(false);
       }
@@ -536,18 +584,18 @@ export default function AdminProjectForm() {
   });
 
   const statusOptions = [
-    { value: 'planning', label: 'Planning' },
-    { value: 'in-progress', label: 'In Progress' },
-    { value: 'completed', label: 'Completed' },
-    { value: 'on-hold', label: 'On Hold' },
-    { value: 'cancelled', label: 'Cancelled' },
+    { value: "planning", label: "Planning" },
+    { value: "in-progress", label: "In Progress" },
+    { value: "completed", label: "Completed" },
+    { value: "on-hold", label: "On Hold" },
+    { value: "cancelled", label: "Cancelled" },
   ];
 
   const priorityOptions = [
-    { value: 'low', label: 'Low' },
-    { value: 'medium', label: 'Medium' },
-    { value: 'high', label: 'High' },
-    { value: 'urgent', label: 'Urgent' },
+    { value: "low", label: "Low" },
+    { value: "medium", label: "Medium" },
+    { value: "high", label: "High" },
+    { value: "urgent", label: "Urgent" },
   ];
 
   return (
@@ -562,15 +610,18 @@ export default function AdminProjectForm() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-4xl font-bold text-white mb-4">Add New Project</h1>
+          <h1 className="text-4xl font-bold text-white mb-4">
+            Add New Project
+          </h1>
           <p className="text-xl text-gray-400">
-            Create a detailed project entry with media attachments and key metrics
+            Create a detailed project entry with media attachments and key
+            metrics
           </p>
         </motion.div>
 
         {/* Success/Error Messages */}
         <AnimatePresence>
-          {submitStatus === 'success' && (
+          {submitStatus === "success" && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -578,10 +629,12 @@ export default function AdminProjectForm() {
               className="mb-6 p-4 bg-green-500/20 border border-green-500/30 rounded-xl flex items-center"
             >
               <CheckCircle className="h-5 w-5 text-green-400 mr-3" />
-              <span className="text-green-400">Project created successfully!</span>
+              <span className="text-green-400">
+                Project created successfully!
+              </span>
             </motion.div>
           )}
-          {submitStatus === 'error' && (
+          {submitStatus === "error" && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -589,7 +642,9 @@ export default function AdminProjectForm() {
               className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl flex items-center"
             >
               <AlertCircle className="h-5 w-5 text-red-400 mr-3" />
-              <span className="text-red-400">Error creating project. Please try again.</span>
+              <span className="text-red-400">
+                Error creating project. Please try again.
+              </span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -604,7 +659,9 @@ export default function AdminProjectForm() {
         >
           {/* Basic Information */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Basic Information</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Basic Information
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
                 <FormInput
@@ -641,7 +698,9 @@ export default function AdminProjectForm() {
 
           {/* Project Details */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Project Details</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Project Details
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormInput
                 label="Budget"
@@ -708,7 +767,9 @@ export default function AdminProjectForm() {
 
           {/* Media Attachments */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Media Attachments</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Media Attachments
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <FileUpload
                 label="Project Images"
@@ -747,7 +808,9 @@ export default function AdminProjectForm() {
 
           {/* Awards */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Awards & Recognition</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Awards & Recognition
+            </h2>
             <DynamicList
               label="Awards"
               name="awards"
@@ -765,7 +828,7 @@ export default function AdminProjectForm() {
               <X className="h-4 w-4" />
               <span>Cancel</span>
             </Link>
-            
+
             <div className="flex items-center space-x-4">
               <button
                 type="button"
@@ -774,7 +837,7 @@ export default function AdminProjectForm() {
                 <Eye className="h-4 w-4" />
                 <span>Preview</span>
               </button>
-              
+
               <button
                 type="submit"
                 disabled={isSubmitting}

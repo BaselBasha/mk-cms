@@ -10,4 +10,5 @@ export const ENDPOINTS = {
   projects: `${API_BASE_URL}/api/projects`,
   press: `${API_BASE_URL}/api/press`,
   auth: `${API_BASE_URL}/api/auth`,
+  upload: `${API_BASE_URL}/api/upload`,
 }; 

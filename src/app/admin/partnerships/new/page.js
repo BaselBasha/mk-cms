@@ -26,6 +26,8 @@ import {
 import Link from "next/link";
 import { useDispatch, useSelector } from 'react-redux';
 import { createPartnership } from '@/redux/partnershipsSlice';
+import { uploadFile } from "@/shared/uploadFile";
+import { uploadMultipleFiles } from "@/shared/uploadMultipleFiles";
 
 // --- Particle Background Component ---
 const ParticleBackground = () => {
@@ -532,95 +534,110 @@ export default function AdminPartnershipForm() {
     { value: 'high', label: 'High' },
   ];
   const validationSchema = Yup.object({
-    title: Yup.string().required('Partnership title is required'),
-    summary: Yup.string().required('Summary is required'),
-    description: Yup.string().required('Description is required'),
-    startDate: Yup.date().required('Start date is required'),
+    title: Yup.string().required("Partnership title is required"),
+    summary: Yup.string().required("Summary is required"),
+    description: Yup.string().required("Description is required"),
+    startDate: Yup.date().required("Start date is required"),
     nextMilestone: Yup.string(),
-    status: Yup.string().required('Status is required'),
-    priority: Yup.string().required('Priority is required'),
+    status: Yup.string().required("Status is required"),
+    priority: Yup.string().required("Priority is required"),
     partnerInformation: Yup.object({
-      name: Yup.string().required('Partner name is required'),
+      name: Yup.string().required("Partner name is required"),
       founded: Yup.string(),
       headquarters: Yup.string(),
       employees: Yup.string(),
       specialization: Yup.string(),
-      website: Yup.string().url('Enter a valid URL'),
+      website: Yup.string().url("Enter a valid URL"),
       ceo: Yup.string(),
       revenue: Yup.string(),
     }),
     partnerLinks: Yup.array().of(
       Yup.object({
-        title: Yup.string().required('Link title'),
-        url: Yup.string().url('Enter a valid URL').required('Link URL'),
-        type: Yup.string().required('Type'),
+        title: Yup.string().required("Link title"),
+        url: Yup.string().url("Enter a valid URL").required("Link URL"),
+        type: Yup.string().required("Type"),
       })
     ),
     timeline: Yup.array().of(
       Yup.object({
-        year: Yup.string().required('Year'),
-        event: Yup.string().required('Event'),
-        description: Yup.string().required('Description'),
+        year: Yup.string().required("Year"),
+        event: Yup.string().required("Event"),
+        description: Yup.string().required("Description"),
       })
     ),
     achievements: Yup.array().of(
       Yup.object({
-        title: Yup.string().required('Title'),
-        description: Yup.string().required('Description'),
+        title: Yup.string().required("Title"),
+        description: Yup.string().required("Description"),
       })
     ),
     attachments: Yup.array(),
     // Keep legacy fields for compatibility
-    website: Yup.string().url('Enter a valid URL'),
+    website: Yup.string().url("Enter a valid URL"),
     contact: Yup.string(),
     focusAreas: Yup.array().of(Yup.string()),
     image: Yup.mixed(),
     documents: Yup.array(),
     endDate: Yup.date(),
+    videos: Yup.array(),
   });
   const formik = useFormik({
     initialValues: {
-      title: '',
-      summary: '',
-      description: '',
-      startDate: '',
-      nextMilestone: '',
-      status: '',
-      priority: '',
+      title: "",
+      summary: "",
+      description: "",
+      startDate: "",
+      nextMilestone: "",
+      status: "",
+      priority: "",
       partnerInformation: {
-        name: '',
-        founded: '',
-        headquarters: '',
-        employees: '',
-        specialization: '',
-        website: '',
-        ceo: '',
-        revenue: '',
+        name: "",
+        founded: "",
+        headquarters: "",
+        employees: "",
+        specialization: "",
+        website: "",
+        ceo: "",
+        revenue: "",
       },
       partnerLinks: [],
       timeline: [],
       achievements: [],
       attachments: [],
-      website: '',
-      contact: '',
+      website: "",
+      contact: "",
       focusAreas: [],
       image: null,
       documents: [],
-      endDate: '',
+      endDate: "",
+      videos: [],
     },
     validationSchema,
     onSubmit: async (values) => {
       setIsSubmitting(true);
       try {
-        await dispatch(createPartnership(values)).unwrap();
-        setSubmitStatus('success');
+        const imageUploads = await uploadMultipleFiles(
+          values.image ? [values.image] : []
+        );
+        const videoUploads = await uploadMultipleFiles(values.videos);
+        const documentUploads = await uploadMultipleFiles(values.documents);
+
+        const partnershipData = {
+          ...values,
+          image: imageUploads[0]?.url || null,
+          videos: videoUploads.map((f) => f.url),
+          documents: documentUploads.map((f) => f.url),
+        };
+
+        await dispatch(createPartnership(partnershipData)).unwrap();
+        setSubmitStatus("success");
         setTimeout(() => {
           formik.resetForm();
           setSubmitStatus(null);
         }, 3000);
       } catch (error) {
-        setSubmitStatus('error');
-        console.error('Submission error:', error);
+        setSubmitStatus("error");
+        console.error("Submission error:", error);
       } finally {
         setIsSubmitting(false);
       }
@@ -633,63 +650,187 @@ export default function AdminPartnershipForm() {
       <AdminHeader />
       <div className="container mx-auto px-6 py-8">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-4">Add New Partnership</h1>
-          <p className="text-xl text-gray-400">Create a new partnership entry with all required details and media</p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-4xl font-bold text-white mb-4">
+            Add New Partnership
+          </h1>
+          <p className="text-xl text-gray-400">
+            Create a new partnership entry with all required details and media
+          </p>
         </motion.div>
         <AnimatePresence>
-          {submitStatus === 'success' && (
-            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="mb-6 p-4 bg-green-500/20 border border-green-500/30 rounded-xl flex items-center">
+          {submitStatus === "success" && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="mb-6 p-4 bg-green-500/20 border border-green-500/30 rounded-xl flex items-center"
+            >
               <CheckCircle className="h-5 w-5 text-green-400 mr-3" />
-              <span className="text-green-400">Partnership created successfully!</span>
+              <span className="text-green-400">
+                Partnership created successfully!
+              </span>
             </motion.div>
           )}
-          {submitStatus === 'error' && (
-            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl flex items-center">
+          {submitStatus === "error" && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl flex items-center"
+            >
               <AlertCircle className="h-5 w-5 text-red-400 mr-3" />
-              <span className="text-red-400">Error creating partnership. Please try again.</span>
+              <span className="text-red-400">
+                Error creating partnership. Please try again.
+              </span>
             </motion.div>
           )}
         </AnimatePresence>
-        <motion.form initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} onSubmit={formik.handleSubmit} className="space-y-8">
+        <motion.form
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          onSubmit={formik.handleSubmit}
+          className="space-y-8"
+        >
           {/* Basic Information */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Basic Information</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Basic Information
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormInput label="Partnership Title" name="title" placeholder="Enter partnership title" formik={formik} icon={<FileText className="h-4 w-4" />} required />
-              <FormInput label="Start Date" name="startDate" type="date" formik={formik} icon={<Calendar className="h-4 w-4" />} required />
-              <FormSelect label="Status" name="status" options={statusOptions} formik={formik} required />
-              <FormSelect label="Priority" name="priority" options={priorityOptions} formik={formik} required />
-              <FormInput label="Next Milestone" name="nextMilestone" placeholder="e.g., Expansion Q3 2024" formik={formik} icon={<Target className="h-4 w-4" />} />
-              <FormTextarea label="Summary" name="summary" placeholder="Brief summary of the partnership" formik={formik} required rows={3} />
-              <FormTextarea label="Description" name="description" placeholder="Detailed description of the partnership" formik={formik} required rows={6} />
+              <FormInput
+                label="Partnership Title"
+                name="title"
+                placeholder="Enter partnership title"
+                formik={formik}
+                icon={<FileText className="h-4 w-4" />}
+                required
+              />
+              <FormInput
+                label="Start Date"
+                name="startDate"
+                type="date"
+                formik={formik}
+                icon={<Calendar className="h-4 w-4" />}
+                required
+              />
+              <FormSelect
+                label="Status"
+                name="status"
+                options={statusOptions}
+                formik={formik}
+                required
+              />
+              <FormSelect
+                label="Priority"
+                name="priority"
+                options={priorityOptions}
+                formik={formik}
+                required
+              />
+              <FormInput
+                label="Next Milestone"
+                name="nextMilestone"
+                placeholder="e.g., Expansion Q3 2024"
+                formik={formik}
+                icon={<Target className="h-4 w-4" />}
+              />
+              <FormTextarea
+                label="Summary"
+                name="summary"
+                placeholder="Brief summary of the partnership"
+                formik={formik}
+                required
+                rows={3}
+              />
+              <FormTextarea
+                label="Description"
+                name="description"
+                placeholder="Detailed description of the partnership"
+                formik={formik}
+                required
+                rows={6}
+              />
             </div>
           </div>
           {/* Partner Information */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Partner Information</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Partner Information
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormInput label="Company Name" name="partnerInformation.name" placeholder="Partner company name" formik={formik} required />
-              <FormInput label="Founded" name="partnerInformation.founded" placeholder="e.g., 2015" formik={formik} />
-              <FormInput label="Headquarters" name="partnerInformation.headquarters" placeholder="e.g., Dubai, UAE" formik={formik} />
-              <FormInput label="Employees" name="partnerInformation.employees" placeholder="e.g., 250+" formik={formik} />
-              <FormInput label="Specialization" name="partnerInformation.specialization" placeholder="e.g., Smart Irrigation" formik={formik} />
-              <FormInput label="Website" name="partnerInformation.website" placeholder="https://partner.com" formik={formik} />
-              <FormInput label="CEO" name="partnerInformation.ceo" placeholder="e.g., Dr. Ahmad Hassan" formik={formik} />
-              <FormInput label="Revenue" name="partnerInformation.revenue" placeholder="e.g., $45M (2023)" formik={formik} />
+              <FormInput
+                label="Company Name"
+                name="partnerInformation.name"
+                placeholder="Partner company name"
+                formik={formik}
+                required
+              />
+              <FormInput
+                label="Founded"
+                name="partnerInformation.founded"
+                placeholder="e.g., 2015"
+                formik={formik}
+              />
+              <FormInput
+                label="Headquarters"
+                name="partnerInformation.headquarters"
+                placeholder="e.g., Dubai, UAE"
+                formik={formik}
+              />
+              <FormInput
+                label="Employees"
+                name="partnerInformation.employees"
+                placeholder="e.g., 250+"
+                formik={formik}
+              />
+              <FormInput
+                label="Specialization"
+                name="partnerInformation.specialization"
+                placeholder="e.g., Smart Irrigation"
+                formik={formik}
+              />
+              <FormInput
+                label="Website"
+                name="partnerInformation.website"
+                placeholder="https://partner.com"
+                formik={formik}
+              />
+              <FormInput
+                label="CEO"
+                name="partnerInformation.ceo"
+                placeholder="e.g., Dr. Ahmad Hassan"
+                formik={formik}
+              />
+              <FormInput
+                label="Revenue"
+                name="partnerInformation.revenue"
+                placeholder="e.g., $45M (2023)"
+                formik={formik}
+              />
             </div>
           </div>
           {/* Partner Links */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Partner Links</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Partner Links
+            </h2>
             <DynamicObjectList
               label="Links"
               name="partnerLinks"
               formik={formik}
               fields={[
-                { name: 'title', placeholder: 'Link Title' },
-                { name: 'url', placeholder: 'https://...' },
-                { name: 'type', placeholder: 'Type (website, press, research, etc.)' },
+                { name: "title", placeholder: "Link Title" },
+                { name: "url", placeholder: "https://..." },
+                {
+                  name: "type",
+                  placeholder: "Type (website, press, research, etc.)",
+                },
               ]}
             />
           </div>
@@ -701,8 +842,8 @@ export default function AdminPartnershipForm() {
               name="achievements"
               formik={formik}
               fields={[
-                { name: 'title', placeholder: 'Achievement Title' },
-                { name: 'description', placeholder: 'Description' },
+                { name: "title", placeholder: "Achievement Title" },
+                { name: "description", placeholder: "Description" },
               ]}
             />
           </div>
@@ -714,33 +855,72 @@ export default function AdminPartnershipForm() {
               name="timeline"
               formik={formik}
               fields={[
-                { name: 'year', placeholder: 'Year' },
-                { name: 'event', placeholder: 'Event' },
-                { name: 'description', placeholder: 'Description' },
+                { name: "year", placeholder: "Year" },
+                { name: "event", placeholder: "Event" },
+                { name: "description", placeholder: "Description" },
               ]}
             />
           </div>
           {/* Media Attachments */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Media Attachments</h2>
-            <FileUpload label="Images" name="attachments" accept="image/*" formik={formik} multiple />
-            <FileUpload label="Videos" name="attachments" accept="video/*" formik={formik} multiple />
-            <FileUpload label="Documents" name="attachments" accept=".pdf,.doc,.docx" formik={formik} multiple />
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Media Attachments
+            </h2>
+            <FileUpload
+              label="Images"
+              name="image"
+              accept="image/*"
+              formik={formik}
+            />
+            <FileUpload
+              label="Partnership Videos"
+              name="videos"
+              accept="video/*"
+              formik={formik}
+              multiple
+            />
+            <FileUpload
+              label="Documents"
+              name="documents"
+              accept=".pdf,.doc,.docx"
+              formik={formik}
+              multiple
+            />
           </div>
           {/* Legacy/Optional Fields */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Other Details (Optional)</h2>
-            <FormInput label="Contact Info" name="contact" placeholder="Contact details (email, phone, etc.)" formik={formik} icon={<User className="h-4 w-4" />} />
-            <DynamicList label="Focus Areas" name="focusAreas" formik={formik} placeholder="e.g., Technology, Sustainability, Research" />
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Other Details (Optional)
+            </h2>
+            <FormInput
+              label="Contact Info"
+              name="contact"
+              placeholder="Contact details (email, phone, etc.)"
+              formik={formik}
+              icon={<User className="h-4 w-4" />}
+            />
+            <DynamicList
+              label="Focus Areas"
+              name="focusAreas"
+              formik={formik}
+              placeholder="e.g., Technology, Sustainability, Research"
+            />
           </div>
           {/* Form Actions */}
           <div className="flex items-center justify-between pt-8">
-            <Link href="/admin" className="flex items-center space-x-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-gray-300 transition-colors">
+            <Link
+              href="/admin"
+              className="flex items-center space-x-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-gray-300 transition-colors"
+            >
               <X className="h-4 w-4" />
               <span>Cancel</span>
             </Link>
             <div className="flex items-center space-x-4">
-              <button type="submit" disabled={isSubmitting} className="flex items-center space-x-2 px-8 py-3 bg-[#2196f3] hover:bg-[#1769aa]/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-white font-medium transition-colors">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex items-center space-x-2 px-8 py-3 bg-[#2196f3] hover:bg-[#1769aa]/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-white font-medium transition-colors"
+              >
                 {isSubmitting ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />

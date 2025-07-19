@@ -1,37 +1,65 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { ENDPOINTS } from '../shared/endpoints';
+import { getToken } from "../shared/auth";
 
-export const fetchPartnerships = createAsyncThunk('partnerships/fetchAll', async () => {
-  const res = await fetch(ENDPOINTS.partnerships);
-  if (!res.ok) throw new Error('Failed to fetch partnerships');
-  return await res.json();
-});
+export const fetchPartnerships = createAsyncThunk(
+  "partnerships/fetchAll",
+  async () => {
+    const res = await fetch(ENDPOINTS.partnerships, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+    });
+    if (!res.ok) throw new Error("Failed to fetch partnerships");
+    return await res.json();
+  }
+);
 
-export const createPartnership = createAsyncThunk('partnerships/create', async (data) => {
-  const res = await fetch(ENDPOINTS.partnerships, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error('Failed to create partnership');
-  return await res.json();
-});
+export const createPartnership = createAsyncThunk(
+  "partnerships/create",
+  async (data) => {
+    const res = await fetch(ENDPOINTS.partnerships, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getToken()}`,
+      },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("Failed to create partnership");
+    return await res.json();
+  }
+);
 
-export const updatePartnership = createAsyncThunk('partnerships/update', async ({ id, data }) => {
-  const res = await fetch(`${ENDPOINTS.partnerships}/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error('Failed to update partnership');
-  return await res.json();
-});
+export const updatePartnership = createAsyncThunk(
+  "partnerships/update",
+  async ({ id, data }) => {
+    const res = await fetch(`${ENDPOINTS.partnerships}/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getToken()}`,
+      },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("Failed to update partnership");
+    return await res.json();
+  }
+);
 
-export const deletePartnership = createAsyncThunk('partnerships/delete', async (id) => {
-  const res = await fetch(`${ENDPOINTS.partnerships}/${id}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error('Failed to delete partnership');
-  return id;
-});
+export const deletePartnership = createAsyncThunk(
+  "partnerships/delete",
+  async (id) => {
+    const res = await fetch(`${ENDPOINTS.partnerships}/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+    });
+    if (!res.ok) throw new Error("Failed to delete partnership");
+    return id;
+  }
+);
 
 const partnershipsSlice = createSlice({
   name: 'partnerships',

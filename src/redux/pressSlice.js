@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { ENDPOINTS } from '../shared/endpoints';
+import { getToken } from "../shared/auth";
 
 export const fetchPress = createAsyncThunk('press/fetchAll', async () => {
   const res = await fetch(ENDPOINTS.press);

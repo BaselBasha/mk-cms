@@ -25,6 +25,7 @@ import {
 import Link from "next/link";
 import { useDispatch, useSelector } from 'react-redux';
 import { createCertification } from '@/redux/certificationsSlice';
+import { ENDPOINTS } from "@/shared/endpoints";
 
 // --- Particle Background Component ---
 const ParticleBackground = () => {
@@ -117,8 +118,7 @@ const ParticleBackground = () => {
         top: 0,
         left: 0,
         zIndex: -1,
-        background:
-          "linear-gradient(135deg, #1a2d27 0%, #33413d 100%)",
+        background: "linear-gradient(135deg, #1a2d27 0%, #33413d 100%)",
       }}
     />
   );
@@ -140,7 +140,9 @@ const AdminHeader = () => {
                 className="h-10 w-auto"
               />
               <div className="hidden md:block">
-                <h1 className="text-xl font-bold text-white">Admin Dashboard</h1>
+                <h1 className="text-xl font-bold text-white">
+                  Admin Dashboard
+                </h1>
                 <p className="text-sm text-gray-400">Add New Certification</p>
               </div>
             </Link>
@@ -162,7 +164,9 @@ const AdminHeader = () => {
                 <div className="w-8 h-8 bg-[#caa464]/20 rounded-full flex items-center justify-center">
                   <User className="h-4 w-4 text-[#caa464]" />
                 </div>
-                <span className="text-white font-medium hidden sm:block">Admin</span>
+                <span className="text-white font-medium hidden sm:block">
+                  Admin
+                </span>
               </button>
               <AnimatePresence>
                 {isProfileOpen && (
@@ -192,7 +196,15 @@ const AdminHeader = () => {
 };
 
 // --- Form Input Component ---
-const FormInput = ({ label, name, type = "text", placeholder, formik, icon, required = false }) => {
+const FormInput = ({
+  label,
+  name,
+  type = "text",
+  placeholder,
+  formik,
+  icon,
+  required = false,
+}) => {
   return (
     <div className="space-y-2">
       <label className="block text-sm font-medium text-gray-300">
@@ -211,10 +223,12 @@ const FormInput = ({ label, name, type = "text", placeholder, formik, icon, requ
           value={formik.values[name]}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          className={`w-full ${icon ? 'pl-10' : 'pl-4'} pr-4 py-3 bg-white/5 border rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#caa464] focus:border-transparent transition-all ${
+          className={`w-full ${
+            icon ? "pl-10" : "pl-4"
+          } pr-4 py-3 bg-white/5 border rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#caa464] focus:border-transparent transition-all ${
             formik.touched[name] && formik.errors[name]
-              ? 'border-red-500'
-              : 'border-white/10 hover:border-white/20'
+              ? "border-red-500"
+              : "border-white/10 hover:border-white/20"
           }`}
         />
       </div>
@@ -233,7 +247,14 @@ const FormInput = ({ label, name, type = "text", placeholder, formik, icon, requ
 };
 
 // --- Form Textarea Component ---
-const FormTextarea = ({ label, name, placeholder, formik, required = false, rows = 4 }) => {
+const FormTextarea = ({
+  label,
+  name,
+  placeholder,
+  formik,
+  required = false,
+  rows = 4,
+}) => {
   return (
     <div className="space-y-2">
       <label className="block text-sm font-medium text-gray-300">
@@ -248,8 +269,8 @@ const FormTextarea = ({ label, name, placeholder, formik, required = false, rows
         rows={rows}
         className={`w-full px-4 py-3 bg-white/5 border rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#caa464] focus:border-transparent transition-all resize-none ${
           formik.touched[name] && formik.errors[name]
-            ? 'border-red-500'
-            : 'border-white/10 hover:border-white/20'
+            ? "border-red-500"
+            : "border-white/10 hover:border-white/20"
         }`}
       />
       {formik.touched[name] && formik.errors[name] && (
@@ -280,13 +301,19 @@ const FormSelect = ({ label, name, options, formik, required = false }) => {
         onBlur={formik.handleBlur}
         className={`w-full px-4 py-3 bg-white/5 border rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#caa464] focus:border-transparent transition-all ${
           formik.touched[name] && formik.errors[name]
-            ? 'border-red-500'
-            : 'border-white/10 hover:border-white/20'
+            ? "border-red-500"
+            : "border-white/10 hover:border-white/20"
         }`}
       >
-        <option value="" className="bg-gray-800">Select {label}</option>
+        <option value="" className="bg-gray-800">
+          Select {label}
+        </option>
         {options.map((option) => (
-          <option key={option.value} value={option.value} className="bg-gray-800">
+          <option
+            key={option.value}
+            value={option.value}
+            className="bg-gray-800"
+          >
             {option.label}
           </option>
         ))}
@@ -338,14 +365,12 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-300">
-        {label}
-      </label>
+      <label className="block text-sm font-medium text-gray-300">{label}</label>
       <div
         className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-all ${
           dragActive
-            ? 'border-[#caa464] bg-[#caa464]/10'
-            : 'border-white/20 hover:border-white/40'
+            ? "border-[#caa464] bg-[#caa464]/10"
+            : "border-white/20 hover:border-white/40"
         }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -367,8 +392,8 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
             Drag & drop files here or click to browse
           </p>
           <p className="text-gray-400 text-sm">
-            {accept.includes('image') && 'Images: JPG, PNG, GIF'}
-            {accept.includes('pdf') && 'Documents: PDF, DOC, DOCX'}
+            {accept.includes("image") && "Images: JPG, PNG, GIF"}
+            {accept.includes("pdf") && "Documents: PDF, DOC, DOCX"}
           </p>
         </div>
       </div>
@@ -377,12 +402,17 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
           {multiple ? (
             <div className="space-y-2">
               {formik.values[name].map((file, index) => (
-                <div key={index} className="flex items-center justify-between bg-white/5 rounded-lg p-2">
+                <div
+                  key={index}
+                  className="flex items-center justify-between bg-white/5 rounded-lg p-2"
+                >
                   <span className="text-white text-sm">{file.name}</span>
                   <button
                     type="button"
                     onClick={() => {
-                      const newFiles = formik.values[name].filter((_, i) => i !== index);
+                      const newFiles = formik.values[name].filter(
+                        (_, i) => i !== index
+                      );
                       formik.setFieldValue(name, newFiles);
                     }}
                     className="text-red-400 hover:text-red-300"
@@ -394,7 +424,9 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
             </div>
           ) : (
             <div className="flex items-center justify-between bg-white/5 rounded-lg p-2">
-              <span className="text-white text-sm">{formik.values[name].name}</span>
+              <span className="text-white text-sm">
+                {formik.values[name].name}
+              </span>
               <button
                 type="button"
                 onClick={() => formik.setFieldValue(name, null)}
@@ -419,7 +451,10 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
 
   const removeItem = (index) => {
     const currentItems = formik.values[name] || [];
-    formik.setFieldValue(name, currentItems.filter((_, i) => i !== index));
+    formik.setFieldValue(
+      name,
+      currentItems.filter((_, i) => i !== index)
+    );
   };
 
   const updateItem = (index, value) => {
@@ -431,9 +466,7 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-300">
-        {label}
-      </label>
+      <label className="block text-sm font-medium text-gray-300">{label}</label>
       <div className="space-y-2">
         {(formik.values[name] || []).map((item, index) => (
           <div key={index} className="flex items-center space-x-2">
@@ -469,34 +502,48 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
 // --- Main Certification Form Component ---
 export default function AdminCertificationForm() {
   const dispatch = useDispatch();
-  const { loading: reduxLoading, error: reduxError } = useSelector(state => state.certifications);
+  const { loading: reduxLoading, error: reduxError } = useSelector(
+    (state) => state.certifications
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
 
+  // Helper to upload a file to the backend and get the S3 URL
+  async function uploadFile(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch(ENDPOINTS.upload, {
+      method: "POST",
+      body: formData,
+    });
+    if (!res.ok) throw new Error("Upload failed");
+    return await res.json(); // should contain { url: ... }
+  }
+
   // Validation schema
   const validationSchema = Yup.object({
-    title: Yup.string().required('Certification title is required'),
-    summary: Yup.string().required('Summary is required'),
-    description: Yup.string().required('Description is required'),
-    issuingBody: Yup.string().required('Issuing body is required'),
-    issueDate: Yup.date().required('Issue date is required'),
-    validUntil: Yup.date().required('Valid until date is required'),
-    priority: Yup.string().required('Priority is required'),
-    category: Yup.string().required('Category is required'),
+    title: Yup.string().required("Certification title is required"),
+    summary: Yup.string().required("Summary is required"),
+    description: Yup.string().required("Description is required"),
+    issuingBody: Yup.string().required("Issuing body is required"),
+    issueDate: Yup.date().required("Issue date is required"),
+    validUntil: Yup.date().required("Valid until date is required"),
+    priority: Yup.string().required("Priority is required"),
+    category: Yup.string().required("Category is required"),
     features: Yup.array().of(Yup.string()),
   });
 
   // Form configuration
   const formik = useFormik({
     initialValues: {
-      title: '',
-      summary: '',
-      description: '',
-      issuingBody: '',
-      issueDate: '',
-      validUntil: '',
-      priority: '',
-      category: '',
+      title: "",
+      summary: "",
+      description: "",
+      issuingBody: "",
+      issueDate: "",
+      validUntil: "",
+      priority: "",
+      category: "",
       features: [],
       image: null,
       documents: [],
@@ -505,15 +552,40 @@ export default function AdminCertificationForm() {
     onSubmit: async (values) => {
       setIsSubmitting(true);
       try {
-        await dispatch(createCertification(values)).unwrap();
-        setSubmitStatus('success');
+        // 1. Upload image if present
+        let imageUrl = null;
+        if (values.image) {
+          const imageRes = await uploadFile(values.image);
+          imageUrl = imageRes.url;
+        }
+
+        // 2. Upload documents if present
+        let documentUrls = [];
+        if (values.documents && values.documents.length > 0) {
+          for (const doc of values.documents) {
+            const docRes = await uploadFile(doc);
+            documentUrls.push({ url: docRes.url });
+          }
+        }
+
+        // 3. Build payload
+        const payload = {
+          ...values,
+          image: imageUrl ? { url: imageUrl } : undefined,
+          documents: documentUrls,
+        };
+
+        // 4. Submit to backend
+        await dispatch(createCertification(payload)).unwrap();
+
+        setSubmitStatus("success");
         setTimeout(() => {
           formik.resetForm();
           setSubmitStatus(null);
         }, 3000);
       } catch (error) {
-        setSubmitStatus('error');
-        console.error('Submission error:', error);
+        setSubmitStatus("error");
+        console.error("Submission error:", error);
       } finally {
         setIsSubmitting(false);
       }
@@ -521,18 +593,18 @@ export default function AdminCertificationForm() {
   });
 
   const priorityOptions = [
-    { value: 'Low', label: 'Low' },
-    { value: 'Medium', label: 'Medium' },
-    { value: 'High', label: 'High' },
+    { value: "Low", label: "Low" },
+    { value: "Medium", label: "Medium" },
+    { value: "High", label: "High" },
   ];
 
   const categoryOptions = [
-    { value: 'Quality', label: 'Quality' },
-    { value: 'Environmental', label: 'Environmental' },
-    { value: 'Organic', label: 'Organic' },
-    { value: 'Food Safety', label: 'Food Safety' },
-    { value: 'Accreditation', label: 'Accreditation' },
-    { value: 'National', label: 'National' },
+    { value: "Quality", label: "Quality" },
+    { value: "Environmental", label: "Environmental" },
+    { value: "Organic", label: "Organic" },
+    { value: "Food Safety", label: "Food Safety" },
+    { value: "Accreditation", label: "Accreditation" },
+    { value: "National", label: "National" },
   ];
 
   return (
@@ -546,14 +618,16 @@ export default function AdminCertificationForm() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-4xl font-bold text-white mb-4">Add New Certification</h1>
+          <h1 className="text-4xl font-bold text-white mb-4">
+            Add New Certification
+          </h1>
           <p className="text-xl text-gray-400">
             Create a new certification entry with all required details and media
           </p>
         </motion.div>
         {/* Success/Error Messages */}
         <AnimatePresence>
-          {submitStatus === 'success' && (
+          {submitStatus === "success" && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -561,10 +635,12 @@ export default function AdminCertificationForm() {
               className="mb-6 p-4 bg-green-500/20 border border-green-500/30 rounded-xl flex items-center"
             >
               <CheckCircle className="h-5 w-5 text-green-400 mr-3" />
-              <span className="text-green-400">Certification created successfully!</span>
+              <span className="text-green-400">
+                Certification created successfully!
+              </span>
             </motion.div>
           )}
-          {submitStatus === 'error' && (
+          {submitStatus === "error" && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -572,7 +648,9 @@ export default function AdminCertificationForm() {
               className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl flex items-center"
             >
               <AlertCircle className="h-5 w-5 text-red-400 mr-3" />
-              <span className="text-red-400">Error creating certification. Please try again.</span>
+              <span className="text-red-400">
+                Error creating certification. Please try again.
+              </span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -586,7 +664,9 @@ export default function AdminCertificationForm() {
         >
           {/* Basic Information */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Basic Information</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Basic Information
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
                 <FormInput
@@ -622,7 +702,9 @@ export default function AdminCertificationForm() {
           </div>
           {/* Certification Details */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Certification Details</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Certification Details
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormInput
                 label="Issuing Body"
@@ -666,7 +748,9 @@ export default function AdminCertificationForm() {
           </div>
           {/* Media Attachments */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Media Attachments</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Media Attachments
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FileUpload
                 label="Certification Image"
