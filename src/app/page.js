@@ -546,24 +546,36 @@ const sliderDragConstraints = { left: -1000, right: 0 };
 const ProductsSection = () => {
   const products = [
     {
-      name: "Pure Jojoba Oil",
+      name: "Seeds",
       desc: "Cold-pressed, virgin oil for cosmetics and skincare.",
-      img: "https://images.unsplash.com/photo-1590432884297-51a45b331031?q=80&w=2787&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2024/04/unnamed-file.png",
     },
-    {
-      name: "Jojoba Meal",
-      desc: "High-protein animal feed supplement.",
-      img: "https://images.unsplash.com/photo-1516223725371-d628d052494b?q=80&w=2787&auto=format&fit=crop",
-    },
+
     {
       name: "Jojoba Wax",
       desc: "Natural wax for industrial and cosmetic applications.",
-      img: "https://images.unsplash.com/photo-1605332224424-352b37e1a03e?q=80&w=2787&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2024/04/pure-75ml-and-mix50ml.jpg",
+    },
+
+    {
+      name: "Seeding",
+      desc: "High-yield, drought-resistant seedlings for cultivation.",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2024/04/9802741e-1650-4027-aa12-6468aa8083f6.jpg",
     },
     {
-      name: "Jojoba Seedlings",
+      name: "Organic Oil",
       desc: "High-yield, drought-resistant seedlings for cultivation.",
-      img: "https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=2787&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2024/06/WhatsApp-Image-2024-06-01-at-19.33.16_9b87c9bbmm.jpg",
+    },
+    {
+      name: "Organic Oil",
+      desc: "High-yield, drought-resistant seedlings for cultivation.",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2024/04/pure-75ml-and-mix50ml.jpg",
+    },
+    {
+      name: "Pest-Control",
+      desc: "High-yield, drought-resistant seedlings for cultivation.",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/Termite-Pest-Control-Frisco-TX.jpg",
     },
   ];
   const duplicated = [...products, ...products, ...products];
@@ -620,22 +632,22 @@ const ProjectsSection = () => {
     {
       name: "Wadi El Natrun Reclamation",
       area: "5,000 Hectares",
-      img: "https://images.unsplash.com/photo-1542451313-380d331656c4?q=80&w=2874&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2024/07/%D9%85%D8%B4%D8%B1%D9%88%D8%B9-%D9%87%D9%8A%D8%A6%D8%A9-%D8%AA%D9%86%D9%85%D9%8A%D8%A9-%D8%A7%D9%84%D8%B5%D8%B9%D9%8A%D8%AF.jpg",
     },
     {
       name: "Sinai Greening Initiative",
       area: "10,000 Hectares",
-      img: "https://images.unsplash.com/photo-1597656649387-c10a2d119515?q=80&w=2940&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2024/07/%D8%A7%D9%84%D9%82%D8%A7%D8%A8%D8%B6%D9%87-%D9%84%D9%84%D9%83%D9%87%D8%B1%D8%A8%D8%A7%D8%A1.jpg",
     },
     {
       name: "New Valley Agro-Forestry",
       area: "7,500 Hectares",
-      img: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2832&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/The-Jojoba-Company-farm.jpg",
     },
     {
       name: "Red Sea Coastline Restoration",
       area: "2,000 Hectares",
-      img: "https://images.unsplash.com/photo-1593436037169-14571959554f?q=80&w=2835&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2024/07/%D9%85%D8%A8%D8%A7%D8%AF%D8%B1%D8%A9-%D9%88%D8%A7%D8%AF%D9%8A-%D8%A7%D9%84%D8%AC%D9%88%D8%AC%D9%88%D8%A8%D8%A7.jpg",
     },
   ];
   const duplicated = [...projects, ...projects, ...projects];
@@ -743,27 +755,27 @@ const SpecializationSection = () => {
     {
       title: "Drip Irrigation Systems",
       desc: "Maximizing water efficiency in arid climates.",
-      img: "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2940&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/shutterstock_767486674-1.jpg",
     },
     {
       title: "Soil Health & Enrichment",
       desc: "Revitalizing desert soil with organic matter.",
-      img: "https://images.unsplash.com/photo-1591785536093-ac933b43a955?q=80&w=2940&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2022/11/DJI_0187-Medium.png",
     },
     {
       title: "Advanced Harvesting",
       desc: "Utilizing modern technology for peak efficiency.",
-      img: "https://images.unsplash.com/photo-1560493676-04071c5f467b?q=80&w=2874&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/Premium-Agribusiness-Consulting-Service.jpeg",
     },
     {
       title: "Genetic Selection",
       desc: "Cultivating proprietary varieties for higher yield.",
-      img: "https://images.unsplash.com/photo-1627542564248-266aa86a735d?q=80&w=2787&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2022/11/0.png",
     },
     {
       title: "Genetic Selection",
       desc: "Cultivating proprietary varieties for higher yield.",
-      img: "https://images.unsplash.com/photo-1627542564248-266aa86a735d?q=80&w=2787&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/money-2724241_1920.webp",
     },
   ];
   const duplicated = [
@@ -820,22 +832,22 @@ const PartnershipsSection = () => {
     {
       name: "GreenTech Solutions",
       desc: "Collaborating on sustainable irrigation systems.",
-      img: "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?q=80&w=800&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2022/11/NVU.png",
     },
     {
       name: "AgroGlobal Inc.",
       desc: "Joint research in crop genetics and yield improvement.",
-      img: "https://images.unsplash.com/photo-1509228468518-180dd4864904?q=80&w=800&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2022/11/NVG.png",
     },
     {
       name: "Desert Bloom Initiative",
       desc: "Pioneering desert agriculture and land reclamation.",
-      img: "https://images.unsplash.com/photo-1464983953574-0892a716854b?q=80&w=800&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2022/11/MU.png",
     },
     {
       name: "EcoCert Europe",
       desc: "Certification and quality assurance for organic produce.",
-      img: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?q=80&w=800&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2022/11/MU-2.png",
     },
   ];
   const duplicated = [...partnerships, ...partnerships, ...partnerships];
@@ -889,27 +901,27 @@ const PressSection = () => {
     {
       quote: "A model for sustainable agriculture in the Middle East.",
       source: "Global Agriculture Today",
-      img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=800&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2024/04/WhatsApp-Image-2024-04-27-at-14.21.40_47a11d61.jpg",
     },
     {
       quote: "MK Jojoba's innovative techniques are turning the desert green.",
       source: "Eco-Innovators Magazine",
-      img: "https://images.unsplash.com/photo-1464983953574-0892a716854b?q=80&w=800&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/391613460_673580461542316_1959068305070372405_n.jpg",
     },
     {
       quote: "The quality of their Jojoba oil is unparalleled in the market.",
       source: "Cosmetics Business Weekly",
-      img: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?q=80&w=800&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2024/04/394630000_678251917741837_7520882499018497547_n-1024x1024-1.jpg",
     },
     {
       quote: "MK Jojoba's innovative techniques are turning the desert green.",
       source: "Eco-Innovators Magazine",
-      img: "https://images.unsplash.com/photo-1464983953574-0892a716854b?q=80&w=800&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2022/05/374684208_673593778207651_2171150138347886782_n.jpg",
     },
     {
       quote: "The quality of their Jojoba oil is unparalleled in the market.",
       source: "Cosmetics Business Weekly",
-      img: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?q=80&w=800&auto=format&fit=crop",
+      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/post1.png",
     },
   ];
   const duplicated = [...press, ...press, ...press];

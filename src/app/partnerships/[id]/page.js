@@ -174,7 +174,8 @@ const Header = () => {
 const partnershipData = {
   id: 1,
   title: "GreenTech Solutions Partnership",
-  summary: "Strategic alliance revolutionizing sustainable irrigation technology across the Middle East",
+  summary:
+    "Strategic alliance revolutionizing sustainable irrigation technology across the Middle East",
   description: `Our partnership with GreenTech Solutions represents a groundbreaking collaboration that's reshaping the future of desert agriculture. Since 2020, we've been working together to develop cutting-edge irrigation systems that reduce water consumption by up to 40% while increasing crop yields by 25%.
 
 This partnership has enabled us to implement state-of-the-art drip irrigation technology across over 15,000 hectares of previously unusable desert land. The collaboration combines our deep understanding of desert agriculture with GreenTech's innovative water management solutions.
@@ -190,123 +191,129 @@ Our joint research has resulted in three breakthrough patents for desert irrigat
     specialization: "Smart Irrigation & Water Management",
     website: "https://greentech-solutions.com",
     ceo: "Dr. Ahmad Hassan",
-    revenue: "$45M (2023)"
+    revenue: "$45M (2023)",
   },
   partnerLinks: [
     {
       title: "Official Website",
       url: "https://greentech-solutions.com",
-      type: "website"
+      type: "website",
     },
     {
       title: "Partnership Press Release",
       url: "https://greentech-solutions.com/mk-partnership",
-      type: "press"
+      type: "press",
     },
     {
       title: "Joint Research Publication",
       url: "https://research.greentech.com/desert-irrigation",
-      type: "research"
+      type: "research",
     },
     {
       title: "Case Study: Wadi El Natrun Project",
       url: "https://greentech-solutions.com/case-studies/wadi-el-natrun",
-      type: "case-study"
-    }
+      type: "case-study",
+    },
   ],
   attachments: [
     {
       type: "image",
-      url: "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2940&auto=format&fit=crop",
+      url: "https://mkgroup-eg.com/wp-content/uploads/2022/11/MU-2.png",
       title: "Smart Drip Irrigation System Installation",
-      description: "Advanced irrigation technology being implemented in our Wadi El Natrun facility"
+      description:
+        "Advanced irrigation technology being implemented in our Wadi El Natrun facility",
     },
     {
       type: "image",
-      url: "https://images.unsplash.com/photo-1591785536093-ac933b43a955?q=80&w=2940&auto=format&fit=crop",
+      url: "https://mkgroup-eg.com/wp-content/uploads/2022/11/AU-FS.png",
       title: "Soil Sensor Network Deployment",
-      description: "IoT sensors monitoring soil conditions across 5,000 hectares"
+      description:
+        "IoT sensors monitoring soil conditions across 5,000 hectares",
     },
     {
       type: "image",
-      url: "https://images.unsplash.com/photo-1560493676-04071c5f467b?q=80&w=2874&auto=format&fit=crop",
+      url: "https://mkgroup-eg.com/wp-content/uploads/2022/11/ASORC.png",
       title: "Solar-Powered Irrigation Hub",
-      description: "Sustainable energy solutions powering our irrigation systems"
+      description:
+        "Sustainable energy solutions powering our irrigation systems",
     },
     {
       type: "image",
-      url: "https://images.unsplash.com/photo-1542451313-380d331656c4?q=80&w=2874&auto=format&fit=crop",
+      url: "https://mkgroup-eg.com/wp-content/uploads/2022/11/DHAFRA.png",
       title: "Partnership Signing Ceremony",
-      description: "Historic partnership agreement signing in Dubai, 2020"
+      description: "Historic partnership agreement signing in Dubai, 2020",
     },
     {
       type: "video",
       url: "https://player.vimeo.com/video/507832639?h=a8b6e7f9c0",
       title: "Partnership Success Story",
-      description: "Documentary showcasing the impact of our collaboration"
+      description: "Documentary showcasing the impact of our collaboration",
     },
     {
       type: "document",
       url: "/documents/partnership-agreement.pdf",
       title: "Partnership Agreement",
-      description: "Official partnership documentation and terms"
+      description: "Official partnership documentation and terms",
     },
     {
       type: "document",
       url: "/documents/joint-research-findings.pdf",
       title: "Research Findings Report",
-      description: "Comprehensive analysis of irrigation efficiency improvements"
-    }
+      description:
+        "Comprehensive analysis of irrigation efficiency improvements",
+    },
   ],
   timeline: [
     {
       year: "2020",
       event: "Partnership Established",
-      description: "Strategic alliance formed with initial $5M investment"
+      description: "Strategic alliance formed with initial $5M investment",
     },
     {
       year: "2021",
       event: "First Pilot Project",
-      description: "Successful implementation across 1,000 hectares"
+      description: "Successful implementation across 1,000 hectares",
     },
     {
       year: "2022",
       event: "Technology Patent Filed",
-      description: "Joint patent application for smart irrigation system"
+      description: "Joint patent application for smart irrigation system",
     },
     {
       year: "2023",
       event: "Regional Expansion",
-      description: "Partnership expanded to Jordan and Saudi Arabia"
+      description: "Partnership expanded to Jordan and Saudi Arabia",
     },
     {
       year: "2024",
       event: "Award Recognition",
-      description: "Received Middle East Sustainability Award"
-    }
+      description: "Received Middle East Sustainability Award",
+    },
   ],
   achievements: [
     {
       title: "40% Water Reduction",
-      description: "Achieved 40% reduction in water consumption across all projects"
+      description:
+        "Achieved 40% reduction in water consumption across all projects",
     },
     {
       title: "25% Yield Increase",
-      description: "Increased crop yields by 25% through optimized irrigation"
+      description: "Increased crop yields by 25% through optimized irrigation",
     },
     {
       title: "15,000 Hectares",
-      description: "Successfully implemented across 15,000 hectares of desert land"
+      description:
+        "Successfully implemented across 15,000 hectares of desert land",
     },
     {
       title: "3 Patents",
-      description: "Developed 3 breakthrough patents for desert irrigation"
-    }
+      description: "Developed 3 breakthrough patents for desert irrigation",
+    },
   ],
   priority: "high",
   status: "active",
   startDate: "2020-03-15",
-  nextMilestone: "Sub-Saharan Africa Expansion - Q3 2024"
+  nextMilestone: "Sub-Saharan Africa Expansion - Q3 2024",
 };
 
 // --- Media Gallery Component ---

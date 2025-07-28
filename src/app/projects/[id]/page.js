@@ -224,15 +224,15 @@ export default function ProjectDetailPage() {
     priority: "High",
     attachments: {
       images: [
-        "https://images.unsplash.com/photo-1542451313-380d331656c4?q=80&w=2874&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1597656649387-c10a2d119515?q=80&w=2940&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2832&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1593436037169-14571959554f?q=80&w=2835&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1464983953574-0892a716854b?q=80&w=800&auto=format&fit=crop",
+        "https://mkgroup-eg.com/wp-content/uploads/2024/05/The-Jojoba-Company-farm.jpg",
+        "https://mkgroup-eg.com/wp-content/uploads/2024/05/The-Jojoba-Company-farm.jpg",
+        "https://mkgroup-eg.com/wp-content/uploads/2024/07/%D9%85%D8%A8%D8%A7%D8%AF%D8%B1%D8%A9-%D9%88%D8%A7%D8%AF%D9%8A-%D8%A7%D9%84%D8%AC%D9%88%D8%AC%D9%88%D8%A8%D8%A7.jpg",
+        "https://mkgroup-eg.com/wp-content/uploads/2024/07/%D9%85%D8%B4%D8%B1%D9%88%D8%B9-%D9%87%D9%8A%D8%A6%D8%A9-%D8%AA%D9%86%D9%85%D9%8A%D8%A9-%D8%A7%D9%84%D8%B5%D8%B9%D9%8A%D8%AF.jpg",
+        "https://mkgroup-eg.com/wp-content/uploads/2024/05/The-Jojoba-Company-farm.jpg",
         "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2940&auto=format&fit=crop",
       ],
       videos: [
-        "https://www.w3schools.com/html/mov_bbb.mp4",
+        "https://youtu.be/10A4z4EKidghttps://youtu.be/10A4z4EKidg?si=-0CJGkyguVvhTmjt",
         "https://www.w3schools.com/html/movie.mp4",
       ],
       documents: [

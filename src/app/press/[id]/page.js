@@ -342,7 +342,7 @@ export default function PressArticleDetail() {
       "Egypt",
       "Jojoba",
     ],
-    priority: 1,
+    priority: 5,
     attachments: [
       {
         name: "MK Jojoba Impact Report 2023",
@@ -371,25 +371,25 @@ export default function PressArticleDetail() {
     ],
     images: [
       {
-        src: "https://images.unsplash.com/photo-1464983953574-0892a716854b?q=80&w=2400&auto=format&fit=crop",
+        src: "https://mkgroup-eg.com/wp-content/uploads/2024/05/391613460_673580461542316_1959068305070372405_n.jpg",
         alt: "MK Jojoba Desert Farm Aerial View",
         caption:
           "Aerial view of MK Jojoba's transformation of desert landscape into thriving agricultural land",
       },
       {
-        src: "https://images.unsplash.com/photo-1542451313-380d331656c4?q=80&w=2400&auto=format&fit=crop",
+        src: "https://mkgroup-eg.com/wp-content/uploads/2022/05/374684208_673593778207651_2171150138347886782_n.jpg",
         alt: "Jojoba Plant Close-up",
         caption:
           "Close-up of mature jojoba plants showing the distinctive seed pods",
       },
       {
-        src: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?q=80&w=2400&auto=format&fit=crop",
+        src: "https://mkgroup-eg.com/wp-content/uploads/2022/05/374684208_673593778207651_2171150138347886782_n.jpg",
         alt: "Irrigation System",
         caption:
           "Advanced drip irrigation system maximizing water efficiency in desert conditions",
       },
       {
-        src: "https://images.unsplash.com/photo-1597656649387-c10a2d119515?q=80&w=2400&auto=format&fit=crop",
+        src: "https://mkgroup-eg.com/wp-content/uploads/2024/04/394630000_678251917741837_7520882499018497547_n-1024x1024-1.jpg",
         alt: "Workers in Field",
         caption:
           "Local workers maintaining the jojoba crops during harvest season",
@@ -399,7 +399,7 @@ export default function PressArticleDetail() {
       {
         src: "/videos/desert-transformation-story.mp4",
         poster:
-          "https://images.unsplash.com/photo-1464983953574-0892a716854b?q=80&w=1200&auto=format&fit=crop",
+          "https://mkgroup-eg.com/wp-content/uploads/2022/05/374684208_673593778207651_2171150138347886782_n.jpg",
         title: "Desert Transformation: The MK Jojoba Story",
       },
     ],
@@ -687,9 +687,7 @@ export default function PressArticleDetail() {
                 className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden hover:bg-white/10 transition-all duration-300 cursor-pointer"
               >
                 <img
-                  src={`https://images.unsplash.com/photo-150${
-                    i + 5
-                  }48207${i}8-15d4a09cfac2?q=80&w=400&auto=format&fit=crop`}
+                  src={`https://mkgroup-eg.com/wp-content/uploads/2024/05/post1.png`}
                   alt={`Related Article ${i}`}
                   className="w-full h-48 object-cover"
                 />
