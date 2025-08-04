@@ -523,13 +523,13 @@ export default function AdminProjectForm() {
     title: Yup.string().required("Project title is required"),
     summary: Yup.string().required("Project summary is required"),
     description: Yup.string().required("Project description is required"),
-    budget: Yup.string().required("Project budget is required"),
+    budget: Yup.string(),
     location: Yup.string().required("Project location is required"),
     area: Yup.string().required("Project area is required"),
     startDate: Yup.date().required("Start date is required"),
     endDate: Yup.date().required("End date is required"),
     status: Yup.string().required("Project status is required"),
-    priority: Yup.string().required("Project priority is required"),
+    priority: Yup.string(),
     successPartner: Yup.string(),
   });
 
@@ -547,8 +547,8 @@ export default function AdminProjectForm() {
       status: "",
       priority: "",
       successPartner: "",
+      youtubeLinks: [],
       images: [],
-      videos: [],
       documents: [],
       keyMetrics: [],
       awards: [],
@@ -557,17 +557,20 @@ export default function AdminProjectForm() {
     onSubmit: async (values) => {
       setIsSubmitting(true);
       try {
+        console.log('Form values:', values);
         const imageUploads = await uploadMultipleFiles(values.images);
-        const videoUploads = await uploadMultipleFiles(values.videos);
         const documentUploads = await uploadMultipleFiles(values.documents);
+        
+        console.log('Image uploads:', imageUploads);
+        console.log('Document uploads:', documentUploads);
 
         const projectData = {
           ...values,
-          images: imageUploads.map((f) => f.url),
-          videos: videoUploads.map((f) => f.url),
-          documents: documentUploads.map((f) => f.url),
+          images: imageUploads,
+          documents: documentUploads,
         };
 
+        console.log('Project data being sent:', projectData);
         await dispatch(createProject(projectData)).unwrap();
         setSubmitStatus("success");
         setTimeout(() => {
@@ -708,7 +711,6 @@ export default function AdminProjectForm() {
                 placeholder="e.g., $12.5 Million"
                 formik={formik}
                 icon={<DollarSign className="h-4 w-4" />}
-                required
               />
               <FormInput
                 label="Location"
@@ -731,6 +733,12 @@ export default function AdminProjectForm() {
                 placeholder="Partner organization"
                 formik={formik}
                 icon={<Users className="h-4 w-4" />}
+              />
+              <DynamicList
+                label="YouTube Video Links"
+                name="youtubeLinks"
+                formik={formik}
+                placeholder="https://youtu.be/VIDEO_ID"
               />
               <FormInput
                 label="Start Date"
@@ -760,7 +768,6 @@ export default function AdminProjectForm() {
                 name="priority"
                 options={priorityOptions}
                 formik={formik}
-                required
               />
             </div>
           </div>
@@ -770,18 +777,11 @@ export default function AdminProjectForm() {
             <h2 className="text-2xl font-bold text-white mb-6">
               Media Attachments
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FileUpload
                 label="Project Images"
                 name="images"
                 accept="image/*"
-                formik={formik}
-                multiple
-              />
-              <FileUpload
-                label="Project Videos"
-                name="videos"
-                accept="video/*"
                 formik={formik}
                 multiple
               />

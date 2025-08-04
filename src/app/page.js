@@ -3,7 +3,26 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
-import { Award, Leaf, Globe, Users, Wind, Sun, Menu, X } from "lucide-react";
+import {
+  Award,
+  Leaf,
+  Globe,
+  Users,
+  Wind,
+  Sun,
+  Menu,
+  X,
+  Shield,
+  Star,
+  ArrowLeft,
+} from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchPublicProjects } from "@/redux/projectsSlice";
+import { fetchPublicPress } from "@/redux/pressSlice";
+import { fetchPublicCertifications } from "@/redux/certificationsSlice";
+import { fetchPublicAwards } from "@/redux/awardsSlice";
+import { fetchPublicPartnerships } from "@/redux/partnershipsSlice";
+import Link from "next/link";
 
 // --- Particle Background Component ---
 // Creates a dynamic, animated particle background for the entire page.
@@ -18,7 +37,7 @@ const ParticleBackground = () => {
 
     // Set initial canvas size
     canvas.width = window.innerWidth;
-    canvas.height = document.documentElement.scrollHeight; // Cover entire scrollable height
+    canvas.height = window.innerHeight; // Use viewport height instead of scroll height
 
     let particlesArray = [];
     const numberOfParticles = 150; // Increased for more density
@@ -59,7 +78,7 @@ const ParticleBackground = () => {
         let y = Math.random() * canvas.height;
         let directionX = Math.random() * 0.4 - 0.2;
         let directionY = Math.random() * 0.4 - 0.2;
-        let color = "rgba(101, 163, 13, 0.3)"; // Match project detail page
+        let color = "rgba(101, 163, 13, 0.3)"; // Green theme particles
         particlesArray.push(
           new Particle(x, y, directionX, directionY, size, color)
         );
@@ -77,7 +96,7 @@ const ParticleBackground = () => {
 
     const handleResize = () => {
       canvas.width = window.innerWidth;
-      canvas.height = document.documentElement.scrollHeight;
+      canvas.height = window.innerHeight;
       init();
     };
 
@@ -99,11 +118,11 @@ const ParticleBackground = () => {
     <canvas
       ref={canvasRef}
       style={{
-        position: "absolute",
+        position: "fixed",
         top: 0,
         left: 0,
         zIndex: -1,
-        background: "linear-gradient(135deg, #1a2d27 0%, #33413d 100%)", // Match project detail page
+        background: "linear-gradient(135deg, #1a2d27 0%, #33413d 100%)",
       }}
     />
   );
@@ -111,21 +130,67 @@ const ParticleBackground = () => {
 
 // --- Main Page Component ---
 export default function App() {
+  const dispatch = useDispatch();
+  const { publicItems: projects, loading: projectsLoading } = useSelector(
+    (state) => state.projects
+  );
+  const { publicItems: pressArticles, loading: pressLoading } = useSelector(
+    (state) => state.press
+  );
+  const { publicItems: certifications, loading: certificationsLoading } =
+    useSelector((state) => state.certifications);
+  const { publicItems: awards, loading: awardsLoading } = useSelector(
+    (state) => state.awards
+  );
+  const { publicItems: partnerships, loading: partnershipsLoading } =
+    useSelector((state) => state.partnerships);
+
+  useEffect(() => {
+    // Ensure the background is properly set on page load/refresh
+    document.body.style.background = "transparent";
+    document.documentElement.style.background = "transparent";
+
+    // Force a repaint to ensure the particle background is visible
+    const timer = setTimeout(() => {
+      window.dispatchEvent(new Event("resize"));
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    // Fetch data for dynamic sections
+    dispatch(fetchPublicProjects());
+    dispatch(fetchPublicPress());
+    dispatch(fetchPublicCertifications());
+    dispatch(fetchPublicAwards());
+    dispatch(fetchPublicPartnerships());
+  }, [dispatch]);
+
+  // Check if any section has data
+  const hasProjects = projects && projects.length > 0;
+  const hasPress = pressArticles && pressArticles.length > 0;
+  const hasCertifications = certifications && certifications.length > 0;
+  const hasAwards = awards && awards.length > 0;
+  const hasPartnerships = partnerships && partnerships.length > 0;
+
   return (
-    <div className="bg-transparent text-gray-200 font-sans overflow-x-hidden relative">
+    <div className="bg-transparent text-gray-200 font-sans overflow-x-hidden relative w-full">
       <ParticleBackground />
       <Header />
-      <main>
+      <main className="w-full">
         <HeroSection />
         <WhoAreWeSection />
-        <CertificationsSection />
+        {hasCertifications && <CertificationsSection />}
+
         <ProductsSection />
-        <ProjectsSection />
-        <CertificationsImageSlider />
+        {hasProjects && <ProjectsSection />}
+        {hasCertifications && <CertificationsImageSlider />}
+        {hasAwards && <AwardsSliderSection />}
         <WhyUsSection />
         <SpecializationSection />
-        <PartnershipsSection />
-        <PressSection />
+        {hasPartnerships && <PartnershipsSection />}
+        {hasPress && <PressSection />}
       </main>
       <Footer />
     </div>
@@ -133,7 +198,7 @@ export default function App() {
 }
 
 // --- Reusable Animation Component ---
-const AnimatedSection = ({ children, className }) => {
+const AnimatedSection = ({ children, className, id }) => {
   const sectionVariants = {
     hidden: { opacity: 0, y: 60 },
     visible: {
@@ -145,6 +210,7 @@ const AnimatedSection = ({ children, className }) => {
 
   return (
     <motion.section
+      id={id}
       className={className}
       variants={sectionVariants}
       initial="hidden"
@@ -156,9 +222,14 @@ const AnimatedSection = ({ children, className }) => {
   );
 };
 
+// --- Item Animation Variants ---
 const itemVariants = {
-  hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } },
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut" },
+  },
 };
 
 // --- Header Component ---
@@ -172,7 +243,42 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = ["Home", "About", "Products", "Projects", "Contact"];
+  const navLinks = [
+    "Home",
+    "About",
+    "Products",
+    "Projects",
+    "Certifications",
+    "Awards",
+    "Partnerships",
+    "Press",
+    "Career",
+    "Contact",
+  ];
+
+  const scrollToSection = (sectionId) => {
+    // Map section names to their actual IDs
+    const sectionMap = {
+      home: "home",
+      about: "about",
+      products: "products",
+      projects: "projects",
+      certifications: "certifications",
+      awards: "awards-slider",
+      partnerships: "partnerships",
+      press: "press",
+      contact: "contact",
+    };
+
+    const actualId = sectionMap[sectionId.toLowerCase()];
+    const element = document.getElementById(actualId);
+    if (element) {
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  };
 
   return (
     <>
@@ -191,23 +297,31 @@ const Header = () => {
               className="h-12 w-auto"
             />
           </motion.div>
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden lg:flex items-center space-x-6">
             {navLinks.map((link) => (
-              <a
+              <button
                 key={link}
-                href={`#${link.toLowerCase()}`}
-                className="text-gray-300 hover:text-[#65a30d] transition-colors duration-300 font-medium tracking-wider"
+                onClick={() => {
+                  if (link === "Contact") {
+                    window.open("https://wa.me/201067726594", "_blank");
+                  } else if (link === "Career") {
+                    window.location.href = "/careers";
+                  } else {
+                    scrollToSection(link.toLowerCase());
+                  }
+                }}
+                className="text-gray-300 hover:text-[#65a30d] transition-colors duration-300 font-medium tracking-wider cursor-pointer text-sm"
               >
                 {link}
-              </a>
+              </button>
             ))}
           </nav>
-          <a
-            href="#contact"
+          <button
+            onClick={() => window.open("https://wa.me/201067726594", "_blank")}
             className="hidden md:inline-block bg-[#65a30d] text-white py-2 px-6 rounded-full hover:bg-[#84cc16] transition-all duration-300 transform hover:scale-105 shadow-lg shadow-[#65a30d]/20"
           >
             Get in Touch
-          </a>
+          </button>
           <button
             onClick={() => setIsMenuOpen(true)}
             className="md:hidden text-gray-300"
@@ -227,16 +341,24 @@ const Header = () => {
             <X size={32} className="text-gray-300" />
           </button>
         </div>
-        <nav className="flex flex-col items-center justify-center h-full space-y-8">
+        <nav className="flex flex-col items-center justify-center h-full space-y-6 overflow-y-auto">
           {navLinks.map((link) => (
-            <a
+            <button
               key={link}
-              href={`#${link.toLowerCase()}`}
-              onClick={() => setIsMenuOpen(false)}
-              className="text-gray-200 text-3xl font-light hover:text-[#65a30d] transition-colors duration-300"
+              onClick={() => {
+                setIsMenuOpen(false);
+                if (link === "Contact") {
+                  window.open("https://wa.me/201067726594", "_blank");
+                } else if (link === "Career") {
+                  window.location.href = "/careers";
+                } else {
+                  scrollToSection(link.toLowerCase());
+                }
+              }}
+              className="text-gray-200 text-2xl font-light hover:text-[#65a30d] transition-colors duration-300 cursor-pointer"
             >
               {link}
-            </a>
+            </button>
           ))}
         </nav>
       </div>
@@ -364,7 +486,7 @@ const CertificationsSection = () => {
   const duplicatedLogos = [...logos, ...logos, ...logos, ...logos];
 
   return (
-    <div className="py-20 md:py-28">
+    <AnimatedSection id="certifications" className="py-20 md:py-28">
       <div className="relative w-full overflow-hidden mask-gradient">
         <motion.div
           className="flex"
@@ -404,99 +526,78 @@ const CertificationsSection = () => {
           );
         }
       `}</style>
-    </div>
+    </AnimatedSection>
   );
 };
 
 // --- Certifications Image Slider Section ---
 const CertificationsImageSlider = () => {
-  const certs = [
-    {
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/International-Accreditation-Service-IAS.png",
-      alt: "International Accreditation Service IAS",
-    },
-    {
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/ISO-140012015-n.png",
-      alt: "ISO 14001:2015",
-    },
-    {
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/ISO.png",
-      alt: "ISO",
-    },
-    {
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/bio-inspecta.png",
-      alt: "Bio Inspecta",
-    },
-    {
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/usda-organic.png",
-      alt: "USDA Organic",
-    },
-    {
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/IAF.png",
-      alt: "IAF",
-    },
-    {
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/BRSM.png",
-      alt: "BRSM",
-    },
-    {
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/iso-22000_2018.png",
-      alt: "ISO 22000:2018",
-    },
-    {
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/ISO-9001_2015.png",
-      alt: "ISO 9001:2015",
-    },
-    {
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/ISO-140012015-n.png",
-      alt: "ISO 14001:2015",
-    },
-    {
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/EGAC.png",
-      alt: "EGAC",
-    },
-    {
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/Team-Quality.png",
-      alt: "Team Quality",
-    },
-    {
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/International-Accreditation-Service-IAS.png",
-      alt: "International Accreditation Service IAS",
-    },
-  ];
+  const { publicItems: certifications, loading } = useSelector(
+    (state) => state.certifications
+  );
+
+  // Transform certifications for display
+  const certs = (certifications || []).map((cert) => ({
+    img:
+      cert.image?.url ||
+      "https://mkgroup-eg.com/wp-content/uploads/2024/05/ISO.png",
+    alt: cert.title || "Certification",
+    title: cert.title,
+    category: cert.category,
+    priority: cert.priority,
+  }));
+
   // Duplicate for seamless scroll
   const duplicated = [...certs, ...certs, ...certs];
+
   return (
     <AnimatedSection className="py-16 bg-transparent">
       <SectionTitle>Our Certifications</SectionTitle>
-      <div className="relative w-full overflow-hidden mask-gradient">
-        <motion.div
-          className="flex items-center"
-          animate={{ x: ["0%", `-${100 / 3}%`] }}
-          transition={{ ease: "linear", duration: 40, repeat: Infinity }}
-          drag="x"
-          dragConstraints={sliderDragConstraints}
-          whileTap={{ cursor: "grabbing" }}
-        >
-          {duplicated.map((cert, i) => (
-            <div
-              key={i}
-              className="flex-shrink-0 w-56 h-40 mx-6 flex items-center justify-center bg-white/80 rounded-xl shadow border border-gray-200"
+
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#65a30d]"></div>
+        </div>
+      ) : (
+        <>
+          <div className="relative w-full overflow-hidden mask-gradient">
+            <motion.div
+              className="flex items-center"
+              animate={{ x: ["0%", `-${100 / 3}%`] }}
+              transition={{ ease: "linear", duration: 40, repeat: Infinity }}
+              drag="x"
+              dragConstraints={sliderDragConstraints}
+              whileTap={{ cursor: "grabbing" }}
             >
-              <img
-                src={cert.img}
-                alt={cert.alt}
-                className="max-h-24 max-w-40 object-contain"
-              />
-            </div>
-          ))}
-        </motion.div>
-      </div>
-      <div className="flex justify-center mt-6">
-        <button className="bg-[#65a30d] text-white px-8 py-3 rounded-full font-semibold shadow hover:bg-[#84cc16] transition-all duration-300">
-          Show All
-        </button>
-      </div>
+              {duplicated.map((cert, i) => (
+                <div
+                  key={i}
+                  className="flex-shrink-0 w-56 h-40 mx-6 flex items-center justify-center bg-white/80 rounded-xl shadow border border-gray-200"
+                >
+                  <img
+                    src={cert.img}
+                    alt={cert.alt}
+                    className="max-h-24 max-w-40 object-contain"
+                    onError={(e) => {
+                      e.target.src =
+                        "https://mkgroup-eg.com/wp-content/uploads/2024/05/ISO.png";
+                    }}
+                  />
+                </div>
+              ))}
+            </motion.div>
+          </div>
+          <div className="flex justify-center mt-6">
+            <Link
+              href="/certifications"
+              className="bg-[#65a30d] text-white px-8 py-3 rounded-full font-semibold shadow hover:bg-[#84cc16] transition-all duration-300"
+            >
+              View All Certifications
+            </Link>
+          </div>
+        </>
+      )}
+
       <style jsx>{`
         .mask-gradient {
           -webkit-mask-image: linear-gradient(
@@ -519,21 +620,250 @@ const CertificationsImageSlider = () => {
   );
 };
 
+// --- Awards Section ---
+const AwardsSection = () => {
+  const { publicItems: awards, loading } = useSelector((state) => state.awards);
+
+  // Transform awards for display
+  const displayAwards = (awards || []).map((award) => ({
+    id: award._id,
+    title: award.title || "Award",
+    category: award.category || "General",
+    year: award.awardDate
+      ? new Date(award.awardDate).getFullYear().toString()
+      : "2023",
+    icon: <Award className="h-8 w-8 text-[#65a30d]" />,
+    summary: award.summary,
+    level: award.level,
+  }));
+
+  return (
+    <AnimatedSection id="awards" className="py-20 md:py-28">
+      <div className="container mx-auto px-6">
+        <div className="text-center mb-16">
+          <SectionTitle>Our Achievements & Recognition</SectionTitle>
+          <p className="text-xl text-gray-400 max-w-3xl mx-auto mt-6">
+            Celebrating excellence and innovation in sustainable agriculture
+          </p>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#65a30d]"></div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {displayAwards.map((award, index) => (
+              <Link key={index} href={`/awards/${award.id}`} className="block">
+                <motion.div
+                  variants={itemVariants}
+                  className="group relative bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 p-8 text-center hover:border-[#65a30d]/30 hover:bg-black/30 transition-all duration-500 cursor-pointer"
+                  whileHover={{ y: -10, scale: 1.05 }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#65a30d]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+
+                  <div className="relative z-10">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-[#65a30d] to-[#84cc16] rounded-full flex items-center justify-center">
+                      {award.icon}
+                    </div>
+
+                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-[#65a30d] transition-colors duration-300">
+                      {award.title}
+                    </h3>
+
+                    <p className="text-sm text-gray-400 mb-3">
+                      {award.category}
+                    </p>
+
+                    <div className="text-[#65a30d] font-semibold">
+                      {award.year}
+                    </div>
+                  </div>
+                </motion.div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        <div className="text-center mt-12">
+          <motion.a
+            href="/awards"
+            className="inline-flex items-center space-x-2 bg-[#65a30d] text-white px-8 py-3 rounded-full hover:bg-[#84cc16] transition-all duration-300 transform hover:scale-105 shadow-lg shadow-[#65a30d]/20"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <span>View All Awards</span>
+            <ArrowLeft className="w-4 h-4 rotate-180" />
+          </motion.a>
+        </div>
+      </div>
+    </AnimatedSection>
+  );
+};
+
+// --- Awards Slider Section ---
+const AwardsSliderSection = () => {
+  const { publicItems: awards, loading } = useSelector((state) => state.awards);
+
+  // Transform awards for slider display
+  const sliderAwards = (awards || []).map((award) => ({
+    id: award._id,
+    title: award.title || "Award",
+    category: award.category || "General",
+    year: award.awardDate
+      ? new Date(award.awardDate).getFullYear().toString()
+      : "2023",
+    icon: <Award className="h-8 w-8 text-[#65a30d]" />,
+    summary: award.summary,
+    level: award.level,
+    image: award.image?.url || null,
+  }));
+
+  return (
+    <AnimatedSection id="awards-slider" className="py-20 md:py-28">
+      <div className="container mx-auto px-6">
+        <div className="text-center mb-16">
+          <SectionTitle>Featured Awards Gallery</SectionTitle>
+          <p className="text-xl text-gray-400 max-w-3xl mx-auto mt-6">
+            A showcase of our most prestigious recognitions and achievements
+          </p>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#65a30d]"></div>
+          </div>
+        ) : (
+          <div className="relative">
+            <div className="flex space-x-6 overflow-x-auto pb-6 scrollbar-hide">
+              {sliderAwards.map((award, index) => (
+                <Link
+                  key={index}
+                  href={`/awards/${award.id}`}
+                  className="block"
+                >
+                  <motion.div
+                    variants={itemVariants}
+                    className="group relative flex-shrink-0 w-80 h-96 bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden shadow-lg cursor-pointer"
+                    whileHover={{ y: -10, scale: 1.05 }}
+                  >
+                    {award.image ? (
+                      <div className="relative h-48 overflow-hidden">
+                        <img
+                          src={award.image}
+                          alt={award.title}
+                          className="w-full h-full object-cover transition-all duration-700 ease-in-out group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                      </div>
+                    ) : (
+                      <div className="h-48 bg-gradient-to-br from-[#65a30d]/20 to-[#84cc16]/20 flex items-center justify-center">
+                        <Award className="h-16 w-16 text-[#65a30d]" />
+                      </div>
+                    )}
+
+                    <div className="p-6">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-sm text-[#65a30d] font-semibold bg-[#65a30d]/10 px-3 py-1 rounded-full">
+                          {award.category}
+                        </span>
+                        <span className="text-sm text-gray-400">
+                          {award.year}
+                        </span>
+                      </div>
+
+                      <h3 className="text-lg font-bold text-white mb-2 group-hover:text-[#65a30d] transition-colors duration-300">
+                        {award.title}
+                      </h3>
+
+                      <p className="text-sm text-gray-400 mb-3 line-clamp-2">
+                        {award.summary}
+                      </p>
+
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs text-gray-500">Level:</span>
+                        <span className="text-xs text-[#65a30d] font-semibold">
+                          {award.level}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="text-center mt-12">
+          <motion.a
+            href="/awards"
+            className="inline-flex items-center space-x-2 bg-[#65a30d] text-white px-8 py-3 rounded-full hover:bg-[#84cc16] transition-all duration-300 transform hover:scale-105 shadow-lg shadow-[#65a30d]/20"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <span>Explore All Awards</span>
+            <ArrowLeft className="w-4 h-4 rotate-180" />
+          </motion.a>
+        </div>
+      </div>
+    </AnimatedSection>
+  );
+};
+
 // --- Glass Card Component for Scrolling Sections ---
-const GlassCard = ({ item, index }) => (
+const GlassCard = ({
+  item,
+  index,
+  isProject = false,
+  isPartnership = false,
+}) => (
   <motion.div
     variants={itemVariants}
-    className="group relative flex-shrink-0 w-80 h-96 bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden shadow-lg"
+    className="group relative flex-shrink-0 w-80 h-96 bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden shadow-lg cursor-pointer"
+    onClick={() => {
+      if (isProject && item.id) {
+        window.location.href = `/projects/${item.id}`;
+      } else if (isPartnership && item.id) {
+        window.location.href = `/partnerships/${item.id}`;
+      }
+    }}
   >
     <img
       src={item.img}
       alt={item.name || item.title}
       className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-in-out group-hover:scale-110 opacity-40 group-hover:opacity-60"
+      onError={(e) => {
+        // Fallback image for partnerships if the poster image fails to load
+        if (isPartnership) {
+          e.target.src =
+            "https://mkgroup-eg.com/wp-content/uploads/2022/11/NVU.png";
+        }
+      }}
     />
     <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
     <div className="relative h-full flex flex-col justify-end p-6 text-white">
       <h3 className="text-2xl font-bold mb-2">{item.name || item.title}</h3>
-      <p className="text-gray-300">{item.desc || item.area}</p>
+      <p className="text-gray-300 line-clamp-2">{item.desc || item.area}</p>
+      {item.budget && (
+        <p className="text-[#65a30d] text-sm mt-1">{item.budget}</p>
+      )}
+      {isPartnership && item.status && (
+        <div className="flex items-center mt-2">
+          <span
+            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+              item.status === "active"
+                ? "bg-green-500/20 text-green-400"
+                : item.status === "completed"
+                ? "bg-blue-500/20 text-blue-400"
+                : item.status === "inactive"
+                ? "bg-gray-500/20 text-gray-400"
+                : "bg-red-500/20 text-red-400"
+            }`}
+          >
+            {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+          </span>
+        </div>
+      )}
     </div>
     <div className="absolute inset-0 border-2 border-transparent group-hover:border-[#65a30d] rounded-2xl transition-all duration-300"></div>
   </motion.div>
@@ -628,54 +958,68 @@ const ProductsSection = () => {
 
 // --- Projects Section ---
 const ProjectsSection = () => {
-  const projects = [
-    {
-      name: "Wadi El Natrun Reclamation",
-      area: "5,000 Hectares",
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/07/%D9%85%D8%B4%D8%B1%D9%88%D8%B9-%D9%87%D9%8A%D8%A6%D8%A9-%D8%AA%D9%86%D9%85%D9%8A%D8%A9-%D8%A7%D9%84%D8%B5%D8%B9%D9%8A%D8%AF.jpg",
-    },
-    {
-      name: "Sinai Greening Initiative",
-      area: "10,000 Hectares",
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/07/%D8%A7%D9%84%D9%82%D8%A7%D8%A8%D8%B6%D9%87-%D9%84%D9%84%D9%83%D9%87%D8%B1%D8%A8%D8%A7%D8%A1.jpg",
-    },
-    {
-      name: "New Valley Agro-Forestry",
-      area: "7,500 Hectares",
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/The-Jojoba-Company-farm.jpg",
-    },
-    {
-      name: "Red Sea Coastline Restoration",
-      area: "2,000 Hectares",
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/07/%D9%85%D8%A8%D8%A7%D8%AF%D8%B1%D8%A9-%D9%88%D8%A7%D8%AF%D9%8A-%D8%A7%D9%84%D8%AC%D9%88%D8%AC%D9%88%D8%A8%D8%A7.jpg",
-    },
+  const { publicItems: projects, loading } = useSelector(
+    (state) => state.projects
+  );
+
+  // Transform projects for display
+  const displayProjects = (projects || []).map((project) => ({
+    name: project.title,
+    area: project.area,
+    budget: project.budget,
+    img:
+      project.images && project.images.length > 0
+        ? typeof project.images[0] === "string"
+          ? project.images[0]
+          : project.images[0].url
+        : "https://mkgroup-eg.com/wp-content/uploads/2024/05/The-Jojoba-Company-farm.jpg",
+    id: project._id || project.id,
+  }));
+
+  const duplicated = [
+    ...displayProjects,
+    ...displayProjects,
+    ...displayProjects,
   ];
-  const duplicated = [...projects, ...projects, ...projects];
+
   return (
     <AnimatedSection
       id="projects"
       className="py-20 md:py-28 overflow-hidden bg-transparent"
     >
       <SectionTitle>Our Landmark Projects</SectionTitle>
-      <div className="relative w-full overflow-hidden mask-gradient">
-        <motion.div
-          className="flex"
-          animate={{ x: ["0%", `-${100 / 3}%`] }}
-          transition={{ ease: "linear", duration: 40, repeat: Infinity }}
-          drag="x"
-          dragConstraints={sliderDragConstraints}
-          whileTap={{ cursor: "grabbing" }}
-        >
-          {duplicated.map((p, i) => (
-            <GlassCard key={i} item={p} index={i} />
-          ))}
-        </motion.div>
-      </div>
-      <div className="flex justify-center mt-6">
-        <button className="bg-[#65a30d] text-white px-8 py-3 rounded-full font-semibold shadow hover:bg-[#84cc16] transition-all duration-300">
-          Show All
-        </button>
-      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#65a30d]"></div>
+        </div>
+      ) : (
+        <>
+          <div className="relative w-full overflow-hidden mask-gradient">
+            <motion.div
+              className="flex justify-center"
+              animate={{ x: ["0%", `-${100 / 3}%`] }}
+              transition={{ ease: "linear", duration: 40, repeat: Infinity }}
+              drag="x"
+              dragConstraints={sliderDragConstraints}
+              whileTap={{ cursor: "grabbing" }}
+            >
+              {duplicated.map((p, i) => (
+                <GlassCard key={i} item={p} index={i} isProject={true} />
+              ))}
+            </motion.div>
+          </div>
+          <div className="flex justify-center mt-6">
+            <Link
+              href="/projects"
+              className="bg-[#65a30d] text-white px-8 py-3 rounded-full font-semibold shadow hover:bg-[#84cc16] transition-all duration-300"
+            >
+              Show All
+            </Link>
+          </div>
+        </>
+      )}
+
       <style jsx>{`
         .mask-gradient {
           -webkit-mask-image: linear-gradient(
@@ -723,7 +1067,7 @@ const WhyUsSection = () => {
     },
   ];
   return (
-    <AnimatedSection className="py-20 md:py-28">
+    <AnimatedSection id="why-us" className="py-20 md:py-28">
       <div className="container mx-auto px-6 text-center">
         <SectionTitle>Why Choose Us?</SectionTitle>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -784,7 +1128,10 @@ const SpecializationSection = () => {
     ...specializations,
   ];
   return (
-    <AnimatedSection className="py-20 md:py-28 overflow-hidden bg-transparent">
+    <AnimatedSection
+      id="specializations"
+      className="py-20 md:py-28 overflow-hidden bg-transparent"
+    >
       <SectionTitle>Our Specializations</SectionTitle>
       <div className="relative w-full overflow-hidden mask-gradient">
         <motion.div
@@ -828,51 +1175,91 @@ const SpecializationSection = () => {
 };
 
 const PartnershipsSection = () => {
-  const partnerships = [
-    {
-      name: "GreenTech Solutions",
-      desc: "Collaborating on sustainable irrigation systems.",
-      img: "https://mkgroup-eg.com/wp-content/uploads/2022/11/NVU.png",
-    },
-    {
-      name: "AgroGlobal Inc.",
-      desc: "Joint research in crop genetics and yield improvement.",
-      img: "https://mkgroup-eg.com/wp-content/uploads/2022/11/NVG.png",
-    },
-    {
-      name: "Desert Bloom Initiative",
-      desc: "Pioneering desert agriculture and land reclamation.",
-      img: "https://mkgroup-eg.com/wp-content/uploads/2022/11/MU.png",
-    },
-    {
-      name: "EcoCert Europe",
-      desc: "Certification and quality assurance for organic produce.",
-      img: "https://mkgroup-eg.com/wp-content/uploads/2022/11/MU-2.png",
-    },
+  const { publicItems: partnerships, loading } = useSelector(
+    (state) => state.partnerships
+  );
+
+  // Transform partnerships for display with proper poster image handling
+  const displayPartnerships = (partnerships || []).map((partnership) => {
+    // Handle partnership poster image
+    let posterImageUrl =
+      "https://mkgroup-eg.com/wp-content/uploads/2022/11/NVU.png"; // fallback
+
+    if (partnership.image) {
+      if (typeof partnership.image === "string") {
+        // If image is a direct string URL
+        posterImageUrl = partnership.image;
+      } else if (partnership.image.url) {
+        // If image is an object with url property (backend structure)
+        posterImageUrl = partnership.image.url;
+      } else if (
+        Array.isArray(partnership.image) &&
+        partnership.image.length > 0
+      ) {
+        // If image is an array, take the first one
+        const firstImage = partnership.image[0];
+        if (typeof firstImage === "string") {
+          posterImageUrl = firstImage;
+        } else if (firstImage && firstImage.url) {
+          posterImageUrl = firstImage.url;
+        }
+      }
+    }
+
+    return {
+      name: partnership.title || partnership.name,
+      desc: partnership.summary || partnership.description,
+      img: posterImageUrl,
+      id: partnership._id || partnership.id,
+      status: partnership.status,
+      priority: partnership.priority,
+    };
+  });
+
+  const duplicated = [
+    ...displayPartnerships,
+    ...displayPartnerships,
+    ...displayPartnerships,
   ];
-  const duplicated = [...partnerships, ...partnerships, ...partnerships];
+
   return (
-    <AnimatedSection className="py-20 md:py-28 overflow-hidden bg-transparent">
-      <SectionTitle>Our Partnerships</SectionTitle>
-      <div className="relative w-full overflow-hidden mask-gradient">
-        <motion.div
-          className="flex"
-          animate={{ x: ["0%", `-${100 / 3}%`] }}
-          transition={{ ease: "linear", duration: 40, repeat: Infinity }}
-          drag="x"
-          dragConstraints={sliderDragConstraints}
-          whileTap={{ cursor: "grabbing" }}
-        >
-          {duplicated.map((p, i) => (
-            <GlassCard key={i} item={p} index={i} />
-          ))}
-        </motion.div>
-      </div>
-      <div className="flex justify-center mt-6">
-        <button className="bg-[#65a30d] text-white px-8 py-3 rounded-full font-semibold shadow hover:bg-[#84cc16] transition-all duration-300">
-          Show All
-        </button>
-      </div>
+    <AnimatedSection
+      id="partnerships"
+      className="py-20 md:py-28 overflow-hidden bg-transparent"
+    >
+      <SectionTitle>Our Strategic Partnerships</SectionTitle>
+
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#65a30d]"></div>
+        </div>
+      ) : (
+        <>
+          <div className="relative w-full overflow-hidden mask-gradient">
+            <motion.div
+              className="flex"
+              animate={{ x: ["0%", `-${100 / 3}%`] }}
+              transition={{ ease: "linear", duration: 40, repeat: Infinity }}
+              drag="x"
+              dragConstraints={sliderDragConstraints}
+              whileTap={{ cursor: "grabbing" }}
+            >
+              {duplicated.map((p, i) => (
+                <GlassCard key={i} item={p} index={i} isPartnership={true} />
+              ))}
+            </motion.div>
+          </div>
+          <div className="flex justify-center mt-6">
+            <Link
+              href="/partnerships"
+              className="bg-[#65a30d] text-white px-8 py-3 rounded-full font-semibold shadow hover:bg-[#84cc16] transition-all duration-300"
+            >
+              View All Partnerships
+            </Link>
+          </div>
+        </>
+      )}
+
       <style jsx>{`
         .mask-gradient {
           -webkit-mask-image: linear-gradient(
@@ -897,71 +1284,102 @@ const PartnershipsSection = () => {
 
 // --- Press Section ---
 const PressSection = () => {
-  const press = [
-    {
-      quote: "A model for sustainable agriculture in the Middle East.",
-      source: "Global Agriculture Today",
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/04/WhatsApp-Image-2024-04-27-at-14.21.40_47a11d61.jpg",
-    },
-    {
-      quote: "MK Jojoba's innovative techniques are turning the desert green.",
-      source: "Eco-Innovators Magazine",
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/391613460_673580461542316_1959068305070372405_n.jpg",
-    },
-    {
-      quote: "The quality of their Jojoba oil is unparalleled in the market.",
-      source: "Cosmetics Business Weekly",
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/04/394630000_678251917741837_7520882499018497547_n-1024x1024-1.jpg",
-    },
-    {
-      quote: "MK Jojoba's innovative techniques are turning the desert green.",
-      source: "Eco-Innovators Magazine",
-      img: "https://mkgroup-eg.com/wp-content/uploads/2022/05/374684208_673593778207651_2171150138347886782_n.jpg",
-    },
-    {
-      quote: "The quality of their Jojoba oil is unparalleled in the market.",
-      source: "Cosmetics Business Weekly",
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/post1.png",
-    },
-  ];
-  const duplicated = [...press, ...press, ...press];
+  const { publicItems: pressArticles, loading } = useSelector(
+    (state) => state.press
+  );
+
+  // Transform press articles for display
+  const displayPress = (pressArticles || []).map((press) => ({
+    quote: press.summary,
+    source: press.publication,
+    img:
+      press.image && press.image.length > 0
+        ? press.image[0]
+        : "https://mkgroup-eg.com/wp-content/uploads/2024/04/WhatsApp-Image-2024-04-27-at-14.21.40_47a11d61.jpg",
+    id: press._id || press.id,
+  }));
+
+  const duplicated = [...displayPress, ...displayPress, ...displayPress];
+
   return (
-    <AnimatedSection className="py-20 md:py-28 overflow-hidden bg-transparent">
+    <AnimatedSection id="press" className="py-20 md:py-28 overflow-hidden">
       <SectionTitle>In The Press</SectionTitle>
-      <div className="relative w-full overflow-hidden mask-gradient">
-        <motion.div
-          className="flex items-stretch"
-          animate={{ x: ["0%", `-${100 / 3}%`] }}
-          transition={{ ease: "linear", duration: 40, repeat: Infinity }}
-          drag="x"
-          dragConstraints={sliderDragConstraints}
-          whileTap={{ cursor: "grabbing" }}
-        >
-          {duplicated.map((item, index) => (
+
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#65a30d]"></div>
+        </div>
+      ) : (
+        <>
+          <div className="relative w-full overflow-hidden mask-gradient">
             <motion.div
-              key={index}
-              className="flex-shrink-0 w-96 max-w-full bg-black/20 backdrop-blur-md border border-white/10 p-8 rounded-2xl flex flex-col items-center mx-6"
+              className="flex items-stretch"
+              animate={{ x: ["0%", `-${100 / 3}%`] }}
+              transition={{ ease: "linear", duration: 40, repeat: Infinity }}
+              drag="x"
+              dragConstraints={sliderDragConstraints}
+              whileTap={{ cursor: "grabbing" }}
             >
-              <img
-                src={item.img}
-                alt={item.source}
-                className="w-full h-40 object-cover rounded-xl mb-6 shadow"
-              />
-              <p className="text-lg italic text-gray-300 mb-6 text-center">
-                “{item.quote}”
-              </p>
-              <p className="font-bold text-right text-[#65a30d] w-full">
-                - {item.source}
-              </p>
+              {duplicated.map((item, index) => (
+                <motion.div
+                  key={index}
+                  className="flex-shrink-0 w-96 max-w-full bg-black/20 backdrop-blur-md border border-white/10 p-6 rounded-2xl flex flex-col mx-6 h-auto min-h-[400px] cursor-pointer hover:border-[#65a30d]/30 transition-all duration-300"
+                  onClick={() => {
+                    if (item.id) {
+                      window.location.href = `/press/${item.id}`;
+                    }
+                  }}
+                  whileHover={{ scale: 1.02, y: -5 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {/* Image Container */}
+                  <div className="relative h-48 mb-4 overflow-hidden rounded-xl">
+                    <img
+                      src={item.img}
+                      alt={item.source}
+                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  </div>
+
+                  {/* Content Container */}
+                  <div className="flex-1 flex flex-col">
+                    {/* Quote */}
+                    <div className="flex-1 mb-4">
+                      <p className="text-base italic text-gray-300 text-center leading-relaxed line-clamp-4">
+                        "
+                        {item.quote && item.quote.length > 200
+                          ? item.quote.substring(0, 200) + "..."
+                          : item.quote}
+                        "
+                      </p>
+                    </div>
+
+                    {/* Source */}
+                    <div className="mt-auto">
+                      <p className="font-bold text-right text-[#65a30d] text-sm truncate">
+                        -{" "}
+                        {item.source && item.source.length > 30
+                          ? item.source.substring(0, 30) + "..."
+                          : item.source}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
             </motion.div>
-          ))}
-        </motion.div>
-      </div>
-      <div className="flex justify-center mt-6">
-        <button className="bg-[#65a30d] text-white px-8 py-3 rounded-full font-semibold shadow hover:bg-[#84cc16] transition-all duration-300">
-          Show All
-        </button>
-      </div>
+          </div>
+          <div className="flex justify-center mt-6">
+            <Link
+              href="/press"
+              className="bg-[#65a30d] text-white px-8 py-3 rounded-full font-semibold shadow hover:bg-[#84cc16] transition-all duration-300"
+            >
+              Show All
+            </Link>
+          </div>
+        </>
+      )}
+
       <style jsx>{`
         .mask-gradient {
           -webkit-mask-image: linear-gradient(
@@ -978,6 +1396,18 @@ const PressSection = () => {
             black 80%,
             transparent
           );
+        }
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .line-clamp-4 {
+          display: -webkit-box;
+          -webkit-line-clamp: 4;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
       `}</style>
     </AnimatedSection>
@@ -1006,48 +1436,180 @@ const Footer = () => (
           <h3 className="text-lg font-bold mb-4 text-gray-100">Quick Links</h3>
           <ul className="space-y-2">
             <li>
-              <a href="#home" className="text-gray-400 hover:text-[#65a30d]">
+              <button
+                onClick={() => {
+                  const element = document.getElementById("home");
+                  if (element) {
+                    element.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }
+                }}
+                className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
+              >
                 Home
-              </a>
+              </button>
             </li>
             <li>
-              <a href="#about" className="text-gray-400 hover:text-[#65a30d]">
+              <button
+                onClick={() => {
+                  const element = document.getElementById("about");
+                  if (element) {
+                    element.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }
+                }}
+                className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
+              >
                 About Us
-              </a>
+              </button>
             </li>
             <li>
-              <a
-                href="#products"
-                className="text-gray-400 hover:text-[#65a30d]"
+              <button
+                onClick={() => {
+                  const element = document.getElementById("products");
+                  if (element) {
+                    element.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }
+                }}
+                className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
               >
                 Products
-              </a>
+              </button>
             </li>
             <li>
-              <a
-                href="#projects"
-                className="text-gray-400 hover:text-[#65a30d]"
+              <button
+                onClick={() => {
+                  const element = document.getElementById("projects");
+                  if (element) {
+                    element.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }
+                }}
+                className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
               >
                 Projects
-              </a>
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => {
+                  const element = document.getElementById("certifications");
+                  if (element) {
+                    element.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }
+                }}
+                className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
+              >
+                Certifications
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => {
+                  const element = document.getElementById("awards-slider");
+                  if (element) {
+                    element.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }
+                }}
+                className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
+              >
+                Awards
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => {
+                  const element = document.getElementById("partnerships");
+                  if (element) {
+                    element.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }
+                }}
+                className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
+              >
+                Partnerships
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => {
+                  const element = document.getElementById("press");
+                  if (element) {
+                    element.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }
+                }}
+                className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
+              >
+                Press
+              </button>
+            </li>
+            <li>
+              <Link
+                href="/careers"
+                className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
+              >
+                Career
+              </Link>
             </li>
           </ul>
         </div>
         <div>
           <h3 className="text-lg font-bold mb-4 text-gray-100">Contact Us</h3>
-          <p className="text-gray-400 mb-2">New Cairo, Egypt</p>
-          <p className="text-gray-400 mb-2">info@mk-jojoba.com</p>
-          <p className="text-gray-400">+20 123 456 7890</p>
+          <p className="text-gray-400 mb-2">Alexandria, Egypt - Smoha</p>
+          <p className="text-gray-400 mb-2">info@mkgroup-eg.com</p>
+          <p className="text-gray-400 mb-4">+20 106 772 6594</p>
+          <button
+            onClick={() => window.open("https://wa.me/201067726594", "_blank")}
+            className="bg-[#65a30d] text-white py-2 px-4 rounded-full hover:bg-[#84cc16] transition-all duration-300 transform hover:scale-105 text-sm font-medium"
+          >
+            Chat on WhatsApp
+          </button>
         </div>
         <div>
           <h3 className="text-lg font-bold mb-4 text-gray-100">Follow Us</h3>
           <div className="flex space-x-4 justify-center md:justify-start">
-            <a href="#" className="text-gray-400 hover:text-white">
+            <a
+              href="https://wa.me/201067726594"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-[#65a30d] transition-colors"
+            >
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" />
+              </svg>
+            </a>
+            <a
+              href="#"
+              className="text-gray-400 hover:text-[#65a30d] transition-colors"
+            >
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M22.46,6C21.69,6.35 20.86,6.58 20,6.69C20.88,6.16 21.56,5.32 21.88,4.31C21.05,4.81 20.13,5.16 19.16,5.36C18.37,4.5 17.26,4 16,4C13.65,4 11.73,5.92 11.73,8.29C11.73,8.63 11.77,8.96 11.84,9.27C8.28,9.09 5.11,7.38 3,4.79C2.63,5.42 2.42,6.16 2.42,6.94C2.42,8.43 3.17,9.75 4.33,10.5C3.62,10.5 2.96,10.3 2.38,10C2.38,10 2.38,10 2.38,10.03C2.38,12.11 3.86,13.85 5.82,14.24C5.46,14.34 5.08,14.39 4.69,14.39C4.42,14.39 4.15,14.36 3.89,14.31C4.43,16 6,17.26 7.89,17.29C6.43,18.45 4.58,19.13 2.56,19.13C2.22,19.13 1.88,19.11 1.54,19.07C3.44,20.29 5.7,21 8.12,21C16,21 20.33,14.46 20.33,8.79C20.33,8.6 20.33,8.42 20.32,8.23C21.16,7.63 21.88,6.87 22.46,6Z"></path>
               </svg>
             </a>
-            <a href="#" className="text-gray-400 hover:text-white">
+            <a
+              href="#"
+              className="text-gray-400 hover:text-[#65a30d] transition-colors"
+            >
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M19,3H5C3.89,3 3,3.89 3,5V19C3,20.1 3.9,21 5,21H19C20.1,21 21,20.1 21,19V5C21,3.89 20.1,3 19,3M8.5,18H5.5V10H8.5V18M7,8.5C6.17,8.5 5.5,7.83 5.5,7C5.5,6.17 6.17,5.5 7,5.5C7.83,5.5 8.5,6.17 8.5,7C8.5,7.83 7.83,8.5 7,8.5M18.5,18H15.5V13.5C15.5,12.57 15.15,12.07 14.43,12.07C13.5,12.07 13,12.8 13,13.5V18H10V10H13V11.25C13.4,10.5 14.2,10 15.25,10C17.5,10 18.5,11.5 18.5,13.25V18Z"></path>
               </svg>

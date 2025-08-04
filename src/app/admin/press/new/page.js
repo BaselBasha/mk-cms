@@ -23,6 +23,7 @@ import {
   Link as LinkIcon,
   Image as ImageIcon,
   Newspaper,
+  Play,
 } from "lucide-react";
 import Link from "next/link";
 import { useDispatch, useSelector } from 'react-redux';
@@ -472,12 +473,16 @@ export default function AdminPressForm() {
     summary: Yup.string().required("Summary is required"),
     content: Yup.string().required("Content is required"),
     author: Yup.string().required("Author is required"),
+    publication: Yup.string().required("Publication is required"),
     publishDate: Yup.date().required("Publish date is required"),
-    source: Yup.string(),
+    url: Yup.string().url("Must be a valid URL"),
+    image: Yup.array(),
+    isActive: Yup.boolean(),
     tags: Yup.array().of(Yup.string()),
-    image: Yup.mixed(),
-    videos: Yup.array(),
+    category: Yup.string().oneOf(["news", "interview", "feature", "review", "announcement"]),
+    youtubeLinks: Yup.array().of(Yup.string().url("Must be a valid URL")),
     documents: Yup.array(),
+    relatedArticles: Yup.array().of(Yup.string()),
   });
 
   // Form configuration
@@ -487,27 +492,27 @@ export default function AdminPressForm() {
       summary: "",
       content: "",
       author: "",
+      publication: "",
       publishDate: "",
-      source: "",
+      url: "",
+      image: [],
+      isActive: true,
       tags: [],
-      image: null,
-      videos: [],
+      category: "",
+      youtubeLinks: [],
       documents: [],
+      relatedArticles: [],
     },
     validationSchema,
     onSubmit: async (values) => {
       setIsSubmitting(true);
       try {
-        const imageUploads = await uploadMultipleFiles(
-          values.image ? [values.image] : []
-        );
-        const videoUploads = await uploadMultipleFiles(values.videos);
+        const imageUploads = await uploadMultipleFiles(values.image);
         const documentUploads = await uploadMultipleFiles(values.documents);
 
         const pressData = {
           ...values,
-          image: imageUploads[0]?.url || null,
-          videos: videoUploads.map((f) => f.url),
+          image: imageUploads.map((f) => f.url),
           documents: documentUploads.map((f) => f.url),
         };
 
@@ -634,6 +639,14 @@ export default function AdminPressForm() {
                 required
               />
               <FormInput
+                label="Publication"
+                name="publication"
+                placeholder="Source or publication"
+                formik={formik}
+                icon={<Globe className="h-4 w-4" />}
+                required
+              />
+              <FormInput
                 label="Publish Date"
                 name="publishDate"
                 type="date"
@@ -642,12 +655,44 @@ export default function AdminPressForm() {
                 required
               />
               <FormInput
-                label="Source"
-                name="source"
-                placeholder="Source or publication"
+                label="URL"
+                name="url"
+                placeholder="Article URL"
                 formik={formik}
-                icon={<Globe className="h-4 w-4" />}
+                icon={<LinkIcon className="h-4 w-4" />}
               />
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-white">
+                  Category <span className="text-red-400">*</span>
+                </label>
+                <select
+                  name="category"
+                  value={formik.values.category}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#65a30d]"
+                >
+                  <option value="">Select Category</option>
+                  <option value="news">News</option>
+                  <option value="interview">Interview</option>
+                  <option value="feature">Feature</option>
+                  <option value="review">Review</option>
+                  <option value="announcement">Announcement</option>
+                </select>
+                {formik.touched.category && formik.errors.category && (
+                  <div className="text-red-400 text-sm">{formik.errors.category}</div>
+                )}
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  name="isActive"
+                  checked={formik.values.isActive}
+                  onChange={formik.handleChange}
+                  className="h-5 w-5 text-[#65a30d] bg-black/30 border border-white/10 rounded focus:ring-[#65a30d] focus:ring-2"
+                />
+                <label className="text-white text-sm">Active</label>
+              </div>
             </div>
           </div>
           {/* Media Attachments */}
@@ -661,19 +706,18 @@ export default function AdminPressForm() {
                 name="image"
                 accept="image/*"
                 formik={formik}
-                multiple={false}
-              />
-              <FileUpload
-                label="Article Videos"
-                name="videos"
-                accept="video/*"
-                formik={formik}
                 multiple
               />
+              <DynamicList
+                label="YouTube Links"
+                name="youtubeLinks"
+                formik={formik}
+                placeholder="e.g., https://www.youtube.com/watch?v=abc123"
+              />
               <FileUpload
-                label="Supporting Documents"
+                label="Documents (PDF, DOC, DOCX)"
                 name="documents"
-                accept=".pdf,.doc,.docx"
+                accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 formik={formik}
                 multiple
               />
@@ -687,6 +731,18 @@ export default function AdminPressForm() {
               name="tags"
               formik={formik}
               placeholder="e.g., Agriculture, Innovation, Award"
+            />
+          </div>
+          {/* Related Articles */}
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Related Articles
+            </h2>
+            <DynamicList
+              label="Related Article URLs"
+              name="relatedArticles"
+              formik={formik}
+              placeholder="e.g., https://example.com/article1"
             />
           </div>
           {/* Form Actions */}

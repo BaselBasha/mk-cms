@@ -66,8 +66,8 @@ ADMIN_USERNAME=admin
 ADMIN_PASSWORD=admin123
 
 # Server Configuration
-PORT=3001
-NEXT_PUBLIC_API_URL=http://localhost:3001/api
+PORT=3000
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
 
 # File Upload Limits
 MAX_FILE_SIZE=100MB
@@ -81,7 +81,7 @@ cd backend
 npm run dev
 
 # In another terminal, make a POST request to initialize admin
-curl -X POST http://localhost:3001/api/auth/init
+curl -X POST http://localhost:3000/api/auth/init
 ```
 
 ## Running the Application

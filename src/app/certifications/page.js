@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchPublicCertifications } from "@/redux/certificationsSlice";
 import {
   Award,
   Calendar,
@@ -209,35 +211,47 @@ const CertificationCard = ({ certification, index }) => (
     whileInView={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.8, delay: index * 0.1 }}
     viewport={{ once: true }}
-    className="group relative bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden shadow-2xl hover:shadow-[#65a30d]/20 transition-all duration-500"
+    className="group relative bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden shadow-2xl hover:shadow-[#65a30d]/20 transition-all duration-500 h-[650px] flex flex-col"
     whileHover={{ y: -10, scale: 1.02 }}
   >
     <div className="absolute inset-0 bg-gradient-to-br from-[#65a30d]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
     {/* Certificate Image */}
-    <div className="relative h-48 bg-white/90 flex items-center justify-center p-6">
-      <img
-        src={certification.image}
-        alt={certification.title}
-        className="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-110"
-      />
+    <div className="relative h-48 bg-white/90 flex items-center justify-center p-6 flex-shrink-0">
+      {certification.image?.url ? (
+        <img
+          src={certification.image.url}
+          alt={certification.title}
+          className="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-110"
+          onError={(e) => {
+            e.target.style.display = 'none';
+            e.target.nextSibling.style.display = 'flex';
+          }}
+        />
+      ) : null}
+      <div 
+        className={`flex items-center justify-center w-full h-full ${certification.image?.url ? 'hidden' : ''}`}
+        style={{ display: certification.image?.url ? 'none' : 'flex' }}
+      >
+        <Award className="w-16 h-16 text-gray-400" />
+      </div>
       <div className="absolute top-4 right-4">
         <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
       </div>
     </div>
 
     {/* Content */}
-    <div className="p-8">
+    <div className="p-8 flex flex-col flex-1">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-2xl font-bold text-white group-hover:text-[#65a30d] transition-colors duration-300">
+        <h3 className="text-2xl font-bold text-white group-hover:text-[#65a30d] transition-colors duration-300 line-clamp-2">
           {certification.title}
         </h3>
-        <div className="flex items-center space-x-1 text-[#65a30d]">
+        <div className="flex items-center space-x-1 text-[#65a30d] flex-shrink-0">
           <Award className="w-5 h-5" />
         </div>
       </div>
 
-      <p className="text-gray-400 mb-6 leading-relaxed">
+      <p className="text-gray-400 mb-6 leading-relaxed line-clamp-3 flex-1">
         {certification.summary}
       </p>
 
@@ -245,18 +259,18 @@ const CertificationCard = ({ certification, index }) => (
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-500">Issue Date:</span>
           <span className="text-gray-300 font-medium">
-            {certification.issueDate}
+            {new Date(certification.issueDate).toLocaleDateString()}
           </span>
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-500">Valid Until:</span>
           <span className="text-gray-300 font-medium">
-            {certification.validUntil}
+            {new Date(certification.validUntil).toLocaleDateString()}
           </span>
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-500">Issuing Body:</span>
-          <span className="text-gray-300 font-medium">
+          <span className="text-gray-300 font-medium truncate max-w-[120px]">
             {certification.issuingBody}
           </span>
         </div>
@@ -267,19 +281,24 @@ const CertificationCard = ({ certification, index }) => (
           Key Features:
         </h4>
         <div className="grid grid-cols-1 gap-2">
-          {certification.features.map((feature, i) => (
+          {(certification.features || []).slice(0, 3).map((feature, i) => (
             <div
               key={i}
               className="flex items-center space-x-2 text-sm text-gray-400"
             >
               <Check className="w-3 h-3 text-[#65a30d] flex-shrink-0" />
-              <span>{feature}</span>
+              <span className="line-clamp-1">{feature}</span>
             </div>
           ))}
+          {(certification.features || []).length > 3 && (
+            <div className="text-sm text-gray-500 italic">
+              +{(certification.features || []).length - 3} more features...
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mt-auto">
         <div
           className={`px-3 py-1 rounded-full text-xs font-medium ${
             certification.priority === "High"
@@ -291,13 +310,33 @@ const CertificationCard = ({ certification, index }) => (
         >
           {certification.priority} Priority
         </div>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="bg-[#65a30d] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#528000] transition-colors duration-300"
-        >
-          View Details
-        </motion.button>
+        {certification.documents && certification.documents.length > 0 && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (certification.documents.length === 1) {
+                // Single document - open directly
+                window.open(certification.documents[0].url, '_blank');
+              } else {
+                // Multiple documents - open each in new tab
+                certification.documents.forEach((doc) => {
+                  window.open(doc.url, '_blank');
+                });
+              }
+            }}
+            className="bg-[#65a30d] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#528000] transition-colors duration-300 flex items-center space-x-2 cursor-pointer z-10 relative"
+            type="button"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            <span>View Documents</span>
+          </motion.button>
+        )}
       </div>
     </div>
   </motion.div>
@@ -412,161 +451,14 @@ const StatsSection = ({
 
 // --- Main Component ---
 export default function CertificationsPage() {
+  const dispatch = useDispatch();
+  const { publicItems: certifications, loading, error } = useSelector((state) => state.certifications);
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const certifications = [ 
-    {
-      id: 1,
-      title: "ISO 9001:2015",
-      summary:
-        "Quality Management System certification ensuring consistent delivery of products and services that meet customer requirements.",
-      image:
-        "https://mkgroup-eg.com/wp-content/uploads/2024/05/ISO-9001_2015.png",
-      issueDate: "January 2023",
-      validUntil: "January 2026",
-      issuingBody: "International Accreditation Service",
-      priority: "High",
-      category: "Quality",
-      features: [
-        "Customer satisfaction focus",
-        "Continuous improvement processes",
-        "Risk-based thinking approach",
-        "Evidence-based decision making",
-      ],
-    },
-    {
-      id: 2,
-      title: "ISO 14001:2015",
-      summary:
-        "Environmental Management System certification demonstrating commitment to environmental protection and sustainability.",
-      image:
-        "https://mkgroup-eg.com/wp-content/uploads/2024/05/ISO-140012015-n.png",
-      issueDate: "March 2023",
-      validUntil: "March 2026",
-      issuingBody: "Bio Inspecta",
-      priority: "High",
-      category: "Environmental",
-      features: [
-        "Environmental impact reduction",
-        "Waste management optimization",
-        "Energy efficiency improvements",
-        "Regulatory compliance",
-      ],
-    },
-    {
-      id: 3,
-      title: "USDA Organic",
-      summary:
-        "Organic certification ensuring products are produced without synthetic pesticides, herbicides, or fertilizers.",
-      image:
-        "https://mkgroup-eg.com/wp-content/uploads/2024/05/usda-organic.png",
-      issueDate: "June 2022",
-      validUntil: "June 2025",
-      issuingBody: "USDA National Organic Program",
-      priority: "High",
-      category: "Organic",
-      features: [
-        "100% organic ingredients",
-        "No synthetic chemicals",
-        "Sustainable farming practices",
-        "Third-party verification",
-      ],
-    },
-    {
-      id: 4,
-      title: "ISO 22000:2018",
-      summary:
-        "Food Safety Management System certification ensuring food safety throughout the entire food supply chain.",
-      image:
-        "https://mkgroup-eg.com/wp-content/uploads/2024/05/iso-22000_2018.png",
-      issueDate: "September 2023",
-      validUntil: "September 2026",
-      issuingBody: "International Accreditation Service",
-      priority: "High",
-      category: "Food Safety",
-      features: [
-        "HACCP principles implementation",
-        "Food safety hazard control",
-        "Traceability systems",
-        "Supplier verification",
-      ],
-    },
-    {
-      id: 5,
-      title: "Bio Inspecta",
-      summary:
-        "Independent organic certification body ensuring compliance with international organic standards.",
-      image:
-        "https://mkgroup-eg.com/wp-content/uploads/2024/05/bio-inspecta.png",
-      issueDate: "February 2023",
-      validUntil: "February 2026",
-      issuingBody: "Bio Inspecta AG",
-      priority: "Medium",
-      category: "Organic",
-      features: [
-        "EU organic regulation compliance",
-        "Biodiversity conservation",
-        "Soil health maintenance",
-        "Natural resource protection",
-      ],
-    },
-    {
-      id: 6,
-      title: "IAF Accreditation",
-      summary:
-        "International Accreditation Forum certification ensuring global recognition and acceptance of our standards.",
-      image: "https://mkgroup-eg.com/wp-content/uploads/2024/05/IAF.png",
-      issueDate: "April 2023",
-      validUntil: "April 2026",
-      issuingBody: "International Accreditation Forum",
-      priority: "Medium",
-      category: "Accreditation",
-      features: [
-        "Global recognition",
-        "Mutual recognition agreements",
-        "Technical competence",
-        "Impartiality assurance",
-      ],
-    },
-    {
-      id: 7,
-      title: "EGAC Certification",
-      summary:
-        "Egyptian Accreditation Council certification ensuring compliance with national quality standards.",
-      image: "https://mkgroup-eg.com/wp-content/uploads/2024/05/EGAC.png",
-      issueDate: "July 2023",
-      validUntil: "July 2026",
-      issuingBody: "Egyptian Accreditation Council",
-      priority: "Medium",
-      category: "National",
-      features: [
-        "National standards compliance",
-        "Local market requirements",
-        "Regulatory adherence",
-        "Quality assurance",
-      ],
-    },
-    {
-      id: 8,
-      title: "Team Quality",
-      summary:
-        "Quality management certification focusing on team-based approaches to quality improvement.",
-      image:
-        "https://mkgroup-eg.com/wp-content/uploads/2024/05/Team-Quality.png",
-      issueDate: "November 2023",
-      validUntil: "November 2026",
-      issuingBody: "Team Quality International",
-      priority: "Low",
-      category: "Quality",
-      features: [
-        "Team-based quality management",
-        "Collaborative improvement",
-        "Employee engagement",
-        "Performance optimization",
-      ],
-    },
-  ];
+  useEffect(() => {
+    dispatch(fetchPublicCertifications());
+  }, [dispatch]);
 
   const categories = [
     "All",
@@ -577,6 +469,28 @@ export default function CertificationsPage() {
     "Accreditation",
     "National",
   ];
+
+  if (loading) {
+    return (
+      <div className="bg-transparent text-gray-200 font-sans min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-xl">Loading certifications...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-transparent text-gray-200 font-sans min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-xl text-red-400 mb-4">Error loading certifications</p>
+          <p className="text-gray-400">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   const filteredCertifications = certifications.filter((cert) => {
     const matchesCategory =
@@ -626,7 +540,7 @@ export default function CertificationsPage() {
               >
                 {filteredCertifications.map((cert, index) => (
                   <CertificationCard
-                    key={cert.id}
+                    key={cert._id || cert.id}
                     certification={cert}
                     index={index}
                   />

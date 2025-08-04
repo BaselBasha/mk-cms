@@ -1,6 +1,9 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { useParams } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchPublicPressById } from "@/redux/pressSlice";
 import {
   ArrowLeft,
   Calendar,
@@ -20,6 +23,7 @@ import {
   Star,
   Clock,
   MapPin,
+  Loader2,
 } from "lucide-react";
 
 // --- Particle Background Component ---
@@ -133,75 +137,145 @@ const ParticleBackground = () => {
   );
 };
 
-// --- Video Player Component ---
-const VideoPlayer = ({ src, poster, title }) => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const videoRef = useRef(null);
-
-  const togglePlay = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
-
-  const toggleMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
-    }
-  };
-
+// --- Loading Component ---
+const LoadingSpinner = () => {
   return (
-    <div className="relative group rounded-2xl overflow-hidden shadow-2xl">
-      <video
-        ref={videoRef}
-        poster={poster}
-        className="w-full h-64 md:h-96 object-cover"
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-      >
-        <source src={src} type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
-
-      {/* Video Controls Overlay */}
-      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={togglePlay}
-            className="bg-white/20 backdrop-blur-sm p-4 rounded-full hover:bg-white/30 transition-all"
+    <div className="min-h-screen bg-transparent text-gray-200 relative">
+      <ParticleBackground />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="mx-auto mb-4"
           >
-            {isPlaying ? (
-              <Pause className="w-8 h-8 text-white" />
-            ) : (
-              <Play className="w-8 h-8 text-white" />
-            )}
-          </button>
-          <button
-            onClick={toggleMute}
-            className="bg-white/20 backdrop-blur-sm p-3 rounded-full hover:bg-white/30 transition-all"
+            <Loader2 className="w-12 h-12 text-[#65a30d]" />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-xl font-semibold text-gray-100 mb-2"
           >
-            {isMuted ? (
-              <VolumeX className="w-6 h-6 text-white" />
-            ) : (
-              <Volume2 className="w-6 h-6 text-white" />
-            )}
-          </button>
+            Loading Article
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-gray-400"
+          >
+            Please wait while we fetch the content...
+          </motion.div>
         </div>
       </div>
+    </div>
+  );
+};
 
-      {/* Video Title */}
-      <div className="absolute bottom-4 left-4 right-4">
-        <h3 className="text-white font-semibold text-lg bg-black/50 backdrop-blur-sm px-4 py-2 rounded-lg">
-          {title}
-        </h3>
-      </div>
+// --- YouTube Video Slider Component ---
+const YouTubeVideoSlider = ({ videos }) => {
+  const [selectedVideo, setSelectedVideo] = useState(0);
+
+  if (!videos || videos.length === 0) return null;
+
+  // Extract YouTube video ID from URL
+  const getYouTubeVideoId = (url) => {
+    const regExp =
+      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
+  };
+
+  const currentVideo = videos[selectedVideo];
+  const videoId = getYouTubeVideoId(currentVideo.src);
+  const embedUrl = videoId
+    ? `https://www.youtube.com/embed/${videoId}?autoplay=0&mute=0&controls=1&rel=0`
+    : null;
+
+  return (
+    <div className="space-y-4">
+      {/* Main Video Player */}
+      <motion.div
+        key={selectedVideo}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+        className="relative rounded-2xl overflow-hidden shadow-2xl bg-gray-800"
+      >
+        {videoId ? (
+          <iframe
+            src={embedUrl}
+            title={currentVideo.title}
+            className="w-full h-64 md:h-96"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        ) : (
+          <div className="w-full h-64 md:h-96 flex items-center justify-center">
+            <div className="text-center">
+              <Play className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-400">Invalid YouTube URL</p>
+            </div>
+          </div>
+        )}
+
+        {/* Video Title Overlay */}
+        <div className="absolute bottom-4 left-4 right-4">
+          <h3 className="text-white font-semibold text-lg bg-black/50 backdrop-blur-sm px-4 py-2 rounded-lg">
+            {currentVideo.title}
+          </h3>
+        </div>
+      </motion.div>
+
+      {/* Video Thumbnail Strip */}
+      {videos.length > 1 && (
+        <div className="flex space-x-2 overflow-x-auto pb-2">
+          {videos.map((video, index) => {
+            const thumbVideoId = getYouTubeVideoId(video.src);
+            const thumbnailUrl = thumbVideoId
+              ? `https://img.youtube.com/vi/${thumbVideoId}/mqdefault.jpg`
+              : null;
+
+            return (
+              <button
+                key={index}
+                onClick={() => setSelectedVideo(index)}
+                className={`flex-shrink-0 w-32 h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 relative ${
+                  selectedVideo === index
+                    ? "border-[#65a30d] shadow-lg shadow-[#65a30d]/30"
+                    : "border-white/20 hover:border-white/40"
+                }`}
+              >
+                {thumbnailUrl ? (
+                  <img
+                    src={thumbnailUrl}
+                    alt={video.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-700 flex items-center justify-center">
+                    <Play className="w-6 h-6 text-gray-400" />
+                  </div>
+                )}
+
+                {/* Play button overlay */}
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                  <Play className="w-6 h-6 text-white" />
+                </div>
+
+                {/* Video title on thumbnail */}
+                <div className="absolute bottom-1 left-1 right-1">
+                  <p className="text-xs text-white bg-black/70 px-2 py-1 rounded truncate">
+                    {video.title}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
@@ -209,6 +283,8 @@ const VideoPlayer = ({ src, poster, title }) => {
 // --- Image Gallery Component ---
 const ImageGallery = ({ images }) => {
   const [selectedImage, setSelectedImage] = useState(0);
+
+  if (!images || images.length === 0) return null;
 
   return (
     <div className="space-y-4">
@@ -234,25 +310,27 @@ const ImageGallery = ({ images }) => {
       </motion.div>
 
       {/* Thumbnail Strip */}
-      <div className="flex space-x-2 overflow-x-auto pb-2">
-        {images.map((img, index) => (
-          <button
-            key={index}
-            onClick={() => setSelectedImage(index)}
-            className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 ${
-              selectedImage === index
-                ? "border-[#65a30d] shadow-lg shadow-[#65a30d]/30"
-                : "border-white/20 hover:border-white/40"
-            }`}
-          >
-            <img
-              src={img.src}
-              alt={img.alt}
-              className="w-full h-full object-cover"
-            />
-          </button>
-        ))}
-      </div>
+      {images.length > 1 && (
+        <div className="flex space-x-2 overflow-x-auto pb-2">
+          {images.map((img, index) => (
+            <button
+              key={index}
+              onClick={() => setSelectedImage(index)}
+              className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-300 ${
+                selectedImage === index
+                  ? "border-[#65a30d] shadow-lg shadow-[#65a30d]/30"
+                  : "border-white/20 hover:border-white/40"
+              }`}
+            >
+              <img
+                src={img.src}
+                alt={img.alt}
+                className="w-full h-full object-cover"
+              />
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -285,9 +363,14 @@ const AttachmentCard = ({ attachment }) => {
           <h4 className="font-semibold text-gray-100">{attachment.name}</h4>
           <p className="text-sm text-gray-400">{attachment.size}</p>
         </div>
-        <button className="bg-[#65a30d] p-2 rounded-full hover:bg-[#84cc16] transition-colors">
+        <a
+          href={attachment.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-[#65a30d] p-2 rounded-full hover:bg-[#84cc16] transition-colors"
+        >
           <Download className="w-4 h-4 text-white" />
-        </button>
+        </a>
       </div>
     </motion.div>
   );
@@ -295,130 +378,35 @@ const AttachmentCard = ({ attachment }) => {
 
 // --- Main Component ---
 export default function PressArticleDetail() {
+  const { id } = useParams();
+  const dispatch = useDispatch();
+  const {
+    currentItem: press,
+    loading,
+    error,
+  } = useSelector((state) => state.press);
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [readingTime, setReadingTime] = useState(0);
 
-  // Mock data for the article
-  const article = {
-    id: 123,
-    title:
-      "MK Jojoba's Revolutionary Desert Agriculture Transforms Egyptian Landscape",
-    summary:
-      "How one company's innovative approach to jojoba cultivation is turning barren desert into thriving agricultural land while creating sustainable economic opportunities.",
-    description: `
-      In the heart of Egypt's Western Desert, where endless sand dunes once stretched to the horizon, something remarkable is happening. MK Jojoba, a pioneering agricultural company, has transformed over 15,000 hectares of barren land into thriving jojoba farms, creating a model for sustainable desert agriculture that's attracting international attention.
-
-      The company's journey began in 2002 with a simple yet ambitious vision: to prove that with the right approach, desert land could be transformed into productive agricultural space. Today, their success story is reshaping perceptions about what's possible in arid environments.
-
-      "We didn't just want to grow jojoba," explains Dr. Ahmed Hassan, the company's chief agricultural scientist. "We wanted to create a sustainable ecosystem that could support both economic growth and environmental restoration."
-
-      The transformation hasn't been without challenges. The initial years required significant investment in soil preparation, water management systems, and research into drought-resistant cultivation techniques. However, the results speak for themselves: MK Jojoba now produces some of the highest-quality jojoba oil in the world, with their products being exported to premium cosmetics manufacturers across Europe, Asia, and North America.
-
-      What sets MK Jojoba apart is their holistic approach to desert agriculture. Beyond just growing jojoba plants, they've implemented comprehensive soil restoration programs, introduced beneficial insects to create natural pest control systems, and developed water recycling technologies that maximize efficiency in this water-scarce environment.
-
-      The environmental impact has been equally impressive. The company's farms now serve as carbon sinks, helping to offset emissions while improving local air quality. The vegetation has also created microclimates that support other forms of desert wildlife, contributing to biodiversity conservation efforts.
-
-      From an economic perspective, MK Jojoba's success has created employment opportunities for over 2,000 people, many of whom are from local communities that previously had limited economic prospects. The company has also established training programs to share their knowledge with other potential desert farmers, creating a ripple effect of sustainable development.
-
-      International recognition has followed their success. The company has received numerous awards for environmental innovation and sustainable agriculture, including the prestigious Global Agriculture Innovation Award in 2023. Their methods are now being studied and replicated in other arid regions around the world.
-
-      Looking ahead, MK Jojoba plans to expand their operations to additional desert areas while continuing to refine their sustainable farming techniques. They're also investing in research partnerships with universities to develop new applications for jojoba and other desert-adapted crops.
-
-      "This is just the beginning," says CEO Mohamed Khaled. "We've proven that deserts don't have to be barriers to agriculture – they can be opportunities for innovation and sustainable growth."
-
-      The story of MK Jojoba serves as a powerful reminder that with vision, persistence, and the right approach, even the most challenging environments can be transformed into sources of prosperity and environmental benefit.
-    `,
-    publishedDate: "2024-01-15",
-    author: "Sarah Mitchell",
-    publication: "Global Agriculture Today",
-    readTime: "8 min read",
-    views: 15247,
-    category: "Sustainable Agriculture",
-    tags: [
-      "Desert Agriculture",
-      "Sustainability",
-      "Innovation",
-      "Egypt",
-      "Jojoba",
-    ],
-    priority: 5,
-    attachments: [
-      {
-        name: "MK Jojoba Impact Report 2023",
-        type: "pdf",
-        size: "2.4 MB",
-        url: "/attachments/mk-jojoba-impact-report-2023.pdf",
-      },
-      {
-        name: "Desert Transformation Time-lapse",
-        type: "video",
-        size: "15.6 MB",
-        url: "/attachments/desert-transformation-timelapse.mp4",
-      },
-      {
-        name: "Aerial Farm Photography",
-        type: "image",
-        size: "1.8 MB",
-        url: "/attachments/aerial-farm-photos.zip",
-      },
-      {
-        name: "Sustainable Farming Techniques Guide",
-        type: "document",
-        size: "3.2 MB",
-        url: "/attachments/sustainable-farming-guide.pdf",
-      },
-    ],
-    images: [
-      {
-        src: "https://mkgroup-eg.com/wp-content/uploads/2024/05/391613460_673580461542316_1959068305070372405_n.jpg",
-        alt: "MK Jojoba Desert Farm Aerial View",
-        caption:
-          "Aerial view of MK Jojoba's transformation of desert landscape into thriving agricultural land",
-      },
-      {
-        src: "https://mkgroup-eg.com/wp-content/uploads/2022/05/374684208_673593778207651_2171150138347886782_n.jpg",
-        alt: "Jojoba Plant Close-up",
-        caption:
-          "Close-up of mature jojoba plants showing the distinctive seed pods",
-      },
-      {
-        src: "https://mkgroup-eg.com/wp-content/uploads/2022/05/374684208_673593778207651_2171150138347886782_n.jpg",
-        alt: "Irrigation System",
-        caption:
-          "Advanced drip irrigation system maximizing water efficiency in desert conditions",
-      },
-      {
-        src: "https://mkgroup-eg.com/wp-content/uploads/2024/04/394630000_678251917741837_7520882499018497547_n-1024x1024-1.jpg",
-        alt: "Workers in Field",
-        caption:
-          "Local workers maintaining the jojoba crops during harvest season",
-      },
-    ],
-    videos: [
-      {
-        src: "/videos/desert-transformation-story.mp4",
-        poster:
-          "https://mkgroup-eg.com/wp-content/uploads/2022/05/374684208_673593778207651_2171150138347886782_n.jpg",
-        title: "Desert Transformation: The MK Jojoba Story",
-      },
-    ],
-  };
+  useEffect(() => {
+    dispatch(fetchPublicPressById(id));
+  }, [id, dispatch]);
 
   useEffect(() => {
     // Calculate reading time based on article length
     const wordsPerMinute = 200;
-    const wordCount = article.description.split(" ").length;
+    const wordCount = press?.content ? press.content.split(" ").length : 0;
     const time = Math.ceil(wordCount / wordsPerMinute);
     setReadingTime(time);
-  }, [article.description]);
+  }, [press?.content]);
 
   const handleShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: article.title,
-          text: article.summary,
+          title: press?.title || "Press Article",
+          text: press?.summary || "",
           url: window.location.href,
         });
       } catch (err) {
@@ -429,6 +417,84 @@ export default function PressArticleDetail() {
       navigator.clipboard.writeText(window.location.href);
       alert("Article URL copied to clipboard!");
     }
+  };
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-transparent text-gray-200 relative">
+        <ParticleBackground />
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="text-red-500 text-6xl mb-4">⚠️</div>
+            <h2 className="text-2xl font-bold text-gray-100 mb-2">
+              Error Loading Article
+            </h2>
+            <p className="text-gray-400">{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!press) {
+    return (
+      <div className="min-h-screen bg-transparent text-gray-200 relative">
+        <ParticleBackground />
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="text-gray-400 text-6xl mb-4">📄</div>
+            <h2 className="text-2xl font-bold text-gray-100 mb-2">
+              Article Not Found
+            </h2>
+            <p className="text-gray-400">
+              The requested press article could not be found.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Convert press data to match the original UI structure
+  const article = {
+    id: press._id,
+    title: press.title,
+    summary: press.summary,
+    description: press.content,
+    publishedDate: press.publishDate,
+    author: press.author,
+    publication: press.publication,
+    readTime: `${readingTime} min read`,
+    views: 15247, // Mock data since backend doesn't have views
+    category: press.category,
+    tags: press.tags || [],
+    priority: 5, // Mock data
+    attachments: press.documents
+      ? press.documents.map((doc, index) => ({
+          name: `Document ${index + 1}`,
+          type: "pdf",
+          size: "2.4 MB",
+          url: doc,
+        }))
+      : [],
+    images: press.image
+      ? press.image.map((img, index) => ({
+          src: img,
+          alt: `${press.title} - Image ${index + 1}`,
+          caption: `Image ${index + 1} from ${press.title}`,
+        }))
+      : [],
+    videos: press.youtubeLinks
+      ? press.youtubeLinks.map((link, index) => ({
+          src: link, // This will be the YouTube URL
+          poster: press.image && press.image.length > 0 ? press.image[0] : "",
+          title: `Related Video ${index + 1}`,
+        }))
+      : [],
   };
 
   return (
@@ -546,16 +612,7 @@ export default function PressArticleDetail() {
         >
           <div className="grid md:grid-cols-2 gap-8">
             <ImageGallery images={article.images} />
-            <div className="space-y-6">
-              {article.videos.map((video, index) => (
-                <VideoPlayer
-                  key={index}
-                  src={video.src}
-                  poster={video.poster}
-                  title={video.title}
-                />
-              ))}
-            </div>
+            <YouTubeVideoSlider videos={article.videos} />
           </div>
         </motion.div>
 
@@ -577,19 +634,23 @@ export default function PressArticleDetail() {
             </div>
 
             {/* Tags */}
-            <div className="mt-8 pt-8 border-t border-white/10">
-              <h3 className="text-lg font-semibold mb-4 text-gray-100">Tags</h3>
-              <div className="flex flex-wrap gap-2">
-                {article.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-white/10 text-gray-300 rounded-full text-sm hover:bg-white/20 transition-colors cursor-pointer"
-                  >
-                    #{tag}
-                  </span>
-                ))}
+            {article.tags.length > 0 && (
+              <div className="mt-8 pt-8 border-t border-white/10">
+                <h3 className="text-lg font-semibold mb-4 text-gray-100">
+                  Tags
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {article.tags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-white/10 text-gray-300 rounded-full text-sm hover:bg-white/20 transition-colors cursor-pointer"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -643,70 +704,81 @@ export default function PressArticleDetail() {
                   <Share2 className="w-4 h-4" />
                   <span>Share Article</span>
                 </button>
-                <button className="w-full flex items-center justify-center space-x-2 bg-white/10 hover:bg-white/20 text-gray-100 py-3 rounded-lg transition-all duration-300">
-                  <ExternalLink className="w-4 h-4" />
-                  <span>View Original</span>
-                </button>
+                {press.url && (
+                  <a
+                    href={press.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center justify-center space-x-2 bg-white/10 hover:bg-white/20 text-gray-100 py-3 rounded-lg transition-all duration-300"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    <span>View Original</span>
+                  </a>
+                )}
               </div>
             </div>
           </div>
         </motion.div>
 
         {/* Attachments Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="mt-16"
-        >
-          <h2 className="text-3xl font-bold text-gray-100 mb-8">
-            Attachments & Resources
-          </h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            {article.attachments.map((attachment, index) => (
-              <AttachmentCard key={index} attachment={attachment} />
-            ))}
-          </div>
-        </motion.div>
+        {article.attachments.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="mt-16"
+          >
+            <h2 className="text-3xl font-bold text-gray-100 mb-8">
+              Attachments & Resources
+            </h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              {article.attachments.map((attachment, index) => (
+                <AttachmentCard key={index} attachment={attachment} />
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* Related Articles */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          className="mt-16"
-        >
-          <h2 className="text-3xl font-bold text-gray-100 mb-8">
-            Related Articles
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <motion.div
-                key={i}
-                whileHover={{ scale: 1.02, y: -5 }}
-                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden hover:bg-white/10 transition-all duration-300 cursor-pointer"
-              >
-                <img
-                  src={`https://mkgroup-eg.com/wp-content/uploads/2024/05/post1.png`}
-                  alt={`Related Article ${i}`}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-6">
-                  <h3 className="font-semibold text-gray-100 mb-2">
-                    Related Article Title {i}
-                  </h3>
-                  <p className="text-sm text-gray-400 mb-4">
-                    Brief description of the related article content...
-                  </p>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span>5 min read</span>
-                    <span>2 days ago</span>
+        {press.relatedArticles && press.relatedArticles.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+            className="mt-16"
+          >
+            <h2 className="text-3xl font-bold text-gray-100 mb-8">
+              Related Articles
+            </h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {press.relatedArticles.map((articleUrl, index) => (
+                <motion.div
+                  key={index}
+                  whileHover={{ scale: 1.02, y: -5 }}
+                  className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden hover:bg-white/10 transition-all duration-300 cursor-pointer"
+                >
+                  <div className="p-6">
+                    <h3 className="font-semibold text-gray-100 mb-2">
+                      Related Article {index + 1}
+                    </h3>
+                    <p className="text-sm text-gray-400 mb-4">
+                      Additional reading material
+                    </p>
+                    <a
+                      href={articleUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center space-x-2 text-[#65a30d] hover:text-[#84cc16] transition-colors"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      <span className="text-sm">Read Article</span>
+                    </a>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
       </main>
     </div>
   );

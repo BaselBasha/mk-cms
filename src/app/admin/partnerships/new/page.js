@@ -1,49 +1,49 @@
 "use client";
-
-import React, { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { createPartnership } from "@/redux/partnershipsSlice";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
-  Save,
-  X,
   Upload,
-  FileText,
-  Calendar,
-  Users,
-  AlertCircle,
-  CheckCircle,
-  User,
-  Settings,
-  LogOut,
+  X,
   Plus,
-  Trash2,
+  Save,
+  CheckCircle,
+  AlertCircle,
+  Award,
+  Calendar,
+  User,
   Globe,
+  FileText,
+  Play,
   Link as LinkIcon,
   Target,
+  Users,
+  Building,
+  MapPin,
+  DollarSign,
+  ExternalLink,
 } from "lucide-react";
-import Link from "next/link";
-import { useDispatch, useSelector } from 'react-redux';
-import { createPartnership } from '@/redux/partnershipsSlice';
-import { uploadFile } from "@/shared/uploadFile";
 import { uploadMultipleFiles } from "@/shared/uploadMultipleFiles";
+import Link from "next/link";
+import AdminHeader from "@/shared/AdminHeader";
 
-// --- Particle Background Component ---
+// Particle Background Component
 const ParticleBackground = () => {
-  const canvasRef = useRef(null);
-
   useEffect(() => {
-    const canvas = canvasRef.current;
+    const canvas = document.getElementById("particle-canvas");
     if (!canvas) return;
+
     const ctx = canvas.getContext("2d");
-    let animationFrameId;
-
     canvas.width = window.innerWidth;
-    canvas.height = document.documentElement.scrollHeight;
+    canvas.height = window.innerHeight;
 
-    let particlesArray = [];
-    const numberOfParticles = 60;
+    let particles = [];
+    const particleCount = 50;
 
     class Particle {
       constructor(x, y, directionX, directionY, size, color) {
@@ -54,12 +54,14 @@ const ParticleBackground = () => {
         this.size = size;
         this.color = color;
       }
+
       draw() {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
         ctx.fillStyle = this.color;
         ctx.fill();
       }
+
       update() {
         if (this.x > canvas.width || this.x < 0) {
           this.directionX = -this.directionX;
@@ -67,6 +69,7 @@ const ParticleBackground = () => {
         if (this.y > canvas.height || this.y < 0) {
           this.directionY = -this.directionY;
         }
+
         this.x += this.directionX;
         this.y += this.directionY;
         this.draw();
@@ -74,346 +77,239 @@ const ParticleBackground = () => {
     }
 
     function init() {
-      particlesArray = [];
-      for (let i = 0; i < numberOfParticles; i++) {
-        let size = Math.random() * 1.5 + 0.5;
-        let x = Math.random() * canvas.width;
-        let y = Math.random() * canvas.height;
-        let directionX = Math.random() * 0.2 - 0.1;
-        let directionY = Math.random() * 0.2 - 0.1;
-        let color = "rgba(100, 181, 246, 0.2)";
-        particlesArray.push(
-          new Particle(x, y, directionX, directionY, size, color)
-        );
+      particles = [];
+      for (let i = 0; i < particleCount; i++) {
+        const size = Math.random() * 2 + 1;
+        const x = Math.random() * (canvas.width - size * 2) + size;
+        const y = Math.random() * (canvas.height - size * 2) + size;
+        const directionX = (Math.random() - 0.5) * 0.5;
+        const directionY = (Math.random() - 0.5) * 0.5;
+        const color = `rgba(101, 163, 13, ${Math.random() * 0.3 + 0.1})`;
+
+        particles.push(new Particle(x, y, directionX, directionY, size, color));
       }
     }
 
     function animate() {
-      animationFrameId = requestAnimationFrame(animate);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let i = 0; i < particlesArray.length; i++) {
-        particlesArray[i].update();
-      }
+      particles.forEach((particle) => particle.update());
+      requestAnimationFrame(animate);
     }
-
-    const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = document.documentElement.scrollHeight;
-      init();
-    };
 
     init();
     animate();
-    window.addEventListener("resize", handleResize);
 
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      cancelAnimationFrame(animationFrameId);
+    const handleResize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      init();
     };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
     <canvas
-      ref={canvasRef}
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        zIndex: -1,
-        background:
-          "linear-gradient(135deg, #1a2d27 0%, #2196f3 100%)",
-      }}
+      id="particle-canvas"
+      className="fixed inset-0 pointer-events-none z-0"
     />
   );
 };
 
-// --- Admin Header Component ---
-const AdminHeader = () => {
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-
-  return (
-    <header className="bg-black/50 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50">
-      <div className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Link href="/admin" className="flex items-center space-x-4">
-              <img
-                src="/MK-GROUP.png"
-                alt="MK Group Logo"
-                className="h-10 w-auto"
-              />
-              <div className="hidden md:block">
-                <h1 className="text-xl font-bold text-white">Admin Dashboard</h1>
-                <p className="text-sm text-gray-400">Add New Partnership</p>
-              </div>
-            </Link>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            <Link
-              href="/admin"
-              className="flex items-center space-x-2 text-gray-300 hover:text-[#2196f3] transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Back to Dashboard</span>
-            </Link>
-            <div className="relative">
-              <button
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex items-center space-x-3 p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
-              >
-                <div className="w-8 h-8 bg-[#2196f3]/20 rounded-full flex items-center justify-center">
-                  <User className="h-4 w-4 text-[#2196f3]" />
-                </div>
-                <span className="text-white font-medium hidden sm:block">Admin</span>
-              </button>
-              <AnimatePresence>
-                {isProfileOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute right-0 mt-2 w-48 bg-black/80 backdrop-blur-xl border border-white/10 rounded-xl p-2"
-                  >
-                    <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors text-left">
-                      <Settings className="h-4 w-4 text-gray-400" />
-                      <span className="text-white">Settings</span>
-                    </button>
-                    <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors text-left">
-                      <LogOut className="h-4 w-4 text-gray-400" />
-                      <span className="text-white">Logout</span>
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
+// Form Components
+const FormInput = ({
+  label,
+  name,
+  type = "text",
+  placeholder,
+  formik,
+  icon,
+  required = false,
+}) => (
+  <div className="space-y-2">
+    <label className="block text-sm font-medium text-white">
+      {label} {required && <span className="text-red-400">*</span>}
+    </label>
+    <div className="relative">
+      {icon && (
+        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+          {icon}
         </div>
-      </div>
-    </header>
-  );
-};
-
-// --- Form Input Component ---
-const FormInput = ({ label, name, type = "text", placeholder, formik, icon, required = false }) => {
-  return (
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-300">
-        {label} {required && <span className="text-red-400">*</span>}
-      </label>
-      <div className="relative">
-        {icon && (
-          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-            {icon}
-          </div>
-        )}
-        <input
-          type={type}
-          name={name}
-          placeholder={placeholder}
-          value={formik.values[name]}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          className={`w-full ${icon ? 'pl-10' : 'pl-4'} pr-4 py-3 bg-white/5 border rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2196f3] focus:border-transparent transition-all ${
-            formik.touched[name] && formik.errors[name]
-              ? 'border-red-500'
-              : 'border-white/10 hover:border-white/20'
-          }`}
-        />
-      </div>
-      {formik.touched[name] && formik.errors[name] && (
-        <motion.p
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-red-400 text-sm flex items-center"
-        >
-          <AlertCircle className="h-4 w-4 mr-1" />
-          {formik.errors[name]}
-        </motion.p>
       )}
-    </div>
-  );
-};
-
-// --- Form Textarea Component ---
-const FormTextarea = ({ label, name, placeholder, formik, required = false, rows = 4 }) => {
-  return (
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-300">
-        {label} {required && <span className="text-red-400">*</span>}
-      </label>
-      <textarea
+      <input
+        type={type}
         name={name}
         placeholder={placeholder}
-        value={formik.values[name]}
         onChange={formik.handleChange}
         onBlur={formik.handleBlur}
-        rows={rows}
-        className={`w-full px-4 py-3 bg-white/5 border rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2196f3] focus:border-transparent transition-all resize-none ${
-          formik.touched[name] && formik.errors[name]
-            ? 'border-red-500'
-            : 'border-white/10 hover:border-white/20'
+        value={formik.values[name]}
+        className={`w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#65a30d] transition-colors ${
+          icon ? "pl-10" : ""
+        } ${
+          formik.touched[name] && formik.errors[name] ? "border-red-500" : ""
         }`}
       />
-      {formik.touched[name] && formik.errors[name] && (
-        <motion.p
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-red-400 text-sm flex items-center"
-        >
-          <AlertCircle className="h-4 w-4 mr-1" />
-          {formik.errors[name]}
-        </motion.p>
-      )}
     </div>
-  );
-};
+    {formik.touched[name] && formik.errors[name] && (
+      <p className="text-red-400 text-sm">{formik.errors[name]}</p>
+    )}
+  </div>
+);
 
-// --- Form Select Component ---
-const FormSelect = ({ label, name, options, formik, required = false }) => {
-  return (
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-300">
-        {label} {required && <span className="text-red-400">*</span>}
-      </label>
-      <select
-        name={name}
-        value={formik.values[name]}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        className={`w-full px-4 py-3 bg-white/5 border rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#2196f3] focus:border-transparent transition-all ${
-          formik.touched[name] && formik.errors[name]
-            ? 'border-red-500'
-            : 'border-white/10 hover:border-white/20'
-        }`}
-      >
-        <option value="" className="bg-gray-800">Select {label}</option>
-        {options.map((option) => (
-          <option key={option.value} value={option.value} className="bg-gray-800">
-            {option.label}
-          </option>
-        ))}
-      </select>
-      {formik.touched[name] && formik.errors[name] && (
-        <motion.p
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-red-400 text-sm flex items-center"
-        >
-          <AlertCircle className="h-4 w-4 mr-1" />
-          {formik.errors[name]}
-        </motion.p>
-      )}
-    </div>
-  );
-};
+const FormTextarea = ({
+  label,
+  name,
+  placeholder,
+  formik,
+  required = false,
+  rows = 4,
+}) => (
+  <div className="space-y-2">
+    <label className="block text-sm font-medium text-white">
+      {label} {required && <span className="text-red-400">*</span>}
+    </label>
+    <textarea
+      name={name}
+      rows={rows}
+      placeholder={placeholder}
+      onChange={formik.handleChange}
+      onBlur={formik.handleBlur}
+      value={formik.values[name]}
+      className={`w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#65a30d] transition-colors resize-none ${
+        formik.touched[name] && formik.errors[name] ? "border-red-500" : ""
+      }`}
+    />
+    {formik.touched[name] && formik.errors[name] && (
+      <p className="text-red-400 text-sm">{formik.errors[name]}</p>
+    )}
+  </div>
+);
 
-// --- File Upload Component ---
+const FormSelect = ({ label, name, options, formik, required = false }) => (
+  <div className="space-y-2">
+    <label className="block text-sm font-medium text-white">
+      {label} {required && <span className="text-red-400">*</span>}
+    </label>
+    <select
+      name={name}
+      onChange={formik.handleChange}
+      onBlur={formik.handleBlur}
+      value={formik.values[name]}
+      className={`w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#65a30d] transition-colors ${
+        formik.touched[name] && formik.errors[name] ? "border-red-500" : ""
+      }`}
+    >
+      <option value="">Select {label}</option>
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+    {formik.touched[name] && formik.errors[name] && (
+      <p className="text-red-400 text-sm">{formik.errors[name]}</p>
+    )}
+  </div>
+);
+
 const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
-  const [dragActive, setDragActive] = useState(false);
-
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setDragActive(false);
     const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) {
-      formik.setFieldValue(name, multiple ? files : files[0]);
-    }
+    if (files.length === 0) return;
+
+    const currentFiles = formik.values[name] || [];
+    formik.setFieldValue(name, [...currentFiles, ...files]);
   };
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    if (files.length > 0) {
-      formik.setFieldValue(name, multiple ? files : files[0]);
-    }
+    if (files.length === 0) return;
+
+    const currentFiles = formik.values[name] || [];
+    formik.setFieldValue(name, [...currentFiles, ...files]);
+  };
+
+  const removeFile = (index) => {
+    const currentFiles = formik.values[name] || [];
+    formik.setFieldValue(
+      name,
+      currentFiles.filter((_, i) => i !== index)
+    );
   };
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-300">
-        {label}
-      </label>
-      <div
-        className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-all ${
-          dragActive
-            ? 'border-[#2196f3] bg-[#2196f3]/10'
-            : 'border-white/20 hover:border-white/40'
-        }`}
-        onDragEnter={handleDrag}
-        onDragLeave={handleDrag}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
-      >
-        <input
-          type="file"
-          accept={accept}
-          multiple={multiple}
-          onChange={handleFileChange}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-        />
-        <div className="flex flex-col items-center space-y-2">
-          <div className="w-12 h-12 bg-[#2196f3]/20 rounded-full flex items-center justify-center">
-            <Upload className="h-6 w-6 text-[#2196f3]" />
-          </div>
-          <p className="text-gray-300 font-medium">
-            Drag & drop files here or click to browse
-          </p>
-          <p className="text-gray-400 text-sm">
-            {accept.includes('image') && 'Images: JPG, PNG, GIF'}
-            {accept.includes('pdf') && 'Documents: PDF, DOC, DOCX'}
-          </p>
+      <label className="block text-sm font-medium text-white">{label}</label>
+      <div className="space-y-3">
+        <div
+          className="relative border-2 border-dashed border-white/20 rounded-lg p-6 hover:border-[#65a30d] transition-colors"
+          onDragOver={handleDrag}
+          onDrop={handleDrop}
+        >
+          <input
+            type="file"
+            accept={accept}
+            multiple={multiple}
+            onChange={handleFileChange}
+            className="hidden"
+            id={`file-${name}`}
+          />
+          <label
+            htmlFor={`file-${name}`}
+            className="flex flex-col items-center justify-center cursor-pointer"
+          >
+            <Upload className="h-8 w-8 text-gray-400 mb-2" />
+            <p className="text-gray-400 text-center">
+              Drag and drop files here, or{" "}
+              <span className="text-[#65a30d]">click to browse</span>
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              {accept} {multiple ? "files" : "file"}
+            </p>
+          </label>
         </div>
-      </div>
-      {formik.values[name] && (
-        <div className="mt-2">
-          {multiple ? (
-            <div className="space-y-2">
-              {formik.values[name].map((file, index) => (
-                <div key={index} className="flex items-center justify-between bg-white/5 rounded-lg p-2">
-                  <span className="text-white text-sm">{file.name}</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const newFiles = formik.values[name].filter((_, i) => i !== index);
-                      formik.setFieldValue(name, newFiles);
-                    }}
-                    className="text-red-400 hover:text-red-300"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex items-center justify-between bg-white/5 rounded-lg p-2">
-              <span className="text-white text-sm">{formik.values[name].name}</span>
-              <button
-                type="button"
-                onClick={() => formik.setFieldValue(name, null)}
-                className="text-red-400 hover:text-red-300"
+
+        {/* Display uploaded files */}
+        {formik.values[name] && formik.values[name].length > 0 && (
+          <div className="space-y-2">
+            {formik.values[name].map((file, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between p-3 bg-black/20 rounded-lg"
               >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+                <div className="flex items-center space-x-3">
+                  <FileText className="h-5 w-5 text-gray-400" />
+                  <div>
+                    <p className="text-white text-sm">{file.name}</p>
+                    <p className="text-gray-400 text-xs">
+                      {(file.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeFile(index)}
+                  className="text-red-400 hover:text-red-300"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
-// --- Dynamic List Component ---
 const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
   const addItem = () => {
     const currentItems = formik.values[name] || [];
@@ -422,7 +318,10 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
 
   const removeItem = (index) => {
     const currentItems = formik.values[name] || [];
-    formik.setFieldValue(name, currentItems.filter((_, i) => i !== index));
+    formik.setFieldValue(
+      name,
+      currentItems.filter((_, i) => i !== index)
+    );
   };
 
   const updateItem = (index, value) => {
@@ -434,32 +333,30 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-300">
-        {label}
-      </label>
-      <div className="space-y-2">
+      <label className="block text-sm font-medium text-white">{label}</label>
+      <div className="space-y-3">
         {(formik.values[name] || []).map((item, index) => (
           <div key={index} className="flex items-center space-x-2">
             <input
               type="text"
-              value={item}
+              value={item || ""}
               onChange={(e) => updateItem(index, e.target.value)}
               placeholder={placeholder}
-              className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2196f3] focus:border-transparent transition-all"
+              className="flex-1 px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#65a30d]"
             />
             <button
               type="button"
               onClick={() => removeItem(index)}
-              className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
+              className="px-3 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
             >
-              <Trash2 className="h-4 w-4" />
+              <X className="h-4 w-4" />
             </button>
           </div>
         ))}
         <button
           type="button"
           onClick={addItem}
-          className="flex items-center space-x-2 px-4 py-2 bg-[#2196f3]/20 hover:bg-[#2196f3]/30 border border-[#2196f3]/30 rounded-xl text-[#2196f3] transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-[#65a30d] hover:bg-[#528000] text-white rounded-lg transition-colors"
         >
           <Plus className="h-4 w-4" />
           <span>Add {label}</span>
@@ -469,45 +366,95 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
   );
 };
 
-// --- Dynamic List for Objects ---
 const DynamicObjectList = ({ label, name, formik, fields, placeholder }) => {
   const addItem = () => {
     const currentItems = formik.values[name] || [];
-    formik.setFieldValue(name, [...currentItems, {}]);
+    const newItem = {};
+    fields.forEach((field) => {
+      newItem[field.name] = "";
+    });
+    formik.setFieldValue(name, [...currentItems, newItem]);
   };
+
   const removeItem = (index) => {
     const currentItems = formik.values[name] || [];
-    formik.setFieldValue(name, currentItems.filter((_, i) => i !== index));
+    formik.setFieldValue(
+      name,
+      currentItems.filter((_, i) => i !== index)
+    );
   };
+
   const updateItem = (index, field, value) => {
     const currentItems = formik.values[name] || [];
     const newItems = [...currentItems];
     newItems[index] = { ...newItems[index], [field]: value };
     formik.setFieldValue(name, newItems);
   };
+
+  const renderField = (field, item, index) => {
+    const value = item[field.name] || "";
+
+    // If field has options, render as select
+    if (field.options) {
+      return (
+        <select
+          key={field.name}
+          value={value}
+          onChange={(e) => updateItem(index, field.name, e.target.value)}
+          className="px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#65a30d]"
+        >
+          <option value="">{field.placeholder}</option>
+          {field.options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    // Otherwise render as text input
+    return (
+      <input
+        key={field.name}
+        type="text"
+        value={value}
+        onChange={(e) => updateItem(index, field.name, e.target.value)}
+        placeholder={field.placeholder}
+        className="px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#65a30d]"
+      />
+    );
+  };
+
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-300">{label}</label>
-      <div className="space-y-2">
+      <label className="block text-sm font-medium text-white">{label}</label>
+      <div className="space-y-4">
         {(formik.values[name] || []).map((item, index) => (
-          <div key={index} className="flex flex-wrap gap-2 items-center bg-white/5 border border-white/10 rounded-xl p-4">
-            {fields.map((field) => (
-              <input
-                key={field.name}
-                type="text"
-                value={item[field.name] || ''}
-                onChange={(e) => updateItem(index, field.name, e.target.value)}
-                placeholder={field.placeholder}
-                className="px-2 py-1 bg-white/10 border border-white/10 rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2196f3] focus:border-transparent text-xs"
-                style={{ minWidth: 120, flex: 1 }}
-              />
-            ))}
-            <button type="button" onClick={() => removeItem(index)} className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors">
-              <Trash2 className="h-4 w-4" />
-            </button>
+          <div
+            key={index}
+            className="p-4 bg-black/20 rounded-lg border border-white/10"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-gray-400">Item {index + 1}</span>
+              <button
+                type="button"
+                onClick={() => removeItem(index)}
+                className="text-red-400 hover:text-red-300"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {fields.map((field) => renderField(field, item, index))}
+            </div>
           </div>
         ))}
-        <button type="button" onClick={addItem} className="flex items-center space-x-2 px-4 py-2 bg-[#2196f3]/20 hover:bg-[#2196f3]/30 border border-[#2196f3]/30 rounded-xl text-[#2196f3] transition-colors">
+        <button
+          type="button"
+          onClick={addItem}
+          className="flex items-center space-x-2 px-4 py-2 bg-[#65a30d] hover:bg-[#528000] text-white rounded-lg transition-colors"
+        >
           <Plus className="h-4 w-4" />
           <span>Add {label}</span>
         </button>
@@ -516,71 +463,47 @@ const DynamicObjectList = ({ label, name, formik, fields, placeholder }) => {
   );
 };
 
-// --- Main Partnership Form Component ---
 export default function AdminPartnershipForm() {
+  const router = useRouter();
   const dispatch = useDispatch();
-  const { loading: reduxLoading, error: reduxError } = useSelector(state => state.partnerships);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
-  const statusOptions = [
-    { value: 'active', label: 'Active' },
-    { value: 'inactive', label: 'Inactive' },
-    { value: 'completed', label: 'Completed' },
-    { value: 'cancelled', label: 'Cancelled' },
-  ];
-  const priorityOptions = [
-    { value: 'low', label: 'Low' },
-    { value: 'medium', label: 'Medium' },
-    { value: 'high', label: 'High' },
-  ];
-  const validationSchema = Yup.object({
-    title: Yup.string().required("Partnership title is required"),
+
+  const validationSchema = Yup.object().shape({
+    title: Yup.string().required("Title is required"),
     summary: Yup.string().required("Summary is required"),
     description: Yup.string().required("Description is required"),
     startDate: Yup.date().required("Start date is required"),
     nextMilestone: Yup.string(),
     status: Yup.string().required("Status is required"),
     priority: Yup.string().required("Priority is required"),
-    partnerInformation: Yup.object({
+    partnerInformation: Yup.object().shape({
       name: Yup.string().required("Partner name is required"),
       founded: Yup.string(),
       headquarters: Yup.string(),
       employees: Yup.string(),
       specialization: Yup.string(),
-      website: Yup.string().url("Enter a valid URL"),
+      website: Yup.string(),
       ceo: Yup.string(),
       revenue: Yup.string(),
     }),
     partnerLinks: Yup.array().of(
-      Yup.object({
-        title: Yup.string().required("Link title"),
-        url: Yup.string().url("Enter a valid URL").required("Link URL"),
-        type: Yup.string().required("Type"),
+      Yup.object().shape({
+        title: Yup.string().required("Title is required"),
+        url: Yup.string().url("Invalid URL").required("URL is required"),
+        type: Yup.string()
+          .oneOf(["website", "press", "research", "case-study"], "Invalid type")
+          .required("Type is required"),
       })
     ),
-    timeline: Yup.array().of(
-      Yup.object({
-        year: Yup.string().required("Year"),
-        event: Yup.string().required("Event"),
-        description: Yup.string().required("Description"),
-      })
-    ),
-    achievements: Yup.array().of(
-      Yup.object({
-        title: Yup.string().required("Title"),
-        description: Yup.string().required("Description"),
-      })
-    ),
+    timeline: Yup.array(),
+    achievements: Yup.array(),
     attachments: Yup.array(),
-    // Keep legacy fields for compatibility
-    website: Yup.string().url("Enter a valid URL"),
-    contact: Yup.string(),
-    focusAreas: Yup.array().of(Yup.string()),
-    image: Yup.mixed(),
-    documents: Yup.array(),
-    endDate: Yup.date(),
-    videos: Yup.array(),
+    youtubeLinks: Yup.array(),
+    image: Yup.array().min(1, "Poster image is required"),
+    galleryImages: Yup.array().min(1, "At least one gallery image is required"),
   });
+
   const formik = useFormik({
     initialValues: {
       title: "",
@@ -603,38 +526,99 @@ export default function AdminPartnershipForm() {
       partnerLinks: [],
       timeline: [],
       achievements: [],
-      attachments: [],
-      website: "",
-      contact: "",
-      focusAreas: [],
-      image: null,
-      documents: [],
-      endDate: "",
-      videos: [],
+      image: [], // poster
+      galleryImages: [], // media gallery
+      youtubeLinks: [],
     },
-    validationSchema,
+    validationSchema: Yup.object().shape({
+      title: Yup.string().required("Title is required"),
+      summary: Yup.string().required("Summary is required"),
+      description: Yup.string().required("Description is required"),
+      startDate: Yup.date().required("Start date is required"),
+      nextMilestone: Yup.string(),
+      status: Yup.string().required("Status is required"),
+      priority: Yup.string().required("Priority is required"),
+      partnerInformation: Yup.object().shape({
+        name: Yup.string().required("Partner name is required"),
+        founded: Yup.string(),
+        headquarters: Yup.string(),
+        employees: Yup.string(),
+        specialization: Yup.string(),
+        website: Yup.string(),
+        ceo: Yup.string(),
+        revenue: Yup.string(),
+      }),
+      partnerLinks: Yup.array().of(
+        Yup.object().shape({
+          title: Yup.string().required("Title is required"),
+          url: Yup.string().url("Invalid URL").required("URL is required"),
+          type: Yup.string()
+            .oneOf(
+              ["website", "press", "research", "case-study"],
+              "Invalid type"
+            )
+            .required("Type is required"),
+        })
+      ),
+      timeline: Yup.array(),
+      achievements: Yup.array(),
+      image: Yup.array().min(1, "Poster image is required"),
+      galleryImages: Yup.array().min(
+        1,
+        "At least one gallery image is required"
+      ),
+      youtubeLinks: Yup.array(),
+    }),
     onSubmit: async (values) => {
       setIsSubmitting(true);
+      setSubmitStatus(null);
+
       try {
-        const imageUploads = await uploadMultipleFiles(
-          values.image ? [values.image] : []
-        );
-        const videoUploads = await uploadMultipleFiles(values.videos);
-        const documentUploads = await uploadMultipleFiles(values.documents);
+        // Handle single image upload for the poster
+        let posterImageData = null;
+        if (values.image && values.image.length > 0) {
+          const imageUploads = await uploadMultipleFiles(values.image);
+          if (imageUploads.length > 0) {
+            posterImageData = {
+              url: imageUploads[0].url,
+              name: imageUploads[0].name || "Partnership Poster",
+              type: "image",
+              size: imageUploads[0].size || 0,
+              uploadedAt: new Date().toISOString(),
+            };
+          }
+        }
+
+        // Handle multiple image uploads for the gallery
+        let galleryImageUploads = [];
+        if (values.galleryImages && values.galleryImages.length > 0) {
+          galleryImageUploads = await uploadMultipleFiles(values.galleryImages);
+        }
 
         const partnershipData = {
           ...values,
-          image: imageUploads[0]?.url || null,
-          videos: videoUploads.map((f) => f.url),
-          documents: documentUploads.map((f) => f.url),
+          image: posterImageData,
+          attachments: galleryImageUploads
+            .filter((file) => file && file.url) // Filter out any failed uploads
+            .map((file, index) => ({
+              type: "image", // All gallery images are treated as 'image'
+              url: file.url,
+              title: file.name || `Gallery Image ${index + 1}`,
+              description: `Gallery image ${index + 1}`,
+            })),
         };
+
+        // Remove the temporary fields from the data sent to backend
+        delete partnershipData.image; // Remove the file array
+        delete partnershipData.galleryImages; // Remove the file array
 
         await dispatch(createPartnership(partnershipData)).unwrap();
         setSubmitStatus("success");
+
+        // Navigate to partnerships list after successful creation
         setTimeout(() => {
-          formik.resetForm();
-          setSubmitStatus(null);
-        }, 3000);
+          router.push("/admin/partnerships");
+        }, 2000);
       } catch (error) {
         setSubmitStatus("error");
         console.error("Submission error:", error);
@@ -645,10 +629,10 @@ export default function AdminPartnershipForm() {
   });
 
   return (
-    <div className="bg-transparent text-gray-200 font-sans min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 font-sans">
       <ParticleBackground />
-      <AdminHeader />
-      <div className="container mx-auto px-6 py-8">
+      <AdminHeader currentPage="Partnerships" />
+      <div className="container mx-auto px-6 py-8 mt-20">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -706,11 +690,46 @@ export default function AdminPartnershipForm() {
               <FormInput
                 label="Partnership Title"
                 name="title"
-                placeholder="Enter partnership title"
+                placeholder="e.g., GreenTech Solutions Partnership"
                 formik={formik}
-                icon={<FileText className="h-4 w-4" />}
+                icon={<Award className="h-4 w-4" />}
                 required
               />
+              <FormInput
+                label="Next Milestone"
+                name="nextMilestone"
+                placeholder="e.g., Sub-Saharan Africa Expansion - Q3 2024"
+                formik={formik}
+                icon={<Target className="h-4 w-4" />}
+              />
+              <div className="md:col-span-2">
+                <FormTextarea
+                  label="Summary"
+                  name="summary"
+                  placeholder="Brief description of the partnership"
+                  formik={formik}
+                  required
+                />
+              </div>
+              <div className="md:col-span-2">
+                <FormTextarea
+                  label="Description"
+                  name="description"
+                  placeholder="Detailed description of the partnership"
+                  formik={formik}
+                  rows={6}
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Partnership Details */}
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Partnership Details
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormInput
                 label="Start Date"
                 name="startDate"
@@ -722,42 +741,29 @@ export default function AdminPartnershipForm() {
               <FormSelect
                 label="Status"
                 name="status"
-                options={statusOptions}
                 formik={formik}
                 required
+                options={[
+                  { value: "active", label: "Active" },
+                  { value: "inactive", label: "Inactive" },
+                  { value: "completed", label: "Completed" },
+                  { value: "cancelled", label: "Cancelled" },
+                ]}
               />
               <FormSelect
                 label="Priority"
                 name="priority"
-                options={priorityOptions}
                 formik={formik}
                 required
-              />
-              <FormInput
-                label="Next Milestone"
-                name="nextMilestone"
-                placeholder="e.g., Expansion Q3 2024"
-                formik={formik}
-                icon={<Target className="h-4 w-4" />}
-              />
-              <FormTextarea
-                label="Summary"
-                name="summary"
-                placeholder="Brief summary of the partnership"
-                formik={formik}
-                required
-                rows={3}
-              />
-              <FormTextarea
-                label="Description"
-                name="description"
-                placeholder="Detailed description of the partnership"
-                formik={formik}
-                required
-                rows={6}
+                options={[
+                  { value: "high", label: "High" },
+                  { value: "medium", label: "Medium" },
+                  { value: "low", label: "Low" },
+                ]}
               />
             </div>
           </div>
+
           {/* Partner Information */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
             <h2 className="text-2xl font-bold text-white mb-6">
@@ -765,10 +771,11 @@ export default function AdminPartnershipForm() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormInput
-                label="Company Name"
+                label="Partner Name"
                 name="partnerInformation.name"
-                placeholder="Partner company name"
+                placeholder="e.g., GreenTech Solutions"
                 formik={formik}
+                icon={<Building className="h-4 w-4" />}
                 required
               />
               <FormInput
@@ -776,64 +783,94 @@ export default function AdminPartnershipForm() {
                 name="partnerInformation.founded"
                 placeholder="e.g., 2015"
                 formik={formik}
+                icon={<Calendar className="h-4 w-4" />}
               />
               <FormInput
                 label="Headquarters"
                 name="partnerInformation.headquarters"
                 placeholder="e.g., Dubai, UAE"
                 formik={formik}
+                icon={<MapPin className="h-4 w-4" />}
               />
               <FormInput
                 label="Employees"
                 name="partnerInformation.employees"
                 placeholder="e.g., 250+"
                 formik={formik}
+                icon={<Users className="h-4 w-4" />}
               />
               <FormInput
                 label="Specialization"
                 name="partnerInformation.specialization"
-                placeholder="e.g., Smart Irrigation"
+                placeholder="e.g., Smart Irrigation & Water Management"
                 formik={formik}
+                icon={<Target className="h-4 w-4" />}
               />
               <FormInput
                 label="Website"
                 name="partnerInformation.website"
-                placeholder="https://partner.com"
+                placeholder="e.g., https://greentech-solutions.com"
                 formik={formik}
+                icon={<Globe className="h-4 w-4" />}
               />
               <FormInput
                 label="CEO"
                 name="partnerInformation.ceo"
                 placeholder="e.g., Dr. Ahmad Hassan"
                 formik={formik}
+                icon={<User className="h-4 w-4" />}
               />
               <FormInput
                 label="Revenue"
                 name="partnerInformation.revenue"
                 placeholder="e.g., $45M (2023)"
                 formik={formik}
+                icon={<DollarSign className="h-4 w-4" />}
               />
             </div>
           </div>
+
           {/* Partner Links */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
             <h2 className="text-2xl font-bold text-white mb-6">
               Partner Links
             </h2>
             <DynamicObjectList
-              label="Links"
+              label="Partner Links"
               name="partnerLinks"
               formik={formik}
               fields={[
                 { name: "title", placeholder: "Link Title" },
-                { name: "url", placeholder: "https://..." },
+                { name: "url", placeholder: "URL" },
                 {
                   name: "type",
-                  placeholder: "Type (website, press, research, etc.)",
+                  placeholder: "Type",
+                  options: [
+                    { value: "website", label: "Website" },
+                    { value: "press", label: "Press" },
+                    { value: "research", label: "Research" },
+                    { value: "case-study", label: "Case Study" },
+                  ],
                 },
               ]}
             />
           </div>
+
+          {/* Timeline */}
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+            <h2 className="text-2xl font-bold text-white mb-6">Timeline</h2>
+            <DynamicObjectList
+              label="Timeline Events"
+              name="timeline"
+              formik={formik}
+              fields={[
+                { name: "year", placeholder: "Year" },
+                { name: "event", placeholder: "Event" },
+                { name: "description", placeholder: "Description" },
+              ]}
+            />
+          </div>
+
           {/* Achievements */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
             <h2 className="text-2xl font-bold text-white mb-6">Achievements</h2>
@@ -847,69 +884,52 @@ export default function AdminPartnershipForm() {
               ]}
             />
           </div>
-          {/* Timeline */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Timeline</h2>
-            <DynamicObjectList
-              label="Timeline"
-              name="timeline"
-              formik={formik}
-              fields={[
-                { name: "year", placeholder: "Year" },
-                { name: "event", placeholder: "Event" },
-                { name: "description", placeholder: "Description" },
-              ]}
-            />
-          </div>
-          {/* Media Attachments */}
+
+          {/* Media & Links */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
             <h2 className="text-2xl font-bold text-white mb-6">
-              Media Attachments
+              Media & Links
             </h2>
-            <FileUpload
-              label="Images"
-              name="image"
-              accept="image/*"
-              formik={formik}
-            />
-            <FileUpload
-              label="Partnership Videos"
-              name="videos"
-              accept="video/*"
-              formik={formik}
-              multiple
-            />
-            <FileUpload
-              label="Documents"
-              name="documents"
-              accept=".pdf,.doc,.docx"
-              formik={formik}
-              multiple
-            />
+            <div className="space-y-6">
+              {/* Poster Image (single, required) */}
+              <FileUpload
+                label="Poster Image (Main Cover, Required)"
+                name="image"
+                accept="image/*"
+                formik={formik}
+                multiple={false}
+              />
+              {formik.touched.image && formik.errors.image && (
+                <p className="text-red-400 text-sm">{formik.errors.image}</p>
+              )}
+
+              {/* Media Gallery Images (multiple, required) */}
+              <FileUpload
+                label="Media Gallery Images (Multiple, Required)"
+                name="galleryImages"
+                accept="image/*"
+                formik={formik}
+                multiple={true}
+              />
+              {formik.touched.galleryImages && formik.errors.galleryImages && (
+                <p className="text-red-400 text-sm">
+                  {formik.errors.galleryImages}
+                </p>
+              )}
+
+              <DynamicList
+                label="YouTube Video Links"
+                name="youtubeLinks"
+                formik={formik}
+                placeholder="https://youtu.be/VIDEO_ID"
+              />
+            </div>
           </div>
-          {/* Legacy/Optional Fields */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">
-              Other Details (Optional)
-            </h2>
-            <FormInput
-              label="Contact Info"
-              name="contact"
-              placeholder="Contact details (email, phone, etc.)"
-              formik={formik}
-              icon={<User className="h-4 w-4" />}
-            />
-            <DynamicList
-              label="Focus Areas"
-              name="focusAreas"
-              formik={formik}
-              placeholder="e.g., Technology, Sustainability, Research"
-            />
-          </div>
+
           {/* Form Actions */}
           <div className="flex items-center justify-between pt-8">
             <Link
-              href="/admin"
+              href="/admin/partnerships"
               className="flex items-center space-x-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-gray-300 transition-colors"
             >
               <X className="h-4 w-4" />
@@ -919,7 +939,7 @@ export default function AdminPartnershipForm() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex items-center space-x-2 px-8 py-3 bg-[#2196f3] hover:bg-[#1769aa]/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-white font-medium transition-colors"
+                className="flex items-center space-x-2 px-8 py-3 bg-[#65a30d] hover:bg-[#528000] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-white font-medium transition-colors"
               >
                 {isSubmitting ? (
                   <>

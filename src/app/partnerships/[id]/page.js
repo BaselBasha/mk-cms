@@ -1,6 +1,9 @@
 'use client'
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useParams, useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchPublicPartnershipById } from "@/redux/partnershipsSlice";
 import { 
   ArrowLeft, 
   ExternalLink, 
@@ -18,7 +21,9 @@ import {
   ChevronRight,
   Leaf,
   Target,
-  TrendingUp
+  TrendingUp,
+  Building,
+  User
 } from "lucide-react";
 
 // --- Particle Background Component ---
@@ -170,158 +175,27 @@ const Header = () => {
   );
 };
 
-// --- Sample Partnership Data ---
-const partnershipData = {
-  id: 1,
-  title: "GreenTech Solutions Partnership",
-  summary:
-    "Strategic alliance revolutionizing sustainable irrigation technology across the Middle East",
-  description: `Our partnership with GreenTech Solutions represents a groundbreaking collaboration that's reshaping the future of desert agriculture. Since 2020, we've been working together to develop cutting-edge irrigation systems that reduce water consumption by up to 40% while increasing crop yields by 25%.
-
-This partnership has enabled us to implement state-of-the-art drip irrigation technology across over 15,000 hectares of previously unusable desert land. The collaboration combines our deep understanding of desert agriculture with GreenTech's innovative water management solutions.
-
-Together, we've developed proprietary sensor networks that monitor soil moisture, temperature, and nutrient levels in real-time, allowing for precise irrigation scheduling that maximizes efficiency while minimizing waste. The partnership has also led to the development of solar-powered irrigation systems that operate completely off-grid, making large-scale desert farming economically viable.
-
-Our joint research has resulted in three breakthrough patents for desert irrigation technology, and we've successfully implemented these solutions not only in Egypt but also in Jordan, Saudi Arabia, and Morocco. The partnership continues to expand with plans for new projects in Sub-Saharan Africa.`,
-  partnerInformation: {
-    name: "GreenTech Solutions",
-    founded: "2015",
-    headquarters: "Dubai, UAE",
-    employees: "250+",
-    specialization: "Smart Irrigation & Water Management",
-    website: "https://greentech-solutions.com",
-    ceo: "Dr. Ahmad Hassan",
-    revenue: "$45M (2023)",
-  },
-  partnerLinks: [
-    {
-      title: "Official Website",
-      url: "https://greentech-solutions.com",
-      type: "website",
-    },
-    {
-      title: "Partnership Press Release",
-      url: "https://greentech-solutions.com/mk-partnership",
-      type: "press",
-    },
-    {
-      title: "Joint Research Publication",
-      url: "https://research.greentech.com/desert-irrigation",
-      type: "research",
-    },
-    {
-      title: "Case Study: Wadi El Natrun Project",
-      url: "https://greentech-solutions.com/case-studies/wadi-el-natrun",
-      type: "case-study",
-    },
-  ],
-  attachments: [
-    {
-      type: "image",
-      url: "https://mkgroup-eg.com/wp-content/uploads/2022/11/MU-2.png",
-      title: "Smart Drip Irrigation System Installation",
-      description:
-        "Advanced irrigation technology being implemented in our Wadi El Natrun facility",
-    },
-    {
-      type: "image",
-      url: "https://mkgroup-eg.com/wp-content/uploads/2022/11/AU-FS.png",
-      title: "Soil Sensor Network Deployment",
-      description:
-        "IoT sensors monitoring soil conditions across 5,000 hectares",
-    },
-    {
-      type: "image",
-      url: "https://mkgroup-eg.com/wp-content/uploads/2022/11/ASORC.png",
-      title: "Solar-Powered Irrigation Hub",
-      description:
-        "Sustainable energy solutions powering our irrigation systems",
-    },
-    {
-      type: "image",
-      url: "https://mkgroup-eg.com/wp-content/uploads/2022/11/DHAFRA.png",
-      title: "Partnership Signing Ceremony",
-      description: "Historic partnership agreement signing in Dubai, 2020",
-    },
-    {
-      type: "video",
-      url: "https://player.vimeo.com/video/507832639?h=a8b6e7f9c0",
-      title: "Partnership Success Story",
-      description: "Documentary showcasing the impact of our collaboration",
-    },
-    {
-      type: "document",
-      url: "/documents/partnership-agreement.pdf",
-      title: "Partnership Agreement",
-      description: "Official partnership documentation and terms",
-    },
-    {
-      type: "document",
-      url: "/documents/joint-research-findings.pdf",
-      title: "Research Findings Report",
-      description:
-        "Comprehensive analysis of irrigation efficiency improvements",
-    },
-  ],
-  timeline: [
-    {
-      year: "2020",
-      event: "Partnership Established",
-      description: "Strategic alliance formed with initial $5M investment",
-    },
-    {
-      year: "2021",
-      event: "First Pilot Project",
-      description: "Successful implementation across 1,000 hectares",
-    },
-    {
-      year: "2022",
-      event: "Technology Patent Filed",
-      description: "Joint patent application for smart irrigation system",
-    },
-    {
-      year: "2023",
-      event: "Regional Expansion",
-      description: "Partnership expanded to Jordan and Saudi Arabia",
-    },
-    {
-      year: "2024",
-      event: "Award Recognition",
-      description: "Received Middle East Sustainability Award",
-    },
-  ],
-  achievements: [
-    {
-      title: "40% Water Reduction",
-      description:
-        "Achieved 40% reduction in water consumption across all projects",
-    },
-    {
-      title: "25% Yield Increase",
-      description: "Increased crop yields by 25% through optimized irrigation",
-    },
-    {
-      title: "15,000 Hectares",
-      description:
-        "Successfully implemented across 15,000 hectares of desert land",
-    },
-    {
-      title: "3 Patents",
-      description: "Developed 3 breakthrough patents for desert irrigation",
-    },
-  ],
-  priority: "high",
-  status: "active",
-  startDate: "2020-03-15",
-  nextMilestone: "Sub-Saharan Africa Expansion - Q3 2024",
-};
-
 // --- Media Gallery Component ---
-const MediaGallery = ({ attachments }) => {
+const MediaGallery = ({ attachments = [], image = null }) => {
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const images = attachments.filter(item => item.type === "image");
+  // Combine single image and attachments
+  const allImages = [];
+  if (image && image.url) {
+    allImages.push({
+      type: 'image',
+      url: image.url,
+      title: image.name || 'Partnership Image',
+      description: 'Partnership image'
+    });
+  }
+  
+  if (attachments && attachments.length > 0) {
+    allImages.push(...attachments.filter(item => item.type === "image"));
+  }
+
+  const images = allImages;
   const videos = attachments.filter(item => item.type === "video");
   const documents = attachments.filter(item => item.type === "document");
 
@@ -341,33 +215,35 @@ const MediaGallery = ({ attachments }) => {
   return (
     <div className="space-y-8">
       {/* Image Gallery */}
-      <div>
-        <h3 className="text-2xl font-bold text-gray-100 mb-6 flex items-center">
-          <Globe className="mr-3 text-[#65a30d]" />
-          Project Gallery
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {images.map((image, index) => (
-            <motion.div
-              key={index}
-              className="group relative overflow-hidden rounded-xl bg-black/20 backdrop-blur-sm border border-white/10 cursor-pointer"
-              whileHover={{ scale: 1.02 }}
-              onClick={() => openModal(image, index)}
-            >
-              <img
-                src={image.url}
-                alt={image.title}
-                className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                <h4 className="font-semibold text-lg mb-1">{image.title}</h4>
-                <p className="text-sm text-gray-300">{image.description}</p>
-              </div>
-            </motion.div>
-          ))}
+      {images.length > 0 && (
+        <div>
+          <h3 className="text-2xl font-bold text-gray-100 mb-6 flex items-center">
+            <Globe className="mr-3 text-[#65a30d]" />
+            Project Gallery
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {images.map((image, index) => (
+              <motion.div
+                key={index}
+                className="group relative overflow-hidden rounded-xl bg-black/20 backdrop-blur-sm border border-white/10 cursor-pointer"
+                whileHover={{ scale: 1.02 }}
+                onClick={() => openModal(image, index)}
+              >
+                <img
+                  src={image.url}
+                  alt={image.title}
+                  className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                  <h4 className="font-semibold text-lg mb-1">{image.title}</h4>
+                  <p className="text-sm text-gray-300">{image.description}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Video Section */}
       {videos.length > 0 && (
@@ -433,7 +309,7 @@ const MediaGallery = ({ attachments }) => {
 
       {/* Modal for Image Gallery */}
       <AnimatePresence>
-        {selectedMedia && (
+        {selectedMedia && images.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -489,7 +365,17 @@ const MediaGallery = ({ attachments }) => {
 
 // --- Main Partnership Details Component ---
 export default function PartnershipDetails() {
+  const params = useParams();
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const { currentItem: partnership, loading, error } = useSelector((state) => state.partnerships);
   const [activeTab, setActiveTab] = useState("overview");
+
+  useEffect(() => {
+    if (params.id) {
+      dispatch(fetchPublicPartnershipById(params.id));
+    }
+  }, [dispatch, params.id]);
 
   const tabs = [
     { id: "overview", label: "Overview", icon: Globe },
@@ -502,6 +388,46 @@ export default function PartnershipDetails() {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-transparent text-gray-200 font-sans flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#65a30d]"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-transparent text-gray-200 font-sans flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 mb-4">Error: {error}</p>
+          <button
+            onClick={() => router.push('/partnerships')}
+            className="bg-[#65a30d] text-white px-6 py-3 rounded-xl hover:bg-[#84cc16] transition-colors"
+          >
+            Back to Partnerships
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!partnership) {
+    return (
+      <div className="min-h-screen bg-transparent text-gray-200 font-sans flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-400 mb-4">Partnership not found</p>
+          <button
+            onClick={() => router.push('/partnerships')}
+            className="bg-[#65a30d] text-white px-6 py-3 rounded-xl hover:bg-[#84cc16] transition-colors"
+          >
+            Back to Partnerships
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-transparent text-gray-200 font-sans relative">
@@ -518,51 +444,60 @@ export default function PartnershipDetails() {
             className="text-center max-w-4xl mx-auto"
           >
             <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-[#84cc16] to-[#65a30d] bg-clip-text text-transparent">
-              {partnershipData.title}
+              {partnership.title}
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-8 leading-relaxed">
-              {partnershipData.summary}
+              {partnership.summary}
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <div className="flex items-center bg-black/20 backdrop-blur-sm border border-white/10 rounded-lg px-4 py-2">
                 <Calendar className="mr-2 text-[#65a30d]" size={16} />
-                <span className="text-sm">Since {new Date(partnershipData.startDate).getFullYear()}</span>
+                <span className="text-sm">Since {new Date(partnership.startDate).getFullYear()}</span>
               </div>
-              <div className="flex items-center bg-black/20 backdrop-blur-sm border border-white/10 rounded-lg px-4 py-2">
-                <MapPin className="mr-2 text-[#65a30d]" size={16} />
-                <span className="text-sm">{partnershipData.partnerInformation.headquarters}</span>
-              </div>
-              <div className="flex items-center bg-black/20 backdrop-blur-sm border border-white/10 rounded-lg px-4 py-2">
-                <TrendingUp className="mr-2 text-[#65a30d]" size={16} />
-                <span className="text-sm">{partnershipData.partnerInformation.revenue}</span>
-              </div>
+              {partnership.partnerInformation?.headquarters && (
+                <div className="flex items-center bg-black/20 backdrop-blur-sm border border-white/10 rounded-lg px-4 py-2">
+                  <MapPin className="mr-2 text-[#65a30d]" size={16} />
+                  <span className="text-sm">{partnership.partnerInformation.headquarters}</span>
+                </div>
+              )}
+              {partnership.partnerInformation?.revenue && (
+                <div className="flex items-center bg-black/20 backdrop-blur-sm border border-white/10 rounded-lg px-4 py-2">
+                  <TrendingUp className="mr-2 text-[#65a30d]" size={16} />
+                  <span className="text-sm">{partnership.partnerInformation.revenue}</span>
+                </div>
+              )}
             </div>
           </motion.div>
         </div>
       </section>
 
+      {/* Hero Image Section */}
+    
+
       {/* Achievement Cards */}
-      <section className="py-16">
-        <div className="container mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-          >
-            {partnershipData.achievements.map((achievement, index) => (
-              <motion.div
-                key={index}
-                whileHover={{ scale: 1.05, y: -5 }}
-                className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6 text-center"
-              >
-                <div className="text-3xl font-bold text-[#65a30d] mb-2">{achievement.title}</div>
-                <p className="text-gray-300 text-sm">{achievement.description}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+      {partnership.achievements && partnership.achievements.length > 0 && (
+        <section className="py-16">
+          <div className="container mx-auto px-6">
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+            >
+              {partnership.achievements.map((achievement, index) => (
+                <motion.div
+                  key={index}
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6 text-center"
+                >
+                  <div className="text-3xl font-bold text-[#65a30d] mb-2">{achievement.title}</div>
+                  <p className="text-gray-300 text-sm">{achievement.description}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+      )}
 
       {/* Tab Navigation */}
       <section className="py-8 sticky top-20 z-30 bg-black/50 backdrop-blur-lg border-y border-white/10">
@@ -609,53 +544,92 @@ export default function PartnershipDetails() {
                       <h2 className="text-3xl font-bold text-gray-100 mb-6">Partnership Overview</h2>
                       <div className="prose prose-invert max-w-none">
                         <p className="text-gray-300 leading-relaxed mb-6">
-                          {partnershipData.description.split('\n')[0]}
-                        </p>
-                        <p className="text-gray-300 leading-relaxed mb-6">
-                          {partnershipData.description.split('\n')[1]}
+                          {partnership.description}
                         </p>
                       </div>
                       
-                      <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6 mb-6">
-                        <h3 className="text-xl font-bold text-gray-100 mb-4 flex items-center">
-                          <Target className="mr-2 text-[#65a30d]" />
-                          Next Milestone
-                        </h3>
-                        <p className="text-gray-300">{partnershipData.nextMilestone}</p>
-                      </div>
+                      {partnership.nextMilestone && (
+                        <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6 mb-6">
+                          <h3 className="text-xl font-bold text-gray-100 mb-4 flex items-center">
+                            <Target className="mr-2 text-[#65a30d]" />
+                            Next Milestone
+                          </h3>
+                          <p className="text-gray-300">{partnership.nextMilestone}</p>
+                        </div>
+                      )}
                     </div>
                     
                     <div>
                       <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                        <h3 className="text-xl font-bold text-gray-100 mb-4 flex items-center">
+                        <h3 className="text-xl font-bold text-gray-100 mb-6 flex items-center">
                           <Users className="mr-2 text-[#65a30d]" />
                           Partner Information
                         </h3>
-                        <div className="space-y-3">
-                          <div className="flex justify-between">
-                            <span className="text-gray-400">Company:</span>
-                            <span className="text-gray-200">{partnershipData.partnerInformation.name}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-400">Founded:</span>
-                            <span className="text-gray-200">{partnershipData.partnerInformation.founded}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-400">Headquarters:</span>
-                            <span className="text-gray-200">{partnershipData.partnerInformation.headquarters}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-400">Employees:</span>
-                            <span className="text-gray-200">{partnershipData.partnerInformation.employees}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-400">CEO:</span>
-                            <span className="text-gray-200">{partnershipData.partnerInformation.ceo}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-400">Specialization:</span>
-                            <span className="text-gray-200">{partnershipData.partnerInformation.specialization}</span>
-                          </div>
+                        <div className="space-y-4">
+                          {partnership.partnerInformation?.name && (
+                            <div className="flex items-center space-x-3">
+                              <Building className="h-5 w-5 text-[#65a30d] flex-shrink-0" />
+                              <div className="flex-1">
+                                <span className="text-gray-400 text-sm">Partner Name</span>
+                                <div className="text-gray-200 font-medium">{partnership.partnerInformation.name}</div>
+                              </div>
+                            </div>
+                          )}
+                          {partnership.partnerInformation?.founded && (
+                            <div className="flex items-center space-x-3">
+                              <Calendar className="h-5 w-5 text-[#65a30d] flex-shrink-0" />
+                              <div className="flex-1">
+                                <span className="text-gray-400 text-sm">Founded</span>
+                                <div className="text-gray-200 font-medium">{partnership.partnerInformation.founded}</div>
+                              </div>
+                            </div>
+                          )}
+                          {partnership.partnerInformation?.headquarters && (
+                            <div className="flex items-center space-x-3">
+                              <MapPin className="h-5 w-5 text-[#65a30d] flex-shrink-0" />
+                              <div className="flex-1">
+                                <span className="text-gray-400 text-sm">Headquarters</span>
+                                <div className="text-gray-200 font-medium">{partnership.partnerInformation.headquarters}</div>
+                              </div>
+                            </div>
+                          )}
+                          {partnership.partnerInformation?.employees && (
+                            <div className="flex items-center space-x-3">
+                              <Users className="h-5 w-5 text-[#65a30d] flex-shrink-0" />
+                              <div className="flex-1">
+                                <span className="text-gray-400 text-sm">Employees</span>
+                                <div className="text-gray-200 font-medium">{partnership.partnerInformation.employees}</div>
+                              </div>
+                            </div>
+                          )}
+                          {partnership.partnerInformation?.specialization && (
+                            <div className="flex items-center space-x-3">
+                              <Target className="h-5 w-5 text-[#65a30d] flex-shrink-0" />
+                              <div className="flex-1">
+                                <span className="text-gray-400 text-sm">Specialization</span>
+                                <div className="text-gray-200 font-medium">{partnership.partnerInformation.specialization}</div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {partnership.partnerInformation?.ceo && (
+                            <div className="flex items-center space-x-3">
+                              <User className="h-5 w-5 text-[#65a30d] flex-shrink-0" />
+                              <div className="flex-1">
+                                <span className="text-gray-400 text-sm">CEO</span>
+                                <div className="text-gray-200 font-medium">{partnership.partnerInformation.ceo}</div>
+                              </div>
+                            </div>
+                          )}
+                          {partnership.partnerInformation?.revenue && (
+                            <div className="flex items-center space-x-3">
+                              <TrendingUp className="h-5 w-5 text-[#65a30d] flex-shrink-0" />
+                              <div className="flex-1">
+                                <span className="text-gray-400 text-sm">Revenue</span>
+                                <div className="text-gray-200 font-medium">{partnership.partnerInformation.revenue}</div>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -669,36 +643,38 @@ export default function PartnershipDetails() {
                     <div>
                       <h2 className="text-3xl font-bold text-gray-100 mb-6">Detailed Description</h2>
                       <div className="prose prose-invert max-w-none">
-                        {partnershipData.description.split('\n').map((paragraph, index) => (
-                          <p key={index} className="text-gray-300 leading-relaxed mb-4">
-                            {paragraph}
-                          </p>
-                        ))}
+                        <p className="text-gray-300 leading-relaxed mb-4">
+                          {partnership.description}
+                        </p>
                       </div>
                     </div>
                     
                     <div>
                       <h2 className="text-3xl font-bold text-gray-100 mb-6">Partner Links</h2>
                       <div className="space-y-4">
-                        {partnershipData.partnerLinks.map((link, index) => (
-                          <motion.a
-                            key={index}
-                            href={link.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-between p-4 bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl hover:bg-black/30 transition-all duration-300"
-                            whileHover={{ scale: 1.02 }}
-                          >
-                            <div className="flex items-center">
-                              <ExternalLink className="text-[#65a30d] mr-3" size={20} />
-                              <div>
-                                <h4 className="font-semibold text-gray-100">{link.title}</h4>
-                                <p className="text-sm text-gray-400 capitalize">{link.type.replace('-', ' ')}</p>
+                        {partnership.partnerLinks && partnership.partnerLinks.length > 0 ? (
+                          partnership.partnerLinks.map((link, index) => (
+                            <motion.a
+                              key={index}
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center justify-between p-4 bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl hover:bg-black/30 transition-all duration-300"
+                              whileHover={{ scale: 1.02 }}
+                            >
+                              <div className="flex items-center">
+                                <ExternalLink className="text-[#65a30d] mr-3" size={20} />
+                                <div>
+                                  <h4 className="font-semibold text-gray-100">{link.title}</h4>
+                                  <p className="text-sm text-gray-400 capitalize">{link.type?.replace('-', ' ')}</p>
+                                </div>
                               </div>
-                            </div>
-                            <ChevronRight className="text-gray-400" size={20} />
-                          </motion.a>
-                        ))}
+                              <ChevronRight className="text-gray-400" size={20} />
+                            </motion.a>
+                          ))
+                        ) : (
+                          <p className="text-gray-400">No partner links available</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -708,29 +684,33 @@ export default function PartnershipDetails() {
               {activeTab === "media" && (
                 <div className="max-w-6xl mx-auto">
                   <h2 className="text-3xl font-bold text-gray-100 mb-8 text-center">Media Gallery</h2>
-                  <MediaGallery attachments={partnershipData.attachments} />
+                  <MediaGallery attachments={partnership.attachments} image={partnership.image} />
                 </div>
               )}
 
               {activeTab === "timeline" && (
                 <div className="max-w-4xl mx-auto">
                   <h2 className="text-3xl font-bold text-gray-100 mb-8 text-center">Partnership Timeline</h2>
-                  <div className="relative">
-                    <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#65a30d] to-transparent"></div>
-                    <div className="ml-12 space-y-8">
-                      {partnershipData.timeline.map((item, idx) => (
-                        <div key={idx} className="relative">
-                          <div className="absolute -left-12 top-2 w-8 h-8 rounded-full bg-[#65a30d] flex items-center justify-center text-white font-bold shadow-lg">
-                            {item.year}
+                  {partnership.timeline && partnership.timeline.length > 0 ? (
+                    <div className="relative">
+                      <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#65a30d] to-transparent"></div>
+                      <div className="ml-12 space-y-8">
+                        {partnership.timeline.map((item, idx) => (
+                          <div key={idx} className="relative">
+                            <div className="absolute -left-12 top-2 w-8 h-8 rounded-full bg-[#65a30d] flex items-center justify-center text-white font-bold shadow-lg">
+                              {item.year}
+                            </div>
+                            <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6 ml-2">
+                              <h4 className="text-xl font-bold text-gray-100 mb-2">{item.event}</h4>
+                              <p className="text-gray-300 text-sm">{item.description}</p>
+                            </div>
                           </div>
-                          <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6 ml-2">
-                            <h4 className="text-xl font-bold text-gray-100 mb-2">{item.event}</h4>
-                            <p className="text-gray-300 text-sm">{item.description}</p>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <p className="text-gray-400 text-center">No timeline events available</p>
+                  )}
                 </div>
               )}
             </motion.div>

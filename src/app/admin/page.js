@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import AdminHeader from "@/shared/AdminHeader";
+import { fetchDashboardStats } from "@/utils/api";
 import {
   Plus,
   FileText,
@@ -9,19 +11,11 @@ import {
   Users,
   Newspaper,
   Shield,
-  BarChart3,
-  Eye,
-  Edit,
-  Trash2,
-  Search,
-  Filter,
   LogOut,
   User,
   Settings,
-  Globe,
-  Target,
-  Zap,
-  Calendar,
+  Briefcase,
+  RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -124,72 +118,8 @@ const ParticleBackground = () => {
   );
 };
 
-// --- Admin Header Component ---
-const AdminHeader = ({ onLogout }) => {
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-
-  return (
-    <header className="bg-black/50 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50">
-      <div className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <img
-              src="/MK-GROUP.png"
-              alt="MK Group Logo"
-              className="h-10 w-auto"
-            />
-            <div className="hidden md:block">
-              <h1 className="text-xl font-bold text-white">Admin Dashboard</h1>
-              <p className="text-sm text-gray-400">Content Management System</p>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <button
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex items-center space-x-3 p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
-              >
-                <div className="w-8 h-8 bg-[#65a30d]/20 rounded-full flex items-center justify-center">
-                  <User className="h-4 w-4 text-[#65a30d]" />
-                </div>
-                <span className="text-white font-medium hidden sm:block">
-                  Admin
-                </span>
-              </button>
-
-              <AnimatePresence>
-                {isProfileOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute right-0 mt-2 w-48 bg-black/80 backdrop-blur-xl border border-white/10 rounded-xl p-2"
-                  >
-                    <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors text-left">
-                      <Settings className="h-4 w-4 text-gray-400" />
-                      <span className="text-white">Settings</span>
-                    </button>
-                    <button
-                      className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors text-left"
-                      onClick={onLogout}
-                    >
-                      <LogOut className="h-4 w-4 text-gray-400" />
-                      <span className="text-white">Logout</span>
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-};
-
 // --- Stats Card Component ---
-const StatsCard = ({ title, value, icon, color, trend }) => (
+const StatsCard = ({ title, value, icon, color, trend, loading }) => (
   <motion.div
     whileHover={{ y: -5 }}
     className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6"
@@ -201,7 +131,13 @@ const StatsCard = ({ title, value, icon, color, trend }) => (
         {icon}
       </div>
       <div className="text-right">
-        <div className="text-2xl font-bold text-white">{value}</div>
+        <div className="text-2xl font-bold text-white">
+          {loading ? (
+            <div className="animate-pulse bg-gray-600 h-8 w-16 rounded"></div>
+          ) : (
+            value
+          )}
+        </div>
         <div className="text-sm text-gray-400">{trend}</div>
       </div>
     </div>
@@ -233,40 +169,42 @@ const QuickActionCard = ({ title, description, icon, href, color }) => (
   </Link>
 );
 
-// --- Recent Activity Item ---
-const ActivityItem = ({ type, title, time, status }) => (
-  <motion.div
-    initial={{ opacity: 0, x: -20 }}
-    animate={{ opacity: 1, x: 0 }}
-    className="flex items-center space-x-4 p-4 bg-white/5 rounded-xl border border-white/10 mb-3"
-  >
-    <div className="w-10 h-10 bg-[#65a30d]/20 rounded-full flex items-center justify-center">
-      <FileText className="h-5 w-5 text-[#65a30d]" />
-    </div>
-    <div className="flex-1">
-      <h4 className="text-white font-medium">{title}</h4>
-      <p className="text-gray-400 text-sm">
-        {type} • {time}
-      </p>
-    </div>
-    <div
-      className={`px-3 py-1 rounded-full text-xs font-medium ${
-        status === "Published"
-          ? "bg-green-500/20 text-green-400"
-          : status === "Draft"
-          ? "bg-yellow-500/20 text-yellow-400"
-          : "bg-blue-500/20 text-blue-400"
-      }`}
-    >
-      {status}
-    </div>
-  </motion.div>
-);
-
 // --- Main Dashboard Component ---
 export default function AdminDashboard() {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [stats, setStats] = useState({
+    projects: { total: 0, thisMonth: 0 },
+    certifications: { total: 0, thisMonth: 0 },
+    partnerships: { total: 0, thisMonth: 0 },
+    awards: { total: 0, thisMonth: 0 },
+    careers: { total: 0, thisMonth: 0 },
+  });
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
+
+  // Fetch dashboard stats
+  const loadStats = async () => {
+    try {
+      setLoading(true);
+      const dashboardStats = await fetchDashboardStats();
+      setStats(dashboardStats);
+    } catch (error) {
+      console.error("Failed to load dashboard stats:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Refresh stats
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadStats();
+    setRefreshing(false);
+  };
+
+  useEffect(() => {
+    loadStats();
+  }, []);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -313,54 +251,27 @@ export default function AdminDashboard() {
       color: "bg-yellow-500/20",
     },
     {
+      title: "Add Career",
+      description: "Post new job opportunities and career positions",
+      icon: <Briefcase className="h-8 w-8 text-orange-400" />,
+      href: "/admin/careers/new",
+      color: "bg-orange-500/20",
+    },
+    {
       title: "Add Press Release",
       description: "Publish new press releases and media coverage",
       icon: <Newspaper className="h-8 w-8 text-red-400" />,
       href: "/admin/press/new",
       color: "bg-red-500/20",
     },
-    {
-      title: "Analytics",
-      description: "View detailed analytics and performance metrics",
-      icon: <BarChart3 className="h-8 w-8 text-green-400" />,
-      href: "/admin/analytics",
-      color: "bg-green-500/20",
-    },
-  ];
-
-  const recentActivity = [
-    {
-      type: "Project",
-      title: "Desert Reclamation Project Updated",
-      time: "2 hours ago",
-      status: "Published",
-    },
-    {
-      type: "Award",
-      title: "Sustainability Award Added",
-      time: "5 hours ago",
-      status: "Published",
-    },
-    {
-      type: "Partnership",
-      title: "GreenTech Solutions Partnership",
-      time: "1 day ago",
-      status: "Draft",
-    },
-    {
-      type: "Press",
-      title: "New Innovation Press Release",
-      time: "2 days ago",
-      status: "Review",
-    },
   ];
 
   return (
     <div className="bg-transparent text-gray-200 font-sans min-h-screen">
       <ParticleBackground />
-      <AdminHeader onLogout={handleLogout} />
+      <AdminHeader currentPage="Dashboard" />
 
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-6 py-8 mt-20">
         {/* Welcome Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -380,36 +291,67 @@ export default function AdminDashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
+          className="mb-12"
         >
-          <StatsCard
-            title="Total Projects"
-            value="24"
-            icon={<FileText className="h-6 w-6 text-[#65a30d]" />}
-            color="bg-[#65a30d]/20"
-            trend="+3 this month"
-          />
-          <StatsCard
-            title="Certifications"
-            value="12"
-            icon={<Shield className="h-6 w-6 text-blue-400" />}
-            color="bg-blue-500/20"
-            trend="+2 this month"
-          />
-          <StatsCard
-            title="Active Partnerships"
-            value="8"
-            icon={<Users className="h-6 w-6 text-purple-400" />}
-            color="bg-purple-500/20"
-            trend="+1 this month"
-          />
-          <StatsCard
-            title="Awards Won"
-            value="15"
-            icon={<Award className="h-6 w-6 text-yellow-400" />}
-            color="bg-yellow-500/20"
-            trend="+4 this month"
-          />
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-white">
+              Statistics Overview
+            </h2>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="flex items-center space-x-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors disabled:opacity-50"
+            >
+              <RefreshCw
+                className={`h-4 w-4 text-gray-400 ${
+                  refreshing ? "animate-spin" : ""
+                }`}
+              />
+              <span className="text-gray-400">Refresh</span>
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatsCard
+              title="Total Projects"
+              value={stats.projects.total}
+              icon={<FileText className="h-6 w-6 text-[#65a30d]" />}
+              color="bg-[#65a30d]/20"
+              trend={`+${stats.projects.thisMonth} this month`}
+              loading={loading}
+            />
+            <StatsCard
+              title="Certifications"
+              value={stats.certifications.total}
+              icon={<Shield className="h-6 w-6 text-blue-400" />}
+              color="bg-blue-500/20"
+              trend={`+${stats.certifications.thisMonth} this month`}
+              loading={loading}
+            />
+            <StatsCard
+              title="Active Partnerships"
+              value={stats.partnerships.total}
+              icon={<Users className="h-6 w-6 text-purple-400" />}
+              color="bg-purple-500/20"
+              trend={`+${stats.partnerships.thisMonth} this month`}
+              loading={loading}
+            />
+            <StatsCard
+              title="Awards Won"
+              value={stats.awards.total}
+              icon={<Award className="h-6 w-6 text-yellow-400" />}
+              color="bg-yellow-500/20"
+              trend={`+${stats.awards.thisMonth} this month`}
+              loading={loading}
+            />
+            <StatsCard
+              title="Open Positions"
+              value={stats.careers.total}
+              icon={<Briefcase className="h-6 w-6 text-orange-400" />}
+              color="bg-orange-500/20"
+              trend={`+${stats.careers.thisMonth} this month`}
+              loading={loading}
+            />
+          </div>
         </motion.div>
 
         {/* Quick Actions */}
@@ -431,100 +373,6 @@ export default function AdminDashboard() {
                 <QuickActionCard {...action} />
               </motion.div>
             ))}
-          </div>
-        </motion.div>
-
-        {/* Recent Activity */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="grid lg:grid-cols-3 gap-8"
-        >
-          <div className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-white">Recent Activity</h2>
-              <div className="flex items-center space-x-4">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search activities..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 pl-10 text-white placeholder-gray-400 focus:outline-none focus:border-[#65a30d] transition-colors"
-                  />
-                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                </div>
-                <button className="p-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">
-                  <Filter className="h-4 w-4 text-gray-400" />
-                </button>
-              </div>
-            </div>
-            <div className="space-y-3">
-              {recentActivity.map((activity, index) => (
-                <ActivityItem key={index} {...activity} />
-              ))}
-            </div>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="space-y-6">
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-              <h3 className="text-xl font-bold text-white mb-4">This Month</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-[#65a30d]/20 rounded-full flex items-center justify-center">
-                      <Globe className="h-4 w-4 text-[#65a30d]" />
-                    </div>
-                    <span className="text-gray-300">Page Views</span>
-                  </div>
-                  <span className="text-white font-bold">12.5k</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
-                      <Target className="h-4 w-4 text-blue-400" />
-                    </div>
-                    <span className="text-gray-300">Conversions</span>
-                  </div>
-                  <span className="text-white font-bold">234</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center">
-                      <Zap className="h-4 w-4 text-purple-400" />
-                    </div>
-                    <span className="text-gray-300">Engagement</span>
-                  </div>
-                  <span className="text-white font-bold">87%</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-              <h3 className="text-xl font-bold text-white mb-4">Upcoming</h3>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-yellow-500/20 rounded-full flex items-center justify-center">
-                    <Calendar className="h-4 w-4 text-yellow-400" />
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">Project Review</p>
-                    <p className="text-gray-400 text-sm">Tomorrow, 2:00 PM</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center">
-                    <Calendar className="h-4 w-4 text-red-400" />
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">Content Update</p>
-                    <p className="text-gray-400 text-sm">Friday, 10:00 AM</p>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </motion.div>
       </div>

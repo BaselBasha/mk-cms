@@ -174,11 +174,10 @@ const Header = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
           ? "bg-black/70 backdrop-blur-xl border-b border-white/10"
           : "bg-transparent"
-      }`}
+        }`}
     >
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
         <motion.div whileHover={{ scale: 1.05 }}>
@@ -202,79 +201,104 @@ const Header = () => {
 };
 
 // --- Project Detail Page Component ---
-export default function ProjectDetailPage() {
+export default function ProjectDetailPage({ params }) {
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [mediaType, setMediaType] = useState("image");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock project data
-  const project = {
-    id: 123,
-    title: "Wadi El Natrun Desert Reclamation Project",
-    summary:
-      "Transforming 5,000 hectares of barren desert into thriving agricultural land through innovative Jojoba cultivation and sustainable farming practices.",
-    description:
-      "The Wadi El Natrun Desert Reclamation Project represents our most ambitious undertaking to date. This groundbreaking initiative transforms previously unusable desert terrain into productive agricultural land, demonstrating the potential for sustainable development in Egypt's most challenging environments.\n\nUtilizing cutting-edge drip irrigation systems, soil enrichment techniques, and our proprietary Jojoba cultivars, we've created a self-sustaining ecosystem that not only produces high-quality Jojoba oil but also serves as a model for desert agriculture worldwide.\n\nThe project incorporates renewable energy sources, water conservation technologies, and biodiversity preservation measures, ensuring minimal environmental impact while maximizing agricultural output. Our integrated approach combines traditional farming wisdom with modern agricultural science to create a truly revolutionary farming system.",
-    budget: "$12.5 Million",
-    location: "Wadi El Natrun, Egypt",
-    area: "5,000 Hectares",
-    duration: "2019 - 2024",
-    status: "Completed",
-    successPartner: "GreenTech Solutions & Desert Bloom Initiative",
-    priority: "High",
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`http://localhost:5000/api/projects/public/${params.id}`);
+        if (!response.ok) {
+          throw new Error('Project not found');
+        }
+        const data = await response.json();
+        setProject(data.project);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (params.id) {
+      fetchProject();
+    }
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="bg-transparent text-gray-200 font-sans min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#65a30d]"></div>
+      </div>
+    );
+  }
+
+  if (error || !project) {
+    return (
+      <div className="bg-transparent text-gray-200 font-sans min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 mb-4">Error: {error || 'Project not found'}</p>
+          <button
+            onClick={() => window.history.back()}
+            className="bg-[#65a30d] text-white px-6 py-3 rounded-xl hover:bg-[#84cc16] transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Transform project data for display
+  const transformedProject = {
+    id: project._id || project.id,
+    title: project.title,
+    summary: project.summary,
+    description: project.description,
+    budget: project.budget,
+    location: project.location,
+    area: project.area,
+    duration: `${new Date(project.startDate).getFullYear()} - ${new Date(project.endDate).getFullYear()}`,
+    status: project.status.replace("-", " "),
+    successPartner: project.successPartner,
+    priority: project.priority,
     attachments: {
-      images: [
-        "https://mkgroup-eg.com/wp-content/uploads/2024/05/The-Jojoba-Company-farm.jpg",
-        "https://mkgroup-eg.com/wp-content/uploads/2024/05/The-Jojoba-Company-farm.jpg",
-        "https://mkgroup-eg.com/wp-content/uploads/2024/07/%D9%85%D8%A8%D8%A7%D8%AF%D8%B1%D8%A9-%D9%88%D8%A7%D8%AF%D9%8A-%D8%A7%D9%84%D8%AC%D9%88%D8%AC%D9%88%D8%A8%D8%A7.jpg",
-        "https://mkgroup-eg.com/wp-content/uploads/2024/07/%D9%85%D8%B4%D8%B1%D9%88%D8%B9-%D9%87%D9%8A%D8%A6%D8%A9-%D8%AA%D9%86%D9%85%D9%8A%D8%A9-%D8%A7%D9%84%D8%B5%D8%B9%D9%8A%D8%AF.jpg",
-        "https://mkgroup-eg.com/wp-content/uploads/2024/05/The-Jojoba-Company-farm.jpg",
-        "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2940&auto=format&fit=crop",
-      ],
-      videos: [
-        "https://youtu.be/10A4z4EKidghttps://youtu.be/10A4z4EKidg?si=-0CJGkyguVvhTmjt",
-        "https://www.w3schools.com/html/movie.mp4",
-      ],
-      documents: [
-        { name: "Project Technical Report.pdf", size: "2.3 MB" },
-        { name: "Environmental Impact Assessment.pdf", size: "1.8 MB" },
-        { name: "Financial Analysis.xlsx", size: "890 KB" },
-      ],
+      images: project.images?.map(img => typeof img === 'string' ? img : img.url) || [],
+      videos: project.videos?.map(video => typeof video === 'string' ? video : video.url) || [],
+      documents: project.documents?.map((doc, index) => {
+        if (typeof doc === 'string') {
+          return { url: doc, name: "Document", size: "Unknown size" };
+        }
+        return {
+          url: doc.url,
+          name: doc.name || `Document ${index + 1}`,
+          size: doc.size || "Unknown size"
+        };
+      }) || [],
     },
-    awards: [
-      {
-        title: "Best Sustainable Agriculture Project 2024",
-        organization: "Middle East Green Awards",
-        year: "2024",
-      },
-      {
-        title: "Innovation in Desert Agriculture",
-        organization: "Global Agriculture Forum",
-        year: "2023",
-      },
-    ],
-    keyMetrics: [
-      {
-        label: "Water Savings",
-        value: "40%",
-        icon: <Globe className="h-6 w-6" />,
-      },
-      {
-        label: "Soil Recovery",
-        value: "85%",
-        icon: <Target className="h-6 w-6" />,
-      },
-      {
-        label: "Job Creation",
-        value: "250+",
-        icon: <Users className="h-6 w-6" />,
-      },
-      {
-        label: "CO2 Reduction",
-        value: "1,200 tons",
-        icon: <Zap className="h-6 w-6" />,
-      },
-    ],
+    youtubeLinks: project.youtubeLinks || [],
+    awards: project.awards?.map(award => ({
+      title: award,
+      organization: "MK Group",
+      year: new Date().getFullYear()
+    })) || [],
+    keyMetrics: project.keyMetrics?.map((metric, index) => ({
+      label: metric,
+      value: "Achieved",
+      icon: [<Globe className="h-6 w-6" />, <Target className="h-6 w-6" />, <Users className="h-6 w-6" />, <Zap className="h-6 w-6" />][index % 4]
+    })) || [
+        {
+          label: "Project Success",
+          value: "100%",
+          icon: <CheckCircle className="h-6 w-6" />,
+        }
+      ],
   };
 
   const openMediaModal = (media, type) => {
@@ -308,24 +332,26 @@ export default function ProjectDetailPage() {
               </span>
             </motion.div>
             <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight leading-tight">
-              {project.title}
+              {transformedProject.title}
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto mb-8">
-              {project.summary}
+              {transformedProject.summary}
             </p>
             <div className="flex flex-wrap justify-center gap-4 mb-12">
               <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
                 <MapPin className="h-5 w-5 text-[#65a30d]" />
-                <span className="text-gray-300">{project.location}</span>
+                <span className="text-gray-300">{transformedProject.location}</span>
               </div>
               <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
                 <Calendar className="h-5 w-5 text-[#65a30d]" />
-                <span className="text-gray-300">{project.duration}</span>
+                <span className="text-gray-300">{transformedProject.duration}</span>
               </div>
-              <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-                <DollarSign className="h-5 w-5 text-[#65a30d]" />
-                <span className="text-gray-300">{project.budget}</span>
-              </div>
+              {transformedProject.budget && (
+                <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+                  <DollarSign className="h-5 w-5 text-[#65a30d]" />
+                  <span className="text-gray-300">{transformedProject.budget}</span>
+                </div>
+              )}
             </div>
           </motion.div>
         </div>
@@ -341,7 +367,7 @@ export default function ProjectDetailPage() {
             viewport={{ once: true }}
             className="grid grid-cols-2 md:grid-cols-4 gap-8"
           >
-            {project.keyMetrics.map((metric, index) => (
+            {transformedProject.keyMetrics.map((metric, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -380,94 +406,115 @@ export default function ProjectDetailPage() {
           </motion.div>
 
           {/* Main Featured Image */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="mb-12"
-          >
-            <div
-              className="relative group cursor-pointer overflow-hidden rounded-2xl h-96 md:h-[500px]"
-              onClick={() =>
-                openMediaModal(project.attachments.images[0], "image")
-              }
+          {transformedProject.attachments.images.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="mb-12"
             >
-              <img
-                src={project.attachments.images[0]}
-                alt="Main project image"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300"></div>
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="bg-black/50 backdrop-blur-sm rounded-full p-4">
-                  <ExternalLink className="h-8 w-8 text-white" />
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Image Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-12">
-            {project.attachments.images.slice(1).map((image, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="relative group cursor-pointer overflow-hidden rounded-xl h-48 md:h-64"
-                onClick={() => openMediaModal(image, "image")}
+              <div
+                className="relative group cursor-pointer overflow-hidden rounded-2xl h-96 md:h-[500px]"
+                onClick={() =>
+                  openMediaModal(transformedProject.attachments.images[0], "image")
+                }
               >
                 <img
-                  src={image}
-                  alt={`Project image ${index + 2}`}
+                  src={transformedProject.attachments.images[0]}
+                  alt="Main project image"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300"></div>
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="bg-black/50 backdrop-blur-sm rounded-full p-3">
-                    <ExternalLink className="h-5 w-5 text-white" />
+                  <div className="bg-black/50 backdrop-blur-sm rounded-full p-4">
+                    <ExternalLink className="h-8 w-8 text-white" />
                   </div>
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              </div>
+            </motion.div>
+          )}
 
-          {/* Video Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="mb-12"
-          >
-            <h3 className="text-2xl font-bold text-white mb-6">
-              Project Videos
-            </h3>
-            <div className="grid md:grid-cols-2 gap-6">
-              {project.attachments.videos.map((video, index) => (
-                <div
+          {/* Image Grid */}
+          {transformedProject.attachments.images.length > 1 && (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-12">
+              {transformedProject.attachments.images.slice(1).map((image, index) => (
+                <motion.div
                   key={index}
-                  className="relative group cursor-pointer overflow-hidden rounded-xl bg-black/20 backdrop-blur-sm border border-white/10 h-64"
-                  onClick={() => openMediaModal(video, "video")}
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="relative group cursor-pointer overflow-hidden rounded-xl h-48 md:h-64"
+                  onClick={() => openMediaModal(image, "image")}
                 >
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-[#65a30d]/90 backdrop-blur-sm rounded-full p-6 group-hover:scale-110 transition-transform duration-300">
-                      <Play className="h-8 w-8 text-white" />
+                  <img
+                    src={image}
+                    alt={`Project image ${index + 2}`}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300"></div>
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="bg-black/50 backdrop-blur-sm rounded-full p-3">
+                      <ExternalLink className="h-5 w-5 text-white" />
                     </div>
                   </div>
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <div className="bg-black/50 backdrop-blur-sm rounded-lg p-3">
-                      <span className="text-white font-medium">
-                        Project Video {index + 1}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                </motion.div>
               ))}
             </div>
-          </motion.div>
+          )}
+
+          {/* Video Section */}
+          {(transformedProject.attachments.videos.length > 0 || transformedProject.youtubeLinks.length > 0) && (
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="mb-12"
+            >
+              <h3 className="text-2xl font-bold text-white mb-6">
+                Project Videos
+              </h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* YouTube Videos */}
+                {transformedProject.youtubeLinks.map((link, index) => (
+                  <div key={index} className="relative overflow-hidden rounded-xl bg-black/20 backdrop-blur-sm border border-white/10 h-64">
+                    <iframe
+                      src={link.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
+                      title={`Project Video ${index + 1}`}
+                      className="w-full h-full"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                ))}
+
+                {/* Uploaded Videos */}
+                {transformedProject.attachments.videos.map((video, index) => (
+                  <div
+                    key={index}
+                    className="relative group cursor-pointer overflow-hidden rounded-xl bg-black/20 backdrop-blur-sm border border-white/10 h-64"
+                    onClick={() => openMediaModal(video, "video")}
+                  >
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="bg-[#65a30d]/90 backdrop-blur-sm rounded-full p-6 group-hover:scale-110 transition-transform duration-300">
+                        <Play className="h-8 w-8 text-white" />
+                      </div>
+                    </div>
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <div className="bg-black/50 backdrop-blur-sm rounded-lg p-3">
+                        <span className="text-white font-medium">
+                          Project Video {index + 1}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
         </div>
       </section>
 
@@ -486,7 +533,7 @@ export default function ProjectDetailPage() {
                 Project Overview
               </h2>
               <div className="prose prose-invert max-w-none">
-                {project.description.split("\n\n").map((paragraph, index) => (
+                {transformedProject.description.split("\n\n").map((paragraph, index) => (
                   <p key={index} className="text-gray-300 mb-6 leading-relaxed">
                     {paragraph}
                   </p>
@@ -510,28 +557,40 @@ export default function ProjectDetailPage() {
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">Area Coverage</span>
                     <span className="text-white font-medium">
-                      {project.area}
+                      {transformedProject.area}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">Status</span>
                     <span className="text-green-400 font-medium flex items-center">
                       <CheckCircle className="h-4 w-4 mr-2" />
-                      {project.status}
+                      {transformedProject.status}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Priority</span>
-                    <span className="text-[#65a30d] font-medium">
-                      {project.priority}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Success Partner</span>
-                    <span className="text-white font-medium text-right max-w-[200px]">
-                      {project.successPartner}
-                    </span>
-                  </div>
+                  {transformedProject.priority && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Priority</span>
+                      <span className="text-[#65a30d] font-medium">
+                        {transformedProject.priority}
+                      </span>
+                    </div>
+                  )}
+                  {transformedProject.budget && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Budget</span>
+                      <span className="text-white font-medium">
+                        {transformedProject.budget}
+                      </span>
+                    </div>
+                  )}
+                  {transformedProject.successPartner && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Success Partner</span>
+                      <span className="text-white font-medium text-right max-w-[200px]">
+                        {transformedProject.successPartner}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -541,7 +600,7 @@ export default function ProjectDetailPage() {
                   Awards & Recognition
                 </h3>
                 <div className="space-y-4">
-                  {project.awards.map((award, index) => (
+                  {transformedProject.awards.map((award, index) => (
                     <div key={index} className="flex items-start space-x-3">
                       <div className="w-10 h-10 bg-[#65a30d]/20 rounded-full flex items-center justify-center flex-shrink-0">
                         <Award className="h-5 w-5 text-[#65a30d]" />
@@ -589,20 +648,43 @@ export default function ProjectDetailPage() {
             viewport={{ once: true }}
             className="grid md:grid-cols-3 gap-6"
           >
-            {project.attachments.documents.map((doc, index) => (
+            {transformedProject.attachments.documents.map((doc, index) => (
               <motion.div
                 key={index}
                 whileHover={{ y: -5 }}
                 className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 cursor-pointer group"
+                onClick={() => {
+                  // Handle both string URLs and file objects
+                  const url = typeof doc === 'string' ? doc : doc.url;
+                  if (url) {
+                    try {
+                      // Create a temporary link element to trigger download
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = typeof doc === 'string' ? 'document' : (doc.name || 'document');
+                      link.target = '_blank';
+                      link.rel = 'noopener noreferrer';
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    } catch (error) {
+                      console.error('Download error:', error);
+                      // Fallback to opening in new tab
+                      window.open(url, '_blank');
+                    }
+                  } else {
+                    console.error('No URL found for document:', doc);
+                  }
+                }}
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-12 h-12 bg-[#65a30d]/20 rounded-xl flex items-center justify-center">
                     <Download className="h-6 w-6 text-[#65a30d]" />
                   </div>
-                  <span className="text-gray-400 text-sm">{doc.size}</span>
+                  <span className="text-gray-400 text-sm">{typeof doc === 'string' ? 'Unknown size' : (doc.size || 'Unknown size')}</span>
                 </div>
                 <h3 className="text-white font-medium mb-2 group-hover:text-[#65a30d] transition-colors">
-                  {doc.name}
+                  {typeof doc === 'string' ? 'Document' : (doc.name || 'Document')}
                 </h3>
                 <p className="text-gray-400 text-sm mb-4">Click to download</p>
                 <div className="flex justify-end">
@@ -623,7 +705,7 @@ export default function ProjectDetailPage() {
       />
 
       {/* Footer */}
-      <footer className="bg-black/30 border-t border-white/10 mt-20">
+      <footer className="bg-black/30 border-t border-white/10 mt-20 relative z-10">
         <div className="container mx-auto px-6 py-12">
           <div className="text-center">
             <img
