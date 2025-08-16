@@ -126,36 +126,55 @@ const FormInput = ({
   formik,
   icon,
   required = false,
-}) => (
-  <div className="space-y-2">
-    <label className="block text-sm font-medium text-white">
-      {label} {required && <span className="text-red-400">*</span>}
-    </label>
-    <div className="relative">
-      {icon && (
-        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-          {icon}
-        </div>
+}) => {
+  // Helper function to get nested values
+  const getValue = (obj, path) => {
+    return path.split(".").reduce((curr, prop) => curr?.[prop], obj);
+  };
+
+  // Helper function to handle nested field changes
+  const handleNestedChange = (e) => {
+    const { name, value } = e.target;
+    if (name.includes(".")) {
+      formik.setFieldValue(name, value);
+    } else {
+      formik.handleChange(e);
+    }
+  };
+
+  const fieldValue = getValue(formik.values, name) || "";
+  const fieldError = getValue(formik.errors, name);
+  const fieldTouched = getValue(formik.touched, name);
+
+  return (
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-white">
+        {label} {required && <span className="text-red-400">*</span>}
+      </label>
+      <div className="relative">
+        {icon && (
+          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+            {icon}
+          </div>
+        )}
+        <input
+          type={type}
+          name={name}
+          placeholder={placeholder}
+          onChange={handleNestedChange}
+          onBlur={formik.handleBlur}
+          value={fieldValue}
+          className={`w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#65a30d] transition-colors ${
+            icon ? "pl-10" : ""
+          } ${fieldTouched && fieldError ? "border-red-500" : ""}`}
+        />
+      </div>
+      {fieldTouched && fieldError && (
+        <p className="text-red-400 text-sm">{fieldError}</p>
       )}
-      <input
-        type={type}
-        name={name}
-        placeholder={placeholder}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        value={formik.values[name]}
-        className={`w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#65a30d] transition-colors ${
-          icon ? "pl-10" : ""
-        } ${
-          formik.touched[name] && formik.errors[name] ? "border-red-500" : ""
-        }`}
-      />
     </div>
-    {formik.touched[name] && formik.errors[name] && (
-      <p className="text-red-400 text-sm">{formik.errors[name]}</p>
-    )}
-  </div>
-);
+  );
+};
 
 const FormTextarea = ({
   label,
@@ -469,40 +488,7 @@ export default function AdminPartnershipForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
 
-  const validationSchema = Yup.object().shape({
-    title: Yup.string().required("Title is required"),
-    summary: Yup.string().required("Summary is required"),
-    description: Yup.string().required("Description is required"),
-    startDate: Yup.date().required("Start date is required"),
-    nextMilestone: Yup.string(),
-    status: Yup.string().required("Status is required"),
-    priority: Yup.string().required("Priority is required"),
-    partnerInformation: Yup.object().shape({
-      name: Yup.string().required("Partner name is required"),
-      founded: Yup.string(),
-      headquarters: Yup.string(),
-      employees: Yup.string(),
-      specialization: Yup.string(),
-      website: Yup.string(),
-      ceo: Yup.string(),
-      revenue: Yup.string(),
-    }),
-    partnerLinks: Yup.array().of(
-      Yup.object().shape({
-        title: Yup.string().required("Title is required"),
-        url: Yup.string().url("Invalid URL").required("URL is required"),
-        type: Yup.string()
-          .oneOf(["website", "press", "research", "case-study"], "Invalid type")
-          .required("Type is required"),
-      })
-    ),
-    timeline: Yup.array(),
-    achievements: Yup.array(),
-    attachments: Yup.array(),
-    youtubeLinks: Yup.array(),
-    image: Yup.array().min(1, "Poster image is required"),
-    galleryImages: Yup.array().min(1, "At least one gallery image is required"),
-  });
+  // Remove duplicate validation schema - we'll use it in formik directly
 
   const formik = useFormik({
     initialValues: {
@@ -570,6 +556,11 @@ export default function AdminPartnershipForm() {
       youtubeLinks: Yup.array(),
     }),
     onSubmit: async (values) => {
+      console.log("🚀 Form submission started");
+      console.log("📋 Form values:", values);
+      console.log("❌ Form errors:", formik.errors);
+      console.log("✅ Form isValid:", formik.isValid);
+
       setIsSubmitting(true);
       setSubmitStatus(null);
 
@@ -936,6 +927,20 @@ export default function AdminPartnershipForm() {
               <span>Cancel</span>
             </Link>
             <div className="flex items-center space-x-4">
+              <button
+                type="button"
+                onClick={() => {
+                  console.log("🔍 DEBUG INFO:");
+                  console.log("Form values:", formik.values);
+                  console.log("Form errors:", formik.errors);
+                  console.log("Form touched:", formik.touched);
+                  console.log("Form isValid:", formik.isValid);
+                  console.log("Form isValidating:", formik.isValidating);
+                }}
+                className="flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors"
+              >
+                <span>Debug Form</span>
+              </button>
               <button
                 type="submit"
                 disabled={isSubmitting}

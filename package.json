@@ -7,10 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "setup": "node setup.js"
+    "setup": "node setup.js",
+    "export": "next export"
   },
   "dependencies": {
-    "@reduxjs/toolkit": "^1.9.5",
+    "@reduxjs/toolkit": "^2.8.2",
     "autoprefixer": "^10.4.21",
     "aws-sdk": "^2.1692.0",
     "axios": "^1.10.0",
