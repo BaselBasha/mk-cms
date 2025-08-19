@@ -375,6 +375,46 @@ export default function AdminDashboard() {
             ))}
           </div>
         </motion.div>
+
+        {/* Job Candidates Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mb-12"
+        >
+          <h2 className="text-2xl font-bold text-white mb-6">Job Candidates</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <Link href="/admin/candidates">
+                <div className="group relative bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden shadow-2xl hover:shadow-[#65a30d]/20 transition-all duration-500 cursor-pointer">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#65a30d]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="p-8">
+                    <div className="w-16 h-16 bg-gradient-to-br from-[#65a30d] to-[#84cc16] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                      <Users className="h-8 w-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white group-hover:text-[#65a30d] transition-colors duration-300 mb-3">
+                      Review All Candidates
+                    </h3>
+                    <p className="text-gray-400 leading-relaxed mb-4">
+                      View and manage all job applications, review CVs, and track candidate status
+                    </p>
+                    <div className="flex items-center text-[#65a30d] font-medium">
+                      <span>View Candidates</span>
+                      <svg className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

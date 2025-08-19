@@ -26,6 +26,7 @@ import {
   selectCareersLoading,
   selectCareersError,
 } from "../../redux/careersSlice";
+import ApplicationModal from "./ApplicationModal";
 
 // --- Particle Background Component ---
 const ParticleBackground = () => {
@@ -215,7 +216,7 @@ const HeroSection = () => (
 );
 
 // --- Job Card Component ---
-const JobCard = ({ job, index }) => (
+const JobCard = ({ job, index, onApplyClick }) => (
   <motion.div
     initial={{ opacity: 0, y: 60 }}
     whileInView={{ opacity: 1, y: 0 }}
@@ -350,14 +351,7 @@ const JobCard = ({ job, index }) => (
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const subject = `Application for ${job.title} position`;
-            const body = `Dear Hiring Manager,\n\nI am writing to express my interest in the ${job.title} position at ${job.department} department.\n\nPlease find my application attached.\n\nBest regards,\n[Your Name]`;
-            const mailtoLink = `mailto:hamza.alaydi.99@outlook.sa?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            window.open(mailtoLink, '_blank');
-          }}
+          onClick={() => onApplyClick(job)}
           className="bg-[#65a30d] text-white px-8 py-3 rounded-lg text-sm font-medium hover:bg-[#528000] transition-colors duration-300 flex items-center space-x-2 cursor-pointer z-10 relative"
           type="button"
         >
@@ -512,6 +506,8 @@ export default function CareersPage() {
   const [activeDepartment, setActiveDepartment] = useState("All");
   const [activeExperience, setActiveExperience] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const dispatch = useDispatch();
 
   // Redux selectors
@@ -558,6 +554,16 @@ export default function CareersPage() {
       career.department.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesDepartment && matchesExperience && matchesSearch;
   });
+
+  const handleApplyClick = (job) => {
+    setSelectedJob(job);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedJob(null);
+  };
 
   if (loading && careers.length === 0) {
     return (
@@ -610,13 +616,14 @@ export default function CareersPage() {
                 transition={{ duration: 0.5 }}
                 className="grid grid-cols-1 lg:grid-cols-2 gap-8"
               >
-                {filteredCareers.map((job, index) => (
-                  <JobCard
-                    key={job.id}
-                    job={job}
-                    index={index}
-                  />
-                ))}
+                                 {filteredCareers.map((job, index) => (
+                   <JobCard
+                     key={job.id}
+                     job={job}
+                     index={index}
+                     onApplyClick={handleApplyClick}
+                   />
+                 ))}
               </motion.div>
             </AnimatePresence>
 
@@ -638,8 +645,17 @@ export default function CareersPage() {
               </motion.div>
             )}
           </div>
-        </section>
-      </main>
-    </div>
-  );
-} 
+                 </section>
+       </main>
+
+       {/* Application Modal */}
+       {selectedJob && (
+         <ApplicationModal
+           isOpen={isModalOpen}
+           onClose={handleCloseModal}
+           job={selectedJob}
+         />
+       )}
+     </div>
+   );
+ } 
