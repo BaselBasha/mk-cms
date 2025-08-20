@@ -27,6 +27,8 @@ import Link from "next/link";
 import AdminHeader from "@/shared/AdminHeader";
 import { ENDPOINTS } from "@/shared/endpoints";
 import { uploadMultipleFiles } from "@/shared/uploadMultipleFiles";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
 
 // --- Form Input Component ---
 const FormInput = ({
@@ -134,7 +136,7 @@ const FormTextarea = ({
 };
 
 // --- Form Select Component ---
-const FormSelect = ({ label, name, options, formik, required = false }) => {
+const FormSelect = ({ label, name, options, formik, required = false, t }) => {
   const [isFocused, setIsFocused] = useState(false);
   const hasError = formik.touched[name] && formik.errors[name];
 
@@ -160,7 +162,7 @@ const FormSelect = ({ label, name, options, formik, required = false }) => {
               : "border-white/10 hover:border-white/20"
           }`}
         >
-          <option value="">Select {label}</option>
+          <option value="">{t.admin.form.select} {label}</option>
           {options.map((option) => (
             <option key={option} value={option}>
               {option}
@@ -184,7 +186,7 @@ const FormSelect = ({ label, name, options, formik, required = false }) => {
 };
 
 // --- File Upload Component ---
-const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
+const FileUpload = ({ label, name, accept, formik, multiple = false, t }) => {
   const handleFileChange = async (event) => {
     const files = Array.from(event.target.files);
     if (files.length === 0) return;
@@ -225,7 +227,7 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
             className="flex items-center justify-center w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white cursor-pointer hover:border-[#65a30d] transition-colors"
           >
             <Upload className="h-5 w-5 mr-2" />
-            Choose Files
+            {t.admin.awardEditForm.chooseFiles}
           </label>
         </div>
 
@@ -264,7 +266,7 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
 };
 
 // --- Dynamic List Component ---
-const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
+const DynamicList = ({ label, name, formik, placeholder = "Add item...", t }) => {
   const addItem = () => {
     const currentItems = formik.values[name] || [];
     formik.setFieldValue(name, [...currentItems, ""]);
@@ -315,7 +317,7 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
           className="flex items-center space-x-2 text-[#65a30d] hover:text-[#84cc16] transition-colors duration-300"
         >
           <Plus className="w-4 h-4" />
-          <span>Add {label}</span>
+          <span>{t.admin.awardEditForm.addItem.replace('{item}', label)}</span>
         </button>
       </div>
     </div>
@@ -323,7 +325,7 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
 };
 
 // --- Image Upload Component ---
-const ImageUpload = ({ label, name, formik }) => {
+const ImageUpload = ({ label, name, formik, t }) => {
   const handleFileChange = async (event) => {
     const files = Array.from(event.target.files);
     if (files.length === 0) return;
@@ -400,7 +402,7 @@ const ImageUpload = ({ label, name, formik }) => {
             className="flex items-center justify-center w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white cursor-pointer hover:border-[#65a30d] transition-colors"
           >
             <Upload className="h-5 w-5 mr-2" />
-            Choose Image
+            {t.admin.awardEditForm.chooseImage}
           </label>
         </div>
       )}
@@ -428,6 +430,8 @@ const ImageUpload = ({ label, name, formik }) => {
 
 // --- Main Component ---
 export default function EditAwardPage({ params }) {
+  const { language, isRTL } = useLanguage();
+  const t = translations[language];
   const dispatch = useDispatch();
   const router = useRouter();
   const { currentItem: award, loading } = useSelector((state) => state.awards);
@@ -548,20 +552,20 @@ export default function EditAwardPage({ params }) {
   }, [award]);
 
   const categoryOptions = [
-    "Excellence",
-    "Innovation", 
-    "Quality",
-    "Sustainability",
-    "Leadership",
-    "Industry Recognition"
+    t.admin.awardEditForm.categoryOptions.excellence,
+    t.admin.awardEditForm.categoryOptions.innovation, 
+    t.admin.awardEditForm.categoryOptions.quality,
+    t.admin.awardEditForm.categoryOptions.sustainability,
+    t.admin.awardEditForm.categoryOptions.leadership,
+    t.admin.awardEditForm.categoryOptions.industryRecognition
   ];
 
   const levelOptions = [
-    "Local",
-    "National",
-    "Regional", 
-    "International",
-    "Global"
+    t.admin.awardEditForm.levelOptions.local,
+    t.admin.awardEditForm.levelOptions.national,
+    t.admin.awardEditForm.levelOptions.regional, 
+    t.admin.awardEditForm.levelOptions.international,
+    t.admin.awardEditForm.levelOptions.global
   ];
 
   if (loading) {
@@ -573,7 +577,10 @@ export default function EditAwardPage({ params }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 font-sans">
+    <div 
+      className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 font-sans"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
       <AdminHeader currentPage="Awards" />
 
       <div className="container mx-auto px-6 py-8 mt-20">
@@ -586,10 +593,10 @@ export default function EditAwardPage({ params }) {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold text-white mb-4">
-                Edit Award
+                {t.admin.awardEditForm.editAward}
               </h1>
               <p className="text-xl text-gray-400">
-                Update award information and details
+                {t.admin.awardEditForm.updateAwardInfo}
               </p>
             </div>
             <Link
@@ -597,7 +604,7 @@ export default function EditAwardPage({ params }) {
               className="flex items-center space-x-2 text-[#65a30d] hover:text-[#84cc16] transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
-              <span>Back to Awards</span>
+              <span>{t.admin.awardEditForm.backToAwards}</span>
             </Link>
           </div>
         </motion.div>
@@ -616,12 +623,12 @@ export default function EditAwardPage({ params }) {
             {submitStatus === 'success' ? (
               <>
                 <CheckCircle className="w-5 h-5" />
-                <span>Award updated successfully! Redirecting...</span>
+                <span>{t.admin.awardEditForm.awardUpdated}</span>
               </>
             ) : (
               <>
                 <AlertCircle className="w-5 h-5" />
-                <span>Failed to update award. Please try again.</span>
+                <span>{t.admin.awardEditForm.errorUpdating}</span>
               </>
             )}
           </motion.div>
@@ -633,88 +640,95 @@ export default function EditAwardPage({ params }) {
             {/* Left Column */}
             <div className="space-y-6">
               <FormInput
-                label="Award Title"
+                label={t.admin.awardEditForm.awardTitle}
                 name="title"
-                placeholder="Enter award title"
+                placeholder={t.admin.awardEditForm.titlePlaceholder}
                 formik={formik}
                 icon={<Trophy className="w-4 h-4" />}
                 required
               />
 
               <FormTextarea
-                label="Summary"
+                label={t.admin.awardEditForm.summary}
                 name="summary"
-                placeholder="Brief description of the award"
+                placeholder={t.admin.awardEditForm.summaryPlaceholder}
                 formik={formik}
                 required
                 rows={3}
               />
 
               <FormInput
-                label="Awarding Body"
+                label={t.admin.awardEditForm.awardingBody}
                 name="awardingBody"
-                placeholder="Organization that granted the award"
+                placeholder={t.admin.awardEditForm.awardingBodyPlaceholder}
                 formik={formik}
+                required
                 icon={<Building className="w-4 h-4" />}
                 required
               />
 
               <FormInput
-                label="Award Date"
+                label={t.admin.awardEditForm.awardDate}
                 name="awardDate"
                 type="date"
                 formik={formik}
+                required
                 icon={<Calendar className="w-4 h-4" />}
                 required
               />
 
               <FormSelect
-                label="Category"
+                label={t.admin.awardEditForm.category}
                 name="category"
                 options={categoryOptions}
                 formik={formik}
                 required
+                t={t}
               />
 
               <FormSelect
-                label="Level"
+                label={t.admin.awardEditForm.level}
                 name="level"
                 options={levelOptions}
                 formik={formik}
                 required
+                t={t}
               />
             </div>
 
             {/* Right Column */}
             <div className="space-y-6">
               <FormTextarea
-                label="Description"
+                label={t.admin.awardEditForm.description}
                 name="description"
-                placeholder="Detailed description of the award and its significance"
+                placeholder={t.admin.awardEditForm.descriptionPlaceholder}
                 formik={formik}
                 required
                 rows={6}
               />
 
               <DynamicList
-                label="Key Features"
+                label={t.admin.awardEditForm.keyFeaturesLabel}
                 name="features"
                 formik={formik}
-                placeholder="Add a key feature..."
+                placeholder={t.admin.awardEditForm.featurePlaceholder}
+                t={t}
               />
 
               <ImageUpload
-                label="Award Image"
+                label={t.admin.awardEditForm.awardImage}
                 name="image"
                 formik={formik}
+                t={t}
               />
 
               <FileUpload
-                label="Supporting Documents"
+                label={t.admin.awardEditForm.supportingDocuments}
                 name="documents"
                 accept=".pdf,.doc,.docx"
                 formik={formik}
                 multiple
+                t={t}
               />
             </div>
           </div>
@@ -731,12 +745,12 @@ export default function EditAwardPage({ params }) {
               {isSubmitting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Updating...</span>
+                  <span>{t.admin.awardEditForm.updating}</span>
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  <span>Update Award</span>
+                  <span>{t.admin.awardEditForm.updateAward}</span>
                 </>
               )}
             </motion.button>

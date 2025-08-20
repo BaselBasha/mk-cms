@@ -30,10 +30,13 @@ import Link from "next/link";
 import { useDispatch, useSelector } from 'react-redux';
 import { createProject } from '@/redux/projectsSlice';
 import { uploadMultipleFiles } from "@/shared/uploadMultipleFiles";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
 
 // --- Particle Background Component ---
 const ParticleBackground = () => {
   const canvasRef = useRef(null);
+
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -131,6 +134,8 @@ const ParticleBackground = () => {
 
 // --- Admin Header Component ---
 const AdminHeader = () => {
+  const { language } = useLanguage();
+  const t = translations[language];
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   return (
@@ -146,9 +151,9 @@ const AdminHeader = () => {
               />
               <div className="hidden md:block">
                 <h1 className="text-xl font-bold text-white">
-                  Admin Dashboard
+                  {t.admin.header.title}
                 </h1>
-                <p className="text-sm text-gray-400">Add New Project</p>
+                <p className="text-sm text-gray-400">{t.admin.projects.addNewProject}</p>
               </div>
             </Link>
           </div>
@@ -159,7 +164,7 @@ const AdminHeader = () => {
               className="flex items-center space-x-2 text-gray-300 hover:text-[#65a30d] transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Back to Dashboard</span>
+              <span className="hidden sm:inline">{t.admin.actions.back}</span>
             </Link>
 
             <div className="relative">
@@ -185,11 +190,11 @@ const AdminHeader = () => {
                   >
                     <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors text-left">
                       <Settings className="h-4 w-4 text-gray-400" />
-                      <span className="text-white">Settings</span>
+                      <span className="text-white">{t.admin.header.settings}</span>
                     </button>
                     <button className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 transition-colors text-left">
                       <LogOut className="h-4 w-4 text-gray-400" />
-                      <span className="text-white">Logout</span>
+                      <span className="text-white">{t.admin.header.logout}</span>
                     </button>
                   </motion.div>
                 )}
@@ -295,7 +300,7 @@ const FormTextarea = ({
 };
 
 // --- Form Select Component ---
-const FormSelect = ({ label, name, options, formik, required = false }) => {
+const FormSelect = ({ label, name, options, formik, required = false, t }) => {
   return (
     <div className="space-y-2">
       <label className="block text-sm font-medium text-gray-300">
@@ -313,7 +318,7 @@ const FormSelect = ({ label, name, options, formik, required = false }) => {
         }`}
       >
         <option value="" className="bg-gray-800">
-          Select {label}
+          {t.admin.form.required.replace('This field is required', `Select ${label}`)}
         </option>
         {options.map((option) => (
           <option
@@ -340,7 +345,7 @@ const FormSelect = ({ label, name, options, formik, required = false }) => {
 };
 
 // --- File Upload Component ---
-const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
+const FileUpload = ({ label, name, accept, formik, multiple = false, t }) => {
   const [dragActive, setDragActive] = useState(false);
 
   const handleDrag = (e) => {
@@ -397,12 +402,12 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
             <Upload className="h-6 w-6 text-[#65a30d]" />
           </div>
           <p className="text-gray-300 font-medium">
-            Drag & drop files here or click to browse
+            {t.admin.form.dragDropFiles}
           </p>
           <p className="text-gray-400 text-sm">
-            {accept.includes("image") && "Images: JPG, PNG, GIF"}
-            {accept.includes("video") && "Videos: MP4, MOV, AVI"}
-            {accept.includes("pdf") && "Documents: PDF, DOC, DOCX"}
+            {accept.includes("image") && t.admin.form.imageTypes}
+            {accept.includes("video") && t.admin.form.videoTypes}
+            {accept.includes("pdf") && t.admin.form.documentTypes}
           </p>
         </div>
       </div>
@@ -453,7 +458,7 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
 };
 
 // --- Dynamic List Component ---
-const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
+const DynamicList = ({ label, name, formik, placeholder = "Add item...", t }) => {
   const addItem = () => {
     const currentItems = formik.values[name] || [];
     formik.setFieldValue(name, [...currentItems, ""]);
@@ -502,7 +507,7 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
           className="flex items-center space-x-2 px-4 py-2 bg-[#65a30d]/20 hover:bg-[#65a30d]/30 border border-[#65a30d]/30 rounded-xl text-[#65a30d] transition-colors"
         >
           <Plus className="h-4 w-4" />
-          <span>Add {label}</span>
+          <span>{t.admin.form.addItem.replace('{item}', label)}</span>
         </button>
       </div>
     </div>
@@ -511,6 +516,8 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
 
 // --- Main Project Form Component ---
 export default function AdminProjectForm() {
+  const { language, isRTL } = useLanguage();
+  const t = translations[language];
   const dispatch = useDispatch();
   const { loading: reduxLoading, error: reduxError } = useSelector(
     (state) => state.projects
@@ -587,22 +594,25 @@ export default function AdminProjectForm() {
   });
 
   const statusOptions = [
-    { value: "planning", label: "Planning" },
-    { value: "in-progress", label: "In Progress" },
-    { value: "completed", label: "Completed" },
-    { value: "on-hold", label: "On Hold" },
-    { value: "cancelled", label: "Cancelled" },
+    { value: "planning", label: t.admin.projects.status.planning },
+    { value: "in-progress", label: t.admin.projects.status.inProgress },
+    { value: "completed", label: t.admin.projects.status.completed },
+    { value: "on-hold", label: t.admin.projects.status.onHold },
+    { value: "cancelled", label: t.admin.projects.status.cancelled },
   ];
 
   const priorityOptions = [
-    { value: "low", label: "Low" },
-    { value: "medium", label: "Medium" },
-    { value: "high", label: "High" },
-    { value: "urgent", label: "Urgent" },
+    { value: "low", label: t.admin.projects.priority.low },
+    { value: "medium", label: t.admin.projects.priority.medium },
+    { value: "high", label: t.admin.projects.priority.high },
+    { value: "urgent", label: t.admin.projects.priority.urgent },
   ];
 
   return (
-    <div className="bg-transparent text-gray-200 font-sans min-h-screen">
+    <div 
+      className="bg-transparent text-gray-200 font-sans min-h-screen"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
       <ParticleBackground />
       <AdminHeader />
 
@@ -614,11 +624,10 @@ export default function AdminProjectForm() {
           className="mb-8"
         >
           <h1 className="text-4xl font-bold text-white mb-4">
-            Add New Project
+            {t.admin.projects.addNewProject}
           </h1>
           <p className="text-xl text-gray-400">
-            Create a detailed project entry with media attachments and key
-            metrics
+            {t.admin.form.briefOverview}
           </p>
         </motion.div>
 
@@ -633,7 +642,7 @@ export default function AdminProjectForm() {
             >
               <CheckCircle className="h-5 w-5 text-green-400 mr-3" />
               <span className="text-green-400">
-                Project created successfully!
+                {t.admin.form.projectCreated}
               </span>
             </motion.div>
           )}
@@ -646,7 +655,7 @@ export default function AdminProjectForm() {
             >
               <AlertCircle className="h-5 w-5 text-red-400 mr-3" />
               <span className="text-red-400">
-                Error creating project. Please try again.
+                {t.admin.form.errorCreating}
               </span>
             </motion.div>
           )}
@@ -654,210 +663,222 @@ export default function AdminProjectForm() {
 
         {/* Form */}
         <motion.form
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          onSubmit={formik.handleSubmit}
-          className="space-y-8"
-        >
-          {/* Basic Information */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">
-              Basic Information
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="md:col-span-2">
-                <FormInput
-                  label="Project Title"
-                  name="title"
-                  placeholder="Enter project title"
-                  formik={formik}
-                  icon={<FileText className="h-4 w-4" />}
-                  required
-                />
-              </div>
-              <div className="md:col-span-2">
-                <FormTextarea
-                  label="Project Summary"
-                  name="summary"
-                  placeholder="Brief overview of the project"
-                  formik={formik}
-                  required
-                  rows={3}
-                />
-              </div>
-              <div className="md:col-span-2">
-                <FormTextarea
-                  label="Project Description"
-                  name="description"
-                  placeholder="Detailed description of the project"
-                  formik={formik}
-                  required
-                  rows={6}
-                />
-              </div>
-            </div>
-          </div>
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.1 }}
+  onSubmit={formik.handleSubmit}
+  className="space-y-8"
+>
+  {/* Basic Information */}
+  <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+    <h2 className="text-2xl font-bold text-white mb-6">
+      {t.admin.form.basicInformation}
+    </h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="md:col-span-2">
+        <FormInput
+          label={t.admin.form.projectTitle}
+          name="title"
+          placeholder={t.admin.form.enterProjectTitle}
+          formik={formik}
+          icon={<FileText className="h-4 w-4" />}
+          required
+        />
+      </div>
+      <div className="md:col-span-2">
+        <FormTextarea
+          label={t.admin.form.projectSummary}
+          name="summary"
+          placeholder={t.admin.form.briefOverview}
+          formik={formik}
+          required
+          rows={3}
+        />
+      </div>
+      <div className="md:col-span-2">
+        <FormTextarea
+          label={t.admin.form.projectDescription}
+          name="description"
+          placeholder={t.admin.form.detailedDescription}
+          formik={formik}
+          required
+          rows={6}
+        />
+      </div>
+    </div>
+  </div>
 
-          {/* Project Details */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">
-              Project Details
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormInput
-                label="Budget"
-                name="budget"
-                placeholder="e.g., $12.5 Million"
-                formik={formik}
-                icon={<DollarSign className="h-4 w-4" />}
-              />
-              <FormInput
-                label="Location"
-                name="location"
-                placeholder="Project location"
-                formik={formik}
-                icon={<MapPin className="h-4 w-4" />}
-                required
-              />
-              <FormInput
-                label="Area Coverage"
-                name="area"
-                placeholder="e.g., 5,000 Hectares"
-                formik={formik}
-                required
-              />
-              <FormInput
-                label="Success Partner"
-                name="successPartner"
-                placeholder="Partner organization"
-                formik={formik}
-                icon={<Users className="h-4 w-4" />}
-              />
-              <DynamicList
-                label="YouTube Video Links"
-                name="youtubeLinks"
-                formik={formik}
-                placeholder="https://youtu.be/VIDEO_ID"
-              />
-              <FormInput
-                label="Start Date"
-                name="startDate"
-                type="date"
-                formik={formik}
-                icon={<Calendar className="h-4 w-4" />}
-                required
-              />
-              <FormInput
-                label="End Date"
-                name="endDate"
-                type="date"
-                formik={formik}
-                icon={<Calendar className="h-4 w-4" />}
-                required
-              />
-              <FormSelect
-                label="Status"
-                name="status"
-                options={statusOptions}
-                formik={formik}
-                required
-              />
-              <FormSelect
-                label="Priority"
-                name="priority"
-                options={priorityOptions}
-                formik={formik}
-              />
-            </div>
-          </div>
+  {/* Project Details */}
+  <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+    <h2 className="text-2xl font-bold text-white mb-6">
+      {t.admin.form.projectDetails}
+    </h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <FormInput
+        label={t.admin.form.budget}
+        name="budget"
+        placeholder={t.admin.form.budgetExample}
+        formik={formik}
+        icon={<DollarSign className="h-4 w-4" />}
+      />
+      <FormInput
+        label={t.admin.form.location}
+        name="location"
+        placeholder={t.admin.form.projectLocation}
+        formik={formik}
+        icon={<MapPin className="h-4 w-4" />}
+        required
+      />
+      <FormInput
+        label={t.admin.form.areaCoverage}
+        name="area"
+        placeholder={t.admin.form.areaExample}
+        formik={formik}
+        required
+      />
+      <FormInput
+        label={t.admin.form.successPartner}
+        name="successPartner"
+        placeholder={t.admin.form.partnerOrganization}
+        formik={formik}
+        icon={<Users className="h-4 w-4" />}
+      />
+      <DynamicList
+        label={t.admin.form.youtubeVideoLinks}
+        name="youtubeLinks"
+        formik={formik}
+        placeholder={t.admin.form.videoLinkExample}
+        t={t}
+      />
+      <FormInput
+        label={t.admin.form.startDate}
+        name="startDate"
+        type="date"
+        formik={formik}
+        icon={<Calendar className="h-4 w-4" />}
+        required
+      />
+      <FormInput
+        label={t.admin.form.endDate}
+        name="endDate"
+        type="date"
+        formik={formik}
+        icon={<Calendar className="h-4 w-4" />}
+        required
+      />
+      <FormSelect
+        label={t.admin.form.status}
+        name="status"
+        options={statusOptions}
+        formik={formik}
+        required
+        t={t}
+      />
+      <FormSelect
+        label={t.admin.form.priority}
+        name="priority"
+        options={priorityOptions}
+        formik={formik}
+        required
+        t={t}
+      />
+    </div>
+  </div>
 
-          {/* Media Attachments */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">
-              Media Attachments
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FileUpload
-                label="Project Images"
-                name="images"
-                accept="image/*"
-                formik={formik}
-                multiple
-              />
-              <FileUpload
-                label="Project Documents"
-                name="documents"
-                accept=".pdf,.doc,.docx"
-                formik={formik}
-                multiple
-              />
-            </div>
-          </div>
+  {/* Media Attachments */}
+  <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+    <h2 className="text-2xl font-bold text-white mb-6">
+      {t.admin.form.mediaAttachments}
+    </h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <FileUpload
+        label={t.admin.form.projectImages}
+        name="images"
+        accept="image/*"
+        formik={formik}
+        multiple
+        t={t}
+      />
+      <FileUpload
+        label={t.admin.form.projectDocuments}
+        name="documents"
+        accept=".pdf,.doc,.docx"
+        formik={formik}
+        multiple
+        t={t}
+      />
+    </div>
+  </div>
 
-          {/* Key Metrics */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Key Metrics</h2>
-            <DynamicList
-              label="Key Metrics"
-              name="keyMetrics"
-              formik={formik}
-              placeholder="e.g., Water Savings: 40%"
-            />
-          </div>
+  {/* Key Metrics */}
+  <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+    <h2 className="text-2xl font-bold text-white mb-6">
+      {t.admin.form.keyMetrics}
+    </h2>
+    <DynamicList
+      label={t.admin.form.keyMetrics}
+      name="keyMetrics"
+      formik={formik}
+      placeholder={t.admin.form.metricsExample}
+      t={t}
+    />
+  </div>
 
-          {/* Awards */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">
-              Awards & Recognition
-            </h2>
-            <DynamicList
-              label="Awards"
-              name="awards"
-              formik={formik}
-              placeholder="e.g., Best Sustainable Agriculture Project 2024"
-            />
-          </div>
+  {/* Awards */}
+  <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+    <h2 className="text-2xl font-bold text-white mb-6">
+      {t.admin.form.awardsRecognition}
+    </h2>
+    <DynamicList
+      label={t.admin.form.awards}
+      name="awards"
+      formik={formik}
+      placeholder={t.admin.form.awardsExample}
+      t={t}
+    />
+  </div>
 
-          {/* Form Actions */}
-          <div className="flex items-center justify-between pt-8">
-            <Link
-              href="/admin"
-              className="flex items-center space-x-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-gray-300 transition-colors"
-            >
-              <X className="h-4 w-4" />
-              <span>Cancel</span>
-            </Link>
+  {/* Form Actions */}
+  <div className="flex items-center justify-between pt-8">
+    <Link
+      href="/admin"
+      className="flex items-center space-x-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-gray-300 transition-colors"
+    >
+      <X className="h-4 w-4" />
+      <span>{t.admin.form.cancel}</span>
+    </Link>
 
-            <div className="flex items-center space-x-4">
-              <button
-                type="button"
-                className="flex items-center space-x-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-gray-300 transition-colors"
-              >
-                <Eye className="h-4 w-4" />
-                <span>Preview</span>
-              </button>
+    <div className="flex items-center space-x-4">
+      <button
+        type="button"
+        className="flex items-center space-x-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-gray-300 transition-colors"
+      >
+        <Eye className="h-4 w-4" />
+        <span>{t.admin.form.preview}</span>
+      </button>
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex items-center space-x-2 px-8 py-3 bg-[#65a30d] hover:bg-[#65a30d]/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-white font-medium transition-colors"
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
-                    <span>Saving...</span>
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4" />
-                    <span>Save Project</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </motion.form>
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="flex items-center space-x-2 px-8 py-3 bg-[#65a30d] hover:bg-[#65a30d]/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-white font-medium transition-colors"
+      >
+        {isSubmitting ? (
+          <>
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+            <span>{t.admin.form.saving}</span>
+          </>
+        ) : (
+          <>
+            <Save className="h-4 w-4" />
+            <span>{t.admin.form.saveProject}</span>
+          </>
+        )}
+      </button>
+    </div>
+  </div>
+</motion.form>
+
+
       </div>
     </div>
   );

@@ -7,6 +7,8 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { motion } from "framer-motion";
 import { ArrowLeft, Save, AlertCircle } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
 
 
 // Form Components
@@ -24,7 +26,7 @@ const FormInput = ({ label, name, type = "text", required = false, ...props }) =
   </div>
 );
 
-const FormSelect = ({ label, name, options, required = false, ...props }) => (
+const FormSelect = ({ label, name, options, required = false, t, ...props }) => (
   <div className="space-y-2">
     <label className="block text-sm font-medium text-white">
       {label} {required && <span className="text-red-400">*</span>}
@@ -35,7 +37,7 @@ const FormSelect = ({ label, name, options, required = false, ...props }) => (
       className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
       {...props}
     >
-      <option value="">Select {label}</option>
+      <option value="">{t.admin.form.select} {label}</option>
       {options.map((option) => (
         <option key={option.value} value={option.value}>
           {option.label}
@@ -45,7 +47,7 @@ const FormSelect = ({ label, name, options, required = false, ...props }) => (
   </div>
 );
 
-const DynamicList = ({ label, name, formik, placeholder }) => {
+const DynamicList = ({ label, name, formik, placeholder, t }) => {
   const addItem = () => {
     const currentItems = formik.values[name] || [];
     formik.setFieldValue(name, [...currentItems, ""]);
@@ -94,7 +96,7 @@ const DynamicList = ({ label, name, formik, placeholder }) => {
           className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
         >
           <span>+</span>
-          <span>Add {label}</span>
+          <span>{t.admin.careerEditForm.addItem.replace('{item}', label)}</span>
         </button>
       </div>
     </div>
@@ -102,6 +104,8 @@ const DynamicList = ({ label, name, formik, placeholder }) => {
 };
 
 export default function EditCareerPage({ params }) {
+  const { language, isRTL } = useLanguage();
+  const t = translations[language];
   const router = useRouter();
   const dispatch = useDispatch();
   const [career, setCareer] = useState(null);
@@ -144,7 +148,7 @@ export default function EditCareerPage({ params }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
-        <div className="text-white text-xl">Loading career...</div>
+        <div className="text-white text-xl">{t.admin.careerEditForm.loadingCareer}</div>
       </div>
     );
   }
@@ -154,13 +158,13 @@ export default function EditCareerPage({ params }) {
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="h-16 w-16 text-red-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-white mb-2">Error Loading Career</h3>
+          <h3 className="text-xl font-semibold text-white mb-2">{t.admin.careerEditForm.errorLoadingCareer}</h3>
           <p className="text-gray-400 mb-6">{error}</p>
           <button
             onClick={() => router.back()}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
           >
-            Go Back
+            {t.admin.careerEditForm.goBack}
           </button>
         </div>
       </div>
@@ -170,7 +174,7 @@ export default function EditCareerPage({ params }) {
   if (!career) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
-        <div className="text-white text-xl">Career not found</div>
+        <div className="text-white text-xl">{t.admin.careerEditForm.careerNotFound}</div>
       </div>
     );
   }
@@ -194,7 +198,10 @@ export default function EditCareerPage({ params }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
+    <div 
+      className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
       {/* Header */}
       <div className="bg-black/30 border-b border-white/10">
         <div className="container mx-auto px-6 py-6">
@@ -205,11 +212,11 @@ export default function EditCareerPage({ params }) {
                 className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />
-                <span>Back</span>
+                <span>{t.admin.careerEditForm.back}</span>
               </button>
               <div>
-                <h1 className="text-3xl font-bold text-white mb-2">Edit Career</h1>
-                <p className="text-gray-400">Update career information</p>
+                <h1 className="text-3xl font-bold text-white mb-2">{t.admin.careerEditForm.editCareer}</h1>
+                <p className="text-gray-400">{t.admin.careerEditForm.updateCareerInfo}</p>
               </div>
             </div>
           </div>
@@ -250,74 +257,77 @@ export default function EditCareerPage({ params }) {
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
               >
-                <h2 className="text-xl font-semibold text-white mb-6">Basic Information</h2>
+                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.careerEditForm.basicInformation}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormInput
-                    label="Job Title"
+                    label={t.admin.careerEditForm.jobTitle}
                     name="title"
                     required
-                    placeholder="Enter job title"
+                    placeholder={t.admin.careerEditForm.titlePlaceholder}
                   />
                   <FormSelect
-                    label="Department"
+                    label={t.admin.careerEditForm.department}
                     name="department"
                     required
+                    t={t}
                     options={[
-                      { value: "Engineering", label: "Engineering" },
-                      { value: "Sales", label: "Sales" },
-                      { value: "Marketing", label: "Marketing" },
-                      { value: "Operations", label: "Operations" },
-                      { value: "Finance", label: "Finance" },
-                      { value: "HR", label: "HR" },
-                      { value: "IT", label: "IT" },
-                      { value: "Research & Development", label: "Research & Development" },
-                      { value: "Quality Assurance", label: "Quality Assurance" },
-                      { value: "Supply Chain", label: "Supply Chain" },
+                      { value: "Engineering", label: t.admin.careerEditForm.departmentOptions.engineering },
+                      { value: "Sales", label: t.admin.careerEditForm.departmentOptions.sales },
+                      { value: "Marketing", label: t.admin.careerEditForm.departmentOptions.marketing },
+                      { value: "Operations", label: t.admin.careerEditForm.departmentOptions.operations },
+                      { value: "Finance", label: t.admin.careerEditForm.departmentOptions.finance },
+                      { value: "HR", label: t.admin.careerEditForm.departmentOptions.hr },
+                      { value: "IT", label: t.admin.careerEditForm.departmentOptions.it },
+                      { value: "Research & Development", label: t.admin.careerEditForm.departmentOptions.researchDevelopment },
+                      { value: "Quality Assurance", label: t.admin.careerEditForm.departmentOptions.qualityAssurance },
+                      { value: "Supply Chain", label: t.admin.careerEditForm.departmentOptions.supplyChain },
                     ]}
                   />
                   <FormInput
-                    label="Job Summary"
+                    label={t.admin.careerEditForm.jobSummary}
                     name="summary"
                     required
-                    placeholder="Brief job summary"
+                    placeholder={t.admin.careerEditForm.summaryPlaceholder}
                   />
                   <FormInput
-                    label="Location"
+                    label={t.admin.careerEditForm.location}
                     name="location"
                     required
-                    placeholder="Enter job location"
+                    placeholder={t.admin.careerEditForm.locationPlaceholder}
                   />
                   <FormSelect
-                    label="Job Type"
+                    label={t.admin.careerEditForm.jobType}
                     name="type"
                     required
+                    t={t}
                     options={[
-                      { value: "Full-time", label: "Full Time" },
-                      { value: "Part-time", label: "Part Time" },
-                      { value: "Contract", label: "Contract" },
-                      { value: "Internship", label: "Internship" },
-                      { value: "Remote", label: "Remote" },
+                      { value: "Full-time", label: t.admin.careerEditForm.jobTypeOptions.fullTime },
+                      { value: "Part-time", label: t.admin.careerEditForm.jobTypeOptions.partTime },
+                      { value: "Contract", label: t.admin.careerEditForm.jobTypeOptions.contract },
+                      { value: "Internship", label: t.admin.careerEditForm.jobTypeOptions.internship },
+                      { value: "Remote", label: t.admin.careerEditForm.jobTypeOptions.remote },
                     ]}
                   />
                   <FormSelect
-                    label="Experience Level"
+                    label={t.admin.careerEditForm.experienceLevel}
                     name="experience"
                     required
+                    t={t}
                     options={[
-                      { value: "Entry Level", label: "Entry Level" },
-                      { value: "Junior", label: "Junior" },
-                      { value: "Mid Level", label: "Mid Level" },
-                      { value: "Senior", label: "Senior" },
-                      { value: "Executive", label: "Executive" },
+                      { value: "Entry Level", label: t.admin.careerEditForm.experienceLevelOptions.entryLevel },
+                      { value: "Junior", label: t.admin.careerEditForm.experienceLevelOptions.junior },
+                      { value: "Mid Level", label: t.admin.careerEditForm.experienceLevelOptions.midLevel },
+                      { value: "Senior", label: t.admin.careerEditForm.experienceLevelOptions.senior },
+                      { value: "Executive", label: t.admin.careerEditForm.experienceLevelOptions.executive },
                     ]}
                   />
                   <FormInput
-                    label="Salary"
+                    label={t.admin.careerEditForm.salary}
                     name="salary"
-                    placeholder="e.g., $50,000 - $70,000"
+                    placeholder={t.admin.careerEditForm.salaryPlaceholder}
                   />
                   <FormInput
-                    label="Application Deadline"
+                    label={t.admin.careerEditForm.applicationDeadline}
                     name="applicationDeadline"
                     type="date"
                   />
@@ -333,7 +343,7 @@ export default function EditCareerPage({ params }) {
                       className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                     />
                     <label htmlFor="isActive" className="text-sm font-medium text-white">
-                      Active Position
+                      {t.admin.careerEditForm.activePosition}
                     </label>
                   </div>
                 </div>
@@ -346,15 +356,15 @@ export default function EditCareerPage({ params }) {
                 transition={{ delay: 0.1 }}
                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
               >
-                <h2 className="text-xl font-semibold text-white mb-6">Job Description</h2>
+                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.careerEditForm.jobDescription}</h2>
                 <div className="space-y-6">
                   <FormInput
-                    label="Job Description"
+                    label={t.admin.careerEditForm.description}
                     name="description"
                     as="textarea"
                     rows={6}
                     required
-                    placeholder="Detailed job description"
+                    placeholder={t.admin.careerEditForm.descriptionPlaceholder}
                   />
                 </div>
               </motion.div>
@@ -366,13 +376,14 @@ export default function EditCareerPage({ params }) {
                 transition={{ delay: 0.2 }}
                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
               >
-                <h2 className="text-xl font-semibold text-white mb-6">Requirements</h2>
+                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.careerEditForm.requirements}</h2>
                 <div className="space-y-6">
                   <DynamicList
-                    label="Requirements"
+                    label={t.admin.careerEditForm.requirementsLabel}
                     name="requirements"
                     formik={{ values, setFieldValue }}
-                    placeholder="Enter requirement"
+                    placeholder={t.admin.careerEditForm.requirementsPlaceholder}
+                    t={t}
                   />
                 </div>
               </motion.div>
@@ -384,13 +395,14 @@ export default function EditCareerPage({ params }) {
                 transition={{ delay: 0.3 }}
                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
               >
-                <h2 className="text-xl font-semibold text-white mb-6">Responsibilities</h2>
+                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.careerEditForm.responsibilities}</h2>
                 <div className="space-y-6">
                   <DynamicList
-                    label="Responsibilities"
+                    label={t.admin.careerEditForm.responsibilitiesLabel}
                     name="responsibilities"
                     formik={{ values, setFieldValue }}
-                    placeholder="Enter responsibility"
+                    placeholder={t.admin.careerEditForm.responsibilitiesPlaceholder}
+                    t={t}
                   />
                 </div>
               </motion.div>
@@ -402,13 +414,14 @@ export default function EditCareerPage({ params }) {
                 transition={{ delay: 0.4 }}
                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
               >
-                <h2 className="text-xl font-semibold text-white mb-6">Benefits</h2>
+                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.careerEditForm.benefits}</h2>
                 <div className="space-y-6">
                   <DynamicList
-                    label="Benefits"
+                    label={t.admin.careerEditForm.benefitsLabel}
                     name="benefits"
                     formik={{ values, setFieldValue }}
-                    placeholder="Enter benefit"
+                    placeholder={t.admin.careerEditForm.benefitsPlaceholder}
+                    t={t}
                   />
                 </div>
               </motion.div>
@@ -425,7 +438,7 @@ export default function EditCareerPage({ params }) {
                   onClick={() => router.back()}
                   className="px-6 py-3 border border-white/10 text-white rounded-lg hover:bg-white/10 transition-colors"
                 >
-                  Cancel
+                  {t.admin.careerEditForm.cancel}
                 </button>
                 
                 <button
@@ -434,7 +447,7 @@ export default function EditCareerPage({ params }) {
                   className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white rounded-lg flex items-center space-x-2 transition-colors"
                 >
                   <Save className="h-5 w-5" />
-                  <span>{isSubmitting ? "Updating..." : "Update Career"}</span>
+                  <span>{isSubmitting ? t.admin.careerEditForm.updating : t.admin.careerEditForm.updateCareer}</span>
                 </button>
               </motion.div>
 
@@ -445,7 +458,7 @@ export default function EditCareerPage({ params }) {
                   animate={{ opacity: 1 }}
                   className="bg-green-600/20 border border-green-500/50 text-green-400 p-4 rounded-lg"
                 >
-                  Career updated successfully! Redirecting...
+                  {t.admin.careerEditForm.careerUpdated}
                 </motion.div>
               )}
               
@@ -455,7 +468,7 @@ export default function EditCareerPage({ params }) {
                   animate={{ opacity: 1 }}
                   className="bg-red-600/20 border border-red-500/50 text-red-400 p-4 rounded-lg"
                 >
-                  Failed to update career. Please try again.
+                  {t.admin.careerEditForm.errorUpdating}
                 </motion.div>
               )}
             </Form>

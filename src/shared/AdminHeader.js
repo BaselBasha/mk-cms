@@ -4,8 +4,14 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Award, User, LogOut, ChevronDown, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const AdminHeader = ({ currentPage = "Dashboard" }) => {
+  const { language, isRTL } = useLanguage();
+  const t = translations[language];
+  
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [adminData, setAdminData] = useState(null);
@@ -40,19 +46,20 @@ const AdminHeader = ({ currentPage = "Dashboard" }) => {
   };
 
   const navItems = [
-    { name: "Dashboard", href: "/admin" },
-    { name: "Projects", href: "/admin/projects" },
-    { name: "Partnerships", href: "/admin/partnerships" },
-    { name: "Certifications", href: "/admin/certifications" },
-    { name: "Awards", href: "/admin/awards" },
-    { name: "Careers", href: "/admin/careers" },
-    { name: "Press", href: "/admin/press" },
+    { name: t.admin.nav.dashboard, href: "/admin" },
+    { name: t.admin.nav.projects, href: "/admin/projects" },
+    { name: t.admin.nav.partnerships, href: "/admin/partnerships" },
+    { name: t.admin.nav.certifications, href: "/admin/certifications" },
+    { name: t.admin.nav.awards, href: "/admin/awards" },
+    { name: t.admin.nav.careers, href: "/admin/careers" },
+    { name: t.admin.nav.press, href: "/admin/press" },
   ];
 
   return (
     <motion.header
       initial={{ y: -100 }}
       animate={{ y: 0 }}
+      dir={isRTL ? 'rtl' : 'ltr'}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
           ? "bg-gradient-to-r from-[#0f1419]/95 via-[#1a2d27]/95 to-[#0f1419]/95 backdrop-blur-md border-b border-white/10 shadow-lg"
@@ -64,8 +71,8 @@ const AdminHeader = ({ currentPage = "Dashboard" }) => {
           <div className="flex items-center space-x-4">
             <Award className="h-8 w-8 text-[#65a30d]" />
             <div>
-              <h1 className="text-2xl font-bold text-white">MK Group CMS</h1>
-              <p className="text-sm text-gray-400">{currentPage} Management</p>
+              <h1 className="text-2xl font-bold text-white">{t.admin.header.title}</h1>
+              <p className="text-sm text-gray-400">{currentPage} {t.admin.nav.management}</p>
             </div>
           </div>
           <nav className="flex items-center space-x-6">
@@ -82,6 +89,9 @@ const AdminHeader = ({ currentPage = "Dashboard" }) => {
                 {item.name}
               </a>
             ))}
+            
+            {/* Language Switcher */}
+            <LanguageSwitcher />
             
             {/* Admin Dropdown */}
             <div className="relative">
@@ -127,7 +137,7 @@ const AdminHeader = ({ currentPage = "Dashboard" }) => {
                         className="w-full flex items-center space-x-3 px-4 py-2 text-gray-300 hover:bg-white/5 hover:text-[#65a30d] transition-colors duration-200"
                       >
                         <Settings className="h-4 w-4" />
-                        <span className="text-sm">Settings</span>
+                        <span className="text-sm">{t.admin.header.settings}</span>
                       </button>
                       
                       <button
@@ -138,7 +148,7 @@ const AdminHeader = ({ currentPage = "Dashboard" }) => {
                         className="w-full flex items-center space-x-3 px-4 py-2 text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors duration-200"
                       >
                         <LogOut className="h-4 w-4" />
-                        <span className="text-sm">Logout</span>
+                        <span className="text-sm">{t.admin.header.logout}</span>
                       </button>
                     </div>
                   </motion.div>

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchPressById, updatePress } from "@/redux/pressSlice";
@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import AdminHeader from "@/shared/AdminHeader";
 import { Save, AlertCircle, Plus, Trash2, Upload, X } from "lucide-react";
 import { uploadMultipleFiles } from "@/shared/uploadMultipleFiles";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
 
 // Form Components
 const FormInput = ({ label, name, type = "text", required = false, ...props }) => (
@@ -49,7 +51,7 @@ const FormTextarea = ({ label, name, required = false, ...props }) => (
   </div>
 );
 
-const FormSelect = ({ label, name, options, required = false, ...props }) => (
+const FormSelect = ({ label, name, options, required = false, t, ...props }) => (
   <div className="space-y-2">
     <label className="block text-sm font-medium text-white">
       {label} {required && <span className="text-red-400">*</span>}
@@ -60,7 +62,7 @@ const FormSelect = ({ label, name, options, required = false, ...props }) => (
       className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#65a30d]"
       {...props}
     >
-      <option value="">Select {label}</option>
+      <option value="">{t.admin.form.select} {label}</option>
       {options.map((option) => (
         <option key={option.value} value={option.value}>
           {option.label}
@@ -75,7 +77,7 @@ const FormSelect = ({ label, name, options, required = false, ...props }) => (
   </div>
 );
 
-const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
+const DynamicList = ({ label, name, formik, placeholder = "Add item...", t }) => {
   const addItem = () => {
     const currentValues = formik.values[name] || [];
     formik.setFieldValue(name, [...currentValues, ""]);
@@ -124,14 +126,14 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
           className="flex items-center space-x-2 px-4 py-3 bg-[#65a30d]/20 hover:bg-[#65a30d]/30 text-[#65a30d] rounded-lg transition-colors"
         >
           <Plus className="h-4 w-4" />
-          <span>Add {label}</span>
+          <span>{t.admin.pressEditForm.addItem.replace('{item}', label)}</span>
         </button>
       </div>
     </div>
   );
 };
 
-const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
+const FileUpload = ({ label, name, accept, formik, multiple = false, t }) => {
   const handleFileChange = async (event) => {
     const files = Array.from(event.target.files);
     if (files.length === 0) return;
@@ -168,7 +170,7 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
             className="flex items-center justify-center w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white cursor-pointer hover:border-[#65a30d] transition-colors"
           >
             <Upload className="h-5 w-5 mr-2" />
-            Choose Files
+            {t.admin.pressEditForm.chooseFiles}
           </label>
         </div>
 
@@ -207,6 +209,8 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
 };
 
 export default function EditPressPage({ params }) {
+  const { language, isRTL } = useLanguage();
+  const t = translations[language];
   const router = useRouter();
   const dispatch = useDispatch();
   const { items, loading, error } = useSelector((state) => state.press);
@@ -214,17 +218,21 @@ export default function EditPressPage({ params }) {
   const [submitStatus, setSubmitStatus] = useState(null);
   const [press, setPress] = useState(null);
 
+  // Unwrap params for Next.js 15+
+  const resolvedParams = use(params);
+  const pressId = resolvedParams.id;
+
   useEffect(() => {
     async function fetchData() {
       try {
-        const result = await dispatch(fetchPressById(params.id)).unwrap();
+        const result = await dispatch(fetchPressById(pressId)).unwrap();
         setPress(result);
       } catch (err) {
         setPress(null);
       }
     }
     fetchData();
-  }, [dispatch, params.id]);
+  }, [dispatch, pressId]);
 
   const validationSchema = Yup.object().shape({
     title: Yup.string().required("Title is required"),
@@ -256,7 +264,7 @@ export default function EditPressPage({ params }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
-        <div className="text-white text-xl">Loading press...</div>
+        <div className="text-white text-xl">{t.admin.pressEditForm.loadingPress}</div>
       </div>
     );
   }
@@ -266,13 +274,13 @@ export default function EditPressPage({ params }) {
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="h-16 w-16 text-red-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-white mb-2">Error Loading Press</h3>
+          <h3 className="text-xl font-semibold text-white mb-2">{t.admin.pressEditForm.errorLoadingPress}</h3>
           <p className="text-gray-400 mb-6">{error}</p>
           <button
             onClick={() => router.back()}
             className="bg-[#65a30d] hover:bg-[#528000] text-white px-6 py-3 rounded-lg transition-colors"
           >
-            Go Back
+            {t.admin.pressEditForm.goBack}
           </button>
         </div>
       </div>
@@ -282,7 +290,7 @@ export default function EditPressPage({ params }) {
   if (!press) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
-        <div className="text-white text-xl">Press not found</div>
+        <div className="text-white text-xl">{t.admin.pressEditForm.pressNotFound}</div>
       </div>
     );
   }
@@ -309,27 +317,30 @@ export default function EditPressPage({ params }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 font-sans">
+    <div 
+      className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 font-sans"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
       <AdminHeader currentPage="Press" />
       <div className="container mx-auto px-6 py-8 mt-20">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-4">Edit Press</h1>
-              <p className="text-xl text-gray-400">Update press information and details</p>
+              <h1 className="text-4xl font-bold text-white mb-4">{t.admin.pressEditForm.editPress}</h1>
+              <p className="text-xl text-gray-400">{t.admin.pressEditForm.updatePressInfo}</p>
             </div>
           </div>
         </motion.div>
         <AnimatePresence>
           {submitStatus === "success" && (
             <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="mb-6 p-4 bg-green-500/20 border border-green-500/30 rounded-xl flex items-center">
-              <span className="text-green-400">Press updated successfully!</span>
+              <span className="text-green-400">{t.admin.pressEditForm.pressUpdated}</span>
             </motion.div>
           )}
           {submitStatus === "error" && (
             <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl flex items-center">
               <AlertCircle className="h-5 w-5 text-red-400 mr-3" />
-              <span className="text-red-400">Error updating press. Please try again.</span>
+              <span className="text-red-400">{t.admin.pressEditForm.errorUpdating}</span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -353,7 +364,7 @@ export default function EditPressPage({ params }) {
                 image: values.image ? values.image.map(img => img.url).filter(img => img.length > 0) : [],
               };
               
-              await dispatch(updatePress({ id: press._id, data: dataToSend })).unwrap();
+                             await dispatch(updatePress({ id: press._id || pressId, data: dataToSend })).unwrap();
               setSubmitStatus("success");
               setTimeout(() => {
                 router.push("/admin/press");
@@ -369,50 +380,50 @@ export default function EditPressPage({ params }) {
           {(formik) => (
             <Form className="max-w-4xl mx-auto space-y-8">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                <h2 className="text-xl font-semibold text-white mb-6">Basic Information</h2>
+                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.pressEditForm.basicInformation}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormInput label="Title" name="title" required placeholder="Enter press title" />
-                  <FormInput label="Author" name="author" required placeholder="Enter author name" />
-                  <FormInput label="Publication" name="publication" required placeholder="Enter publication name" />
-                  <FormInput label="Publish Date" name="publishDate" type="date" required />
-                  <FormInput label="URL" name="url" placeholder="https://example.com" />
-                  <FormSelect label="Category" name="category" required options={[
-                    { value: "news", label: "News" },
-                    { value: "interview", label: "Interview" },
-                    { value: "feature", label: "Feature" },
-                    { value: "review", label: "Review" },
-                    { value: "announcement", label: "Announcement" },
+                  <FormInput label={t.admin.pressEditForm.title} name="title" required placeholder={t.admin.pressEditForm.titlePlaceholder} />
+                  <FormInput label={t.admin.pressEditForm.author} name="author" required placeholder={t.admin.pressEditForm.authorPlaceholder} />
+                  <FormInput label={t.admin.pressEditForm.publication} name="publication" required placeholder={t.admin.pressEditForm.publicationPlaceholder} />
+                  <FormInput label={t.admin.pressEditForm.publishDate} name="publishDate" type="date" required />
+                  <FormInput label={t.admin.pressEditForm.url} name="url" placeholder={t.admin.pressEditForm.urlPlaceholder} />
+                  <FormSelect label={t.admin.pressEditForm.category} name="category" required t={t} options={[
+                    { value: "news", label: t.admin.pressEditForm.categoryOptions.news },
+                    { value: "interview", label: t.admin.pressEditForm.categoryOptions.interview },
+                    { value: "feature", label: t.admin.pressEditForm.categoryOptions.feature },
+                    { value: "review", label: t.admin.pressEditForm.categoryOptions.review },
+                    { value: "announcement", label: t.admin.pressEditForm.categoryOptions.announcement },
                   ]} />
                   <div className="flex items-center space-x-2 mt-4">
-                    <label className="text-white text-sm">Active</label>
+                    <label className="text-white text-sm">{t.admin.pressEditForm.active}</label>
                     <Field type="checkbox" name="isActive" className="h-5 w-5 text-[#65a30d]" />
                   </div>
                 </div>
                 <div className="mt-6">
-                  <FormTextarea label="Summary" name="summary" rows={3} required placeholder="Brief summary of the press" />
-                  <FormTextarea label="Content" name="content" rows={8} required placeholder="Full content of the press" />
+                  <FormTextarea label={t.admin.pressEditForm.summary} name="summary" rows={3} required placeholder={t.admin.pressEditForm.summaryPlaceholder} />
+                  <FormTextarea label={t.admin.pressEditForm.content} name="content" rows={8} required placeholder={t.admin.pressEditForm.contentPlaceholder} />
                 </div>
                 <div className="mt-6">
-                  <DynamicList label="Tags" name="tags" formik={formik} placeholder="e.g., news, interview, award" />
+                  <DynamicList label={t.admin.pressEditForm.tags} name="tags" formik={formik} placeholder={t.admin.pressEditForm.tagsPlaceholder} t={t} />
                 </div>
                 <div className="mt-6">
-                  <FileUpload label="Image Files" name="image" accept="image/*" formik={formik} multiple={true} />
+                  <FileUpload label={t.admin.pressEditForm.imageFiles} name="image" accept="image/*" formik={formik} multiple={true} t={t} />
                 </div>
                 <div className="mt-6">
-                  <DynamicList label="YouTube Links" name="youtubeLinks" formik={formik} placeholder="https://youtube.com/watch?v=abc123" />
+                  <DynamicList label={t.admin.pressEditForm.youtubeLinks} name="youtubeLinks" formik={formik} placeholder={t.admin.pressEditForm.youtubeLinksPlaceholder} t={t} />
                 </div>
                 <div className="mt-6">
-                  <FileUpload label="Document Files" name="documents" accept=".pdf,.doc,.docx,.txt" formik={formik} multiple={true} />
+                  <FileUpload label={t.admin.pressEditForm.documentFiles} name="documents" accept=".pdf,.doc,.docx,.txt" formik={formik} multiple={true} t={t} />
                 </div>
                 <div className="mt-6">
-                  <DynamicList label="Related Articles" name="relatedArticles" formik={formik} placeholder="https://example.com/article" />
+                  <DynamicList label={t.admin.pressEditForm.relatedArticles} name="relatedArticles" formik={formik} placeholder={t.admin.pressEditForm.relatedArticlesPlaceholder} t={t} />
                 </div>
               </motion.div>
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-end space-x-4">
-                <button type="button" onClick={() => router.back()} className="px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors">Cancel</button>
+                <button type="button" onClick={() => router.back()} className="px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors">{t.admin.pressEditForm.cancel}</button>
                 <button type="submit" disabled={isSubmitting} className="flex items-center space-x-2 px-6 py-3 bg-[#65a30d] hover:bg-[#528000] text-white rounded-lg transition-colors disabled:opacity-50">
                   <Save className="h-5 w-5" />
-                  <span>{isSubmitting ? "Updating..." : "Update Press"}</span>
+                  <span>{isSubmitting ? t.admin.pressEditForm.updating : t.admin.pressEditForm.updatePress}</span>
                 </button>
               </motion.div>
               {/* Debug Info */}

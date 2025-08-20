@@ -8,6 +8,9 @@ import { User, Mail, Lock, UserPlus, AlertCircle, CheckCircle } from "lucide-rea
 import { motion, AnimatePresence } from "framer-motion";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 // --- Particle Background Component (copied from login) ---
 const ParticleBackground = () => {
@@ -117,17 +120,29 @@ const SignupSchema = Yup.object().shape({
 });
 
 export default function SignupPage() {
+  const { language, isRTL } = useLanguage();
+  const t = translations[language];
+  
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state) => state.auth);
   const [success, setSuccess] = useState(false);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-transparent text-gray-200 font-sans relative">
+    <div 
+      className="min-h-screen flex items-center justify-center bg-transparent text-gray-200 font-sans relative"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
       <ParticleBackground />
+      
+      {/* Language Switcher */}
+      <div className="absolute top-6 right-6 z-10">
+        <LanguageSwitcher />
+      </div>
+      
       <div className="w-full max-w-md mx-auto bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-8 md:p-12 flex flex-col items-center">
         <img src="/MK-GROUP.png" alt="MK Group Logo" className="h-16 w-auto mb-6" />
-        <h1 className="text-3xl font-bold text-white mb-2">Sign Up</h1>
-        <p className="text-gray-400 mb-8 text-center">Create an account to access the admin dashboard</p>
+        <h1 className="text-3xl font-bold text-white mb-2">{t.admin.signup.title}</h1>
+        <p className="text-gray-400 mb-8 text-center">{t.admin.signup.subtitle}</p>
         {success ? (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -136,7 +151,7 @@ export default function SignupPage() {
             className="flex items-center p-3 bg-green-500/20 border border-green-500/30 rounded-xl text-green-400 text-sm mb-6"
           >
             <CheckCircle className="h-4 w-4 mr-2" />
-            Signup successful! You can now <Link href="/admin/login" className="underline text-green-300 ml-1">login</Link>.
+            {t.admin.signup.signupSuccess} <Link href="/admin/login" className="underline text-green-300 ml-1">{t.admin.signup.signIn}</Link>.
           </motion.div>
         ) : (
           <Formik
@@ -153,13 +168,13 @@ export default function SignupPage() {
             {({ isSubmitting }) => (
               <Form className="w-full space-y-6">
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-300">Name</label>
+                  <label className="block text-sm font-medium text-gray-300">{t.admin.signup.name}</label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                     <Field
                       type="text"
                       name="name"
-                      placeholder="Enter your name"
+                      placeholder={t.admin.signup.namePlaceholder}
                       className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#65a30d] focus:border-transparent transition-all"
                       autoComplete="name"
                     />
@@ -167,13 +182,13 @@ export default function SignupPage() {
                   <ErrorMessage name="name" component="div" className="text-red-400 text-xs mt-1 ml-1" />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-300">Email</label>
+                  <label className="block text-sm font-medium text-gray-300">{t.admin.signup.email}</label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                     <Field
                       type="email"
                       name="email"
-                      placeholder="Enter your email"
+                      placeholder={t.admin.signup.emailPlaceholder}
                       className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#65a30d] focus:border-transparent transition-all"
                       autoComplete="email"
                     />
@@ -181,13 +196,13 @@ export default function SignupPage() {
                   <ErrorMessage name="email" component="div" className="text-red-400 text-xs mt-1 ml-1" />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-300">Password</label>
+                  <label className="block text-sm font-medium text-gray-300">{t.admin.signup.password}</label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                     <Field
                       type="password"
                       name="password"
-                      placeholder="Enter your password"
+                      placeholder={t.admin.signup.passwordPlaceholder}
                       className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#65a30d] focus:border-transparent transition-all"
                       autoComplete="new-password"
                     />
@@ -195,13 +210,13 @@ export default function SignupPage() {
                   <ErrorMessage name="password" component="div" className="text-red-400 text-xs mt-1 ml-1" />
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-300">Confirm Password</label>
+                  <label className="block text-sm font-medium text-gray-300">{t.admin.signup.confirmPassword}</label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                     <Field
                       type="password"
                       name="confirmPassword"
-                      placeholder="Confirm your password"
+                      placeholder={t.admin.signup.confirmPasswordPlaceholder}
                       className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#65a30d] focus:border-transparent transition-all"
                       autoComplete="new-password"
                     />
@@ -227,18 +242,18 @@ export default function SignupPage() {
                   disabled={loading || isSubmitting}
                 >
                   <UserPlus className="h-5 w-5" />
-                  <span>{loading || isSubmitting ? "Signing up..." : "Sign Up"}</span>
+                  <span>{loading || isSubmitting ? t.admin.signup.signingUp : t.admin.signup.signUpButton}</span>
                 </button>
                 <div className="mt-4 text-center">
-                  <span className="text-gray-400">Already have an account? </span>
-                  <Link href="/admin/login" className="text-[#65a30d] hover:underline">Login</Link>
+                  <span className="text-gray-400">{t.admin.signup.alreadyHaveAccount} </span>
+                  <Link href="/admin/login" className="text-[#65a30d] hover:underline">{t.admin.signup.login}</Link>
                 </div>
               </Form>
             )}
           </Formik>
         )}
         <div className="mt-8 text-center text-gray-400 text-xs">
-          &copy; {new Date().getFullYear()} MK Group. All rights reserved.
+          &copy; {new Date().getFullYear()} {t.admin.signup.copyright}
         </div>
       </div>
     </div>

@@ -7,6 +7,8 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { motion, AnimatePresence } from "framer-motion";
 import AdminHeader from "@/shared/AdminHeader";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
 import {
   ArrowLeft,
   Upload,
@@ -178,7 +180,7 @@ const FormTextarea = ({
   </div>
 );
 
-const FormSelect = ({ label, name, options, formik, required = false }) => (
+const FormSelect = ({ label, name, options, formik, required = false, t }) => (
   <div className="space-y-2">
     <label className="block text-sm font-medium text-white">
       {label} {required && <span className="text-red-400">*</span>}
@@ -192,7 +194,7 @@ const FormSelect = ({ label, name, options, formik, required = false }) => (
         formik.touched[name] && formik.errors[name] ? "border-red-500" : ""
       }`}
     >
-      <option value="">Select {label}</option>
+      <option value="">{t.admin.form.required.replace('This field is required', `Select ${label}`)}</option>
       {options.map((option) => (
         <option key={option.value} value={option.value}>
           {option.label}
@@ -203,9 +205,9 @@ const FormSelect = ({ label, name, options, formik, required = false }) => (
       <p className="text-red-400 text-sm">{formik.errors[name]}</p>
     )}
   </div>
-);
+ );
 
-const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
+const FileUpload = ({ label, name, accept, formik, multiple = false, t }) => {
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -262,11 +264,11 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
           >
             <Upload className="h-8 w-8 text-gray-400 mb-2" />
             <p className="text-gray-400 text-center">
-              Drag and drop files here, or{" "}
-              <span className="text-[#65a30d]">click to browse</span>
+              {t.admin.form.dragDropFiles}
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              {accept} {multiple ? "files" : "file"}
+              {accept.includes("image") && t.admin.form.imageTypes}
+              {accept.includes("pdf") && t.admin.form.documentTypes}
             </p>
           </label>
         </div>
@@ -327,7 +329,7 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
   );
 };
 
-const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
+const DynamicList = ({ label, name, formik, placeholder = "Add item...", t }) => {
   const addItem = () => {
     const currentItems = formik.values[name] || [];
     formik.setFieldValue(name, [...currentItems, ""]);
@@ -376,7 +378,7 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
           className="flex items-center space-x-2 px-4 py-2 bg-[#65a30d] hover:bg-[#528000] text-white rounded-lg transition-colors"
         >
           <Plus className="h-4 w-4" />
-          <span>Add {label}</span>
+          <span>{t.admin.certificationForm.addItem.replace('{item}', label)}</span>
         </button>
       </div>
     </div>
@@ -384,21 +386,23 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
 };
 
 export default function AdminCertificationForm() {
+  const { language, isRTL } = useLanguage();
+  const t = translations[language];
   const router = useRouter();
   const dispatch = useDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
 
   const validationSchema = Yup.object({
-    title: Yup.string().required("Title is required"),
-    summary: Yup.string().required("Summary is required"),
-    description: Yup.string().required("Description is required"),
-    issuingBody: Yup.string().required("Issuing body is required"),
-    issueDate: Yup.date().required("Issue date is required"),
-    validUntil: Yup.date().required("Valid until date is required"),
-    category: Yup.string().required("Category is required"),
-    priority: Yup.string().required("Priority is required"),
-    status: Yup.string().required("Status is required"),
+    title: Yup.string().required(t.admin.form.required),
+    summary: Yup.string().required(t.admin.form.required),
+    description: Yup.string().required(t.admin.form.required),
+    issuingBody: Yup.string().required(t.admin.form.required),
+    issueDate: Yup.date().required(t.admin.form.required),
+    validUntil: Yup.date().required(t.admin.form.required),
+    category: Yup.string().required(t.admin.form.required),
+    priority: Yup.string().required(t.admin.form.required),
+    status: Yup.string().required(t.admin.form.required),
     image: Yup.mixed(),
     documents: Yup.array(),
     features: Yup.array(),
@@ -461,9 +465,12 @@ export default function AdminCertificationForm() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 font-sans">
+    <div 
+      className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 font-sans"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
       <ParticleBackground />
-      <AdminHeader currentPage="Certifications" />
+      <AdminHeader currentPage={t.admin.certifications.pageTitle} />
       <div className="container mx-auto px-6 py-8 mt-20">
         {/* Header */}
         <motion.div
@@ -472,10 +479,10 @@ export default function AdminCertificationForm() {
           className="mb-8"
         >
           <h1 className="text-4xl font-bold text-white mb-4">
-            Add New Certification
+            {t.admin.certifications.addNewCertification}
           </h1>
           <p className="text-xl text-gray-400">
-            Create a new certification entry with all required details and media
+            {t.admin.form.briefOverview}
           </p>
         </motion.div>
         <AnimatePresence>
@@ -488,8 +495,7 @@ export default function AdminCertificationForm() {
             >
               <CheckCircle className="h-5 w-5 text-green-400 mr-3" />
               <span className="text-green-400">
-                Certification created successfully! Redirecting to
-                certifications list...
+                {t.admin.certificationForm.certificationCreated}
               </span>
             </motion.div>
           )}
@@ -502,7 +508,7 @@ export default function AdminCertificationForm() {
             >
               <AlertCircle className="h-5 w-5 text-red-400 mr-3" />
               <span className="text-red-400">
-                Error creating certification. Please try again.
+                {t.admin.certificationForm.errorCreating}
               </span>
             </motion.div>
           )}
@@ -517,39 +523,39 @@ export default function AdminCertificationForm() {
           {/* Basic Information */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
             <h2 className="text-2xl font-bold text-white mb-6">
-              Basic Information
+              {t.admin.certificationForm.basicInformation}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormInput
-                label="Certification Title"
+                label={t.admin.certificationForm.certificationTitle}
                 name="title"
-                placeholder="e.g., ISO 9001:2015"
+                placeholder={t.admin.certificationForm.titlePlaceholder}
                 formik={formik}
                 icon={<Award className="h-4 w-4" />}
                 required
               />
               <FormInput
-                label="Issuing Body"
+                label={t.admin.certificationForm.issuingBody}
                 name="issuingBody"
-                placeholder="e.g., International Accreditation Service"
+                placeholder={t.admin.certificationForm.issuingBodyPlaceholder}
                 formik={formik}
                 icon={<Globe className="h-4 w-4" />}
                 required
               />
               <div className="md:col-span-2">
                 <FormTextarea
-                  label="Summary"
+                  label={t.admin.certificationForm.summary}
                   name="summary"
-                  placeholder="Brief description of the certification"
+                  placeholder={t.admin.certificationForm.summaryPlaceholder}
                   formik={formik}
                   required
                 />
               </div>
               <div className="md:col-span-2">
                 <FormTextarea
-                  label="Description"
+                  label={t.admin.certificationForm.description}
                   name="description"
-                  placeholder="Detailed description of the certification"
+                  placeholder={t.admin.certificationForm.descriptionPlaceholder}
                   formik={formik}
                   rows={6}
                   required
@@ -561,11 +567,11 @@ export default function AdminCertificationForm() {
           {/* Certification Details */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
             <h2 className="text-2xl font-bold text-white mb-6">
-              Certification Details
+              {t.admin.certificationForm.certificationDetails}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormInput
-                label="Issue Date"
+                label={t.admin.certificationForm.issueDate}
                 name="issueDate"
                 type="date"
                 formik={formik}
@@ -573,7 +579,7 @@ export default function AdminCertificationForm() {
                 required
               />
               <FormInput
-                label="Valid Until"
+                label={t.admin.certificationForm.validUntil}
                 name="validUntil"
                 type="date"
                 formik={formik}
@@ -581,39 +587,42 @@ export default function AdminCertificationForm() {
                 required
               />
               <FormSelect
-                label="Category"
+                label={t.admin.certificationForm.category}
                 name="category"
                 formik={formik}
                 required
+                t={t}
                 options={[
-                  { value: "Quality", label: "Quality" },
-                  { value: "Environmental", label: "Environmental" },
-                  { value: "Organic", label: "Organic" },
-                  { value: "Food Safety", label: "Food Safety" },
-                  { value: "Accreditation", label: "Accreditation" },
-                  { value: "National", label: "National" },
+                  { value: "Quality", label: t.admin.certificationForm.categories.quality },
+                  { value: "Environmental", label: t.admin.certificationForm.categories.environmental },
+                  { value: "Organic", label: t.admin.certificationForm.categories.organic },
+                  { value: "Food Safety", label: t.admin.certificationForm.categories.foodSafety },
+                  { value: "Accreditation", label: t.admin.certificationForm.categories.accreditation },
+                  { value: "National", label: t.admin.certificationForm.categories.national },
                 ]}
               />
               <FormSelect
-                label="Priority"
+                label={t.admin.certificationForm.priority}
                 name="priority"
                 formik={formik}
                 required
+                t={t}
                 options={[
-                  { value: "High", label: "High" },
-                  { value: "Medium", label: "Medium" },
-                  { value: "Low", label: "Low" },
+                  { value: "High", label: t.admin.certificationForm.priorities.high },
+                  { value: "Medium", label: t.admin.certificationForm.priorities.medium },
+                  { value: "Low", label: t.admin.certificationForm.priorities.low },
                 ]}
               />
               <FormSelect
-                label="Status"
+                label={t.admin.certificationForm.status}
                 name="status"
                 formik={formik}
                 required
+                t={t}
                 options={[
-                  { value: "active", label: "Active" },
-                  { value: "expired", label: "Expired" },
-                  { value: "pending", label: "Pending" },
+                  { value: "active", label: t.admin.certificationForm.statuses.active },
+                  { value: "expired", label: t.admin.certificationForm.statuses.expired },
+                  { value: "pending", label: t.admin.certificationForm.statuses.pending },
                 ]}
               />
             </div>
@@ -621,32 +630,35 @@ export default function AdminCertificationForm() {
 
           {/* Features */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Features</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">{t.admin.certificationForm.features}</h2>
             <DynamicList
-              label="Certification Features"
+              label={t.admin.certificationForm.certificationFeatures}
               name="features"
               formik={formik}
-              placeholder="e.g., Customer satisfaction focus"
+              placeholder={t.admin.certificationForm.featuresPlaceholder}
+              t={t}
             />
           </div>
 
           {/* Media Attachments */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
             <h2 className="text-2xl font-bold text-white mb-6">
-              Media Attachments
+              {t.admin.certificationForm.mediaAttachments}
             </h2>
             <FileUpload
-              label="Certification Image"
+              label={t.admin.certificationForm.certificationImage}
               name="image"
               accept="image/*"
               formik={formik}
+              t={t}
             />
             <FileUpload
-              label="Documents"
+              label={t.admin.certificationForm.documents}
               name="documents"
               accept=".pdf,.doc,.docx"
               formik={formik}
               multiple
+              t={t}
             />
           </div>
 
@@ -657,7 +669,7 @@ export default function AdminCertificationForm() {
               className="flex items-center space-x-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-gray-300 transition-colors"
             >
               <X className="h-4 w-4" />
-              <span>Cancel</span>
+              <span>{t.admin.certificationForm.cancel}</span>
             </Link>
             <div className="flex items-center space-x-4">
               <button
@@ -668,12 +680,12 @@ export default function AdminCertificationForm() {
                 {isSubmitting ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
-                    <span>Saving...</span>
+                    <span>{t.admin.certificationForm.saving}</span>
                   </>
                 ) : (
                   <>
                     <Save className="h-4 w-4" />
-                    <span>Save Certification</span>
+                    <span>{t.admin.certificationForm.saveCertification}</span>
                   </>
                 )}
               </button>

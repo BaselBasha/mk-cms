@@ -10,6 +10,8 @@ import AdminHeader from "@/shared/AdminHeader";
 import { ArrowLeft, Upload, X, Plus, Save, AlertCircle, Award, Calendar, User, Globe, FileText, Play, Link, Target, Users, Building, MapPin, DollarSign, ExternalLink } from "lucide-react";
 import { uploadMultipleFiles } from "@/shared/uploadMultipleFiles";
 import { AnimatePresence } from "framer-motion";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
 
 // Form Components
 const FormInput = ({ label, name, type = "text", required = false, ...props }) => (
@@ -26,7 +28,7 @@ const FormInput = ({ label, name, type = "text", required = false, ...props }) =
     </div>
 );
 
-const FormSelect = ({ label, name, options, required = false, ...props }) => (
+const FormSelect = ({ label, name, options, required = false, t, ...props }) => (
     <div className="space-y-2">
         <label className="block text-sm font-medium text-white">
             {label} {required && <span className="text-red-400">*</span>}
@@ -37,7 +39,7 @@ const FormSelect = ({ label, name, options, required = false, ...props }) => (
             className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#65a30d]"
             {...props}
         >
-            <option value="">Select {label}</option>
+            <option value="">{t.admin.form.select} {label}</option>
             {options.map((option) => (
                 <option key={option.value} value={option.value}>
                     {option.label}
@@ -61,7 +63,7 @@ const FormTextarea = ({ label, name, required = false, ...props }) => (
     </div>
 );
 
-const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
+const FileUpload = ({ label, name, accept, formik, multiple = false, t }) => {
     const handleFileChange = async (event) => {
         const files = Array.from(event.target.files);
         if (files.length === 0) return;
@@ -130,7 +132,7 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
                         className="flex items-center justify-center w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white cursor-pointer hover:border-[#65a30d] transition-colors"
                     >
                         <Upload className="h-5 w-5 mr-2" />
-                        Add More Files
+                        {t.admin.partnershipEditForm.addMoreFiles}
                     </label>
                 </div>
 
@@ -146,7 +148,7 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
                                     <div>
                                         <p className="text-white text-sm">{getFileDisplayName(file)}</p>
                                         <p className="text-gray-400 text-xs">
-                                            {isExistingFile(file) ? 'Existing file' : getFileSize(file)}
+                                            {isExistingFile(file) ? t.admin.partnershipEditForm.existingFile : getFileSize(file)}
                                         </p>
                                         {isExistingFile(file) && (
                                             <a 
@@ -155,7 +157,7 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
                                                 rel="noopener noreferrer"
                                                 className="text-blue-400 hover:text-blue-300 text-xs"
                                             >
-                                                View file
+                                                {t.admin.partnershipEditForm.viewFile}
                                             </a>
                                         )}
                                     </div>
@@ -176,7 +178,7 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
     );
 };
 
-const DynamicList = ({ label, name, formik, placeholder }) => {
+const DynamicList = ({ label, name, formik, placeholder, t }) => {
     const addItem = () => {
         const currentItems = formik.values[name] || [];
         formik.setFieldValue(name, [...currentItems, ""]);
@@ -222,14 +224,14 @@ const DynamicList = ({ label, name, formik, placeholder }) => {
                     className="flex items-center space-x-2 px-4 py-2 bg-[#65a30d] hover:bg-[#528000] text-white rounded-lg transition-colors"
                 >
                     <Plus className="h-4 w-4" />
-                    <span>Add {label}</span>
+                    <span>{t.admin.partnershipEditForm.addItem.replace('{item}', label)}</span>
                 </button>
             </div>
         </div>
     );
 };
 
-const DynamicObjectList = ({ label, name, formik, fields, placeholder }) => {
+const DynamicObjectList = ({ label, name, formik, fields, placeholder, t }) => {
     const addItem = () => {
         const currentItems = formik.values[name] || [];
         const newItem = {};
@@ -260,7 +262,7 @@ const DynamicObjectList = ({ label, name, formik, fields, placeholder }) => {
                 {(formik.values[name] || []).map((item, index) => (
                     <div key={index} className="p-4 bg-black/20 rounded-lg border border-white/10">
                         <div className="flex items-center justify-between mb-3">
-                            <span className="text-sm text-gray-400">Item {index + 1}</span>
+                            <span className="text-sm text-gray-400">{t.admin.partnershipEditForm.item} {index + 1}</span>
                             <button
                                 type="button"
                                 onClick={() => removeItem(index)}
@@ -313,7 +315,7 @@ const DynamicObjectList = ({ label, name, formik, fields, placeholder }) => {
                     className="flex items-center space-x-2 px-4 py-2 bg-[#65a30d] hover:bg-[#528000] text-white rounded-lg transition-colors"
                 >
                     <Plus className="h-4 w-4" />
-                    <span>Add {label}</span>
+                    <span>{t.admin.partnershipEditForm.addItem.replace('{item}', label)}</span>
                 </button>
             </div>
         </div>
@@ -321,6 +323,8 @@ const DynamicObjectList = ({ label, name, formik, fields, placeholder }) => {
 };
 
 export default function EditPartnershipPage({ params }) {
+    const { language, isRTL } = useLanguage();
+    const t = translations[language];
     const router = useRouter();
     const dispatch = useDispatch();
     const [partnership, setPartnership] = useState(null);
@@ -396,7 +400,7 @@ export default function EditPartnershipPage({ params }) {
     if (loading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
-                <div className="text-white text-xl">Loading partnership...</div>
+                <div className="text-white text-xl">{t.admin.partnershipEditForm.loadingPartnership}</div>
             </div>
         );
     }
@@ -406,13 +410,13 @@ export default function EditPartnershipPage({ params }) {
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
                 <div className="text-center">
                     <AlertCircle className="h-16 w-16 text-red-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-white mb-2">Error Loading Partnership</h3>
+                    <h3 className="text-xl font-semibold text-white mb-2">{t.admin.partnershipEditForm.errorLoadingPartnership}</h3>
                     <p className="text-gray-400 mb-6">{error}</p>
                     <button
                         onClick={() => router.back()}
                         className="bg-[#65a30d] hover:bg-[#528000] text-white px-6 py-3 rounded-lg transition-colors"
                     >
-                        Go Back
+                        {t.admin.partnershipEditForm.goBack}
                     </button>
                 </div>
             </div>
@@ -422,7 +426,7 @@ export default function EditPartnershipPage({ params }) {
     if (!partnership) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
-                <div className="text-white text-xl">Partnership not found</div>
+                <div className="text-white text-xl">{t.admin.partnershipEditForm.partnershipNotFound}</div>
             </div>
         );
     }
@@ -457,7 +461,10 @@ export default function EditPartnershipPage({ params }) {
     console.log('Initial image values:', initialValues.image);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 font-sans">
+        <div 
+            className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 font-sans"
+            dir={isRTL ? 'rtl' : 'ltr'}
+        >
             <AdminHeader currentPage="Partnerships" />
 
             <div className="container mx-auto px-6 py-8 mt-20">
@@ -470,10 +477,10 @@ export default function EditPartnershipPage({ params }) {
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-4xl font-bold text-white mb-4">
-                                Edit Partnership
+                                {t.admin.partnershipEditForm.editPartnership}
                             </h1>
                             <p className="text-xl text-gray-400">
-                                Update partnership information and details
+                                {t.admin.partnershipEditForm.updatePartnershipInfo}
                             </p>
                         </div>
                     </div>
@@ -490,7 +497,7 @@ export default function EditPartnershipPage({ params }) {
                         >
                             <Award className="h-5 w-5 text-green-400 mr-3" />
                             <span className="text-green-400">
-                                Partnership updated successfully!
+                                {t.admin.partnershipEditForm.partnershipUpdated}
                             </span>
                         </motion.div>
                     )}
@@ -503,7 +510,7 @@ export default function EditPartnershipPage({ params }) {
                         >
                             <AlertCircle className="h-5 w-5 text-red-400 mr-3" />
                             <span className="text-red-400">
-                                Error updating partnership. Please try again.
+                                {t.admin.partnershipEditForm.errorUpdating}
                             </span>
                         </motion.div>
                     )}
@@ -669,35 +676,35 @@ export default function EditPartnershipPage({ params }) {
                                 animate={{ opacity: 1, y: 0 }}
                                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
                             >
-                                <h2 className="text-xl font-semibold text-white mb-6">Basic Information</h2>
+                                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.partnershipEditForm.basicInformation}</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <FormInput
-                                        label="Partnership Title"
+                                        label={t.admin.partnershipEditForm.partnershipTitle}
                                         name="title"
                                         required
-                                        placeholder="Enter partnership title"
+                                        placeholder={t.admin.partnershipEditForm.titlePlaceholder}
                                     />
                                     <FormInput
-                                        label="Next Milestone"
+                                        label={t.admin.partnershipEditForm.nextMilestone}
                                         name="nextMilestone"
-                                        placeholder="e.g., Sub-Saharan Africa Expansion - Q3 2024"
+                                        placeholder={t.admin.partnershipEditForm.nextMilestonePlaceholder}
                                     />
                                     <div className="md:col-span-2">
                                         <FormTextarea
-                                            label="Summary"
+                                            label={t.admin.partnershipEditForm.summary}
                                             name="summary"
                                             rows={3}
                                             required
-                                            placeholder="Brief description of the partnership"
+                                            placeholder={t.admin.partnershipEditForm.summaryPlaceholder}
                                         />
                                     </div>
                                     <div className="md:col-span-2">
                                         <FormTextarea
-                                            label="Description"
+                                            label={t.admin.partnershipEditForm.description}
                                             name="description"
                                             rows={6}
                                             required
-                                            placeholder="Detailed description of the partnership"
+                                            placeholder={t.admin.partnershipEditForm.descriptionPlaceholder}
                                         />
                                     </div>
                                 </div>
@@ -710,33 +717,35 @@ export default function EditPartnershipPage({ params }) {
                                 transition={{ delay: 0.1 }}
                                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
                             >
-                                <h2 className="text-xl font-semibold text-white mb-6">Partnership Details</h2>
+                                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.partnershipEditForm.partnershipDetails}</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <FormInput
-                                        label="Start Date"
+                                        label={t.admin.partnershipEditForm.startDate}
                                         name="startDate"
                                         type="date"
                                         required
                                     />
                                     <FormSelect
-                                        label="Status"
+                                        label={t.admin.partnershipEditForm.status}
                                         name="status"
                                         required
+                                        t={t}
                                         options={[
-                                            { value: "active", label: "Active" },
-                                            { value: "inactive", label: "Inactive" },
-                                            { value: "completed", label: "Completed" },
-                                            { value: "cancelled", label: "Cancelled" },
+                                            { value: "active", label: t.admin.partnershipEditForm.statusOptions.active },
+                                            { value: "inactive", label: t.admin.partnershipEditForm.statusOptions.inactive },
+                                            { value: "completed", label: t.admin.partnershipEditForm.statusOptions.completed },
+                                            { value: "cancelled", label: t.admin.partnershipEditForm.statusOptions.cancelled },
                                         ]}
                                     />
                                     <FormSelect
-                                        label="Priority"
+                                        label={t.admin.partnershipEditForm.priority}
                                         name="priority"
                                         required
+                                        t={t}
                                         options={[
-                                            { value: "high", label: "High" },
-                                            { value: "medium", label: "Medium" },
-                                            { value: "low", label: "Low" },
+                                            { value: "high", label: t.admin.partnershipEditForm.priorityOptions.high },
+                                            { value: "medium", label: t.admin.partnershipEditForm.priorityOptions.medium },
+                                            { value: "low", label: t.admin.partnershipEditForm.priorityOptions.low },
                                         ]}
                                     />
                                 </div>
@@ -749,48 +758,48 @@ export default function EditPartnershipPage({ params }) {
                                 transition={{ delay: 0.2 }}
                                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
                             >
-                                <h2 className="text-xl font-semibold text-white mb-6">Partner Information</h2>
+                                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.partnershipEditForm.partnerInformation}</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <FormInput
-                                        label="Partner Name"
+                                        label={t.admin.partnershipEditForm.partnerName}
                                         name="partnerInformation.name"
                                         required
-                                        placeholder="Enter partner company name"
+                                        placeholder={t.admin.partnershipEditForm.partnerNamePlaceholder}
                                     />
                                     <FormInput
-                                        label="Founded"
+                                        label={t.admin.partnershipEditForm.founded}
                                         name="partnerInformation.founded"
-                                        placeholder="e.g., 2015"
+                                        placeholder={t.admin.partnershipEditForm.foundedPlaceholder}
                                     />
                                     <FormInput
-                                        label="Headquarters"
+                                        label={t.admin.partnershipEditForm.headquarters}
                                         name="partnerInformation.headquarters"
-                                        placeholder="e.g., Dubai, UAE"
+                                        placeholder={t.admin.partnershipEditForm.headquartersPlaceholder}
                                     />
                                     <FormInput
-                                        label="Employees"
+                                        label={t.admin.partnershipEditForm.employees}
                                         name="partnerInformation.employees"
-                                        placeholder="e.g., 250+"
+                                        placeholder={t.admin.partnershipEditForm.employeesPlaceholder}
                                     />
                                     <FormInput
-                                        label="Specialization"
+                                        label={t.admin.partnershipEditForm.specialization}
                                         name="partnerInformation.specialization"
-                                        placeholder="e.g., Smart Irrigation & Water Management"
+                                        placeholder={t.admin.partnershipEditForm.specializationPlaceholder}
                                     />
                                     <FormInput
-                                        label="Website"
+                                        label={t.admin.partnershipEditForm.website}
                                         name="partnerInformation.website"
-                                        placeholder="e.g., https://greentech-solutions.com"
+                                        placeholder={t.admin.partnershipEditForm.websitePlaceholder}
                                     />
                                     <FormInput
-                                        label="CEO"
+                                        label={t.admin.partnershipEditForm.ceo}
                                         name="partnerInformation.ceo"
-                                        placeholder="e.g., Dr. Ahmad Hassan"
+                                        placeholder={t.admin.partnershipEditForm.ceoPlaceholder}
                                     />
                                     <FormInput
-                                        label="Revenue"
+                                        label={t.admin.partnershipEditForm.revenue}
                                         name="partnerInformation.revenue"
-                                        placeholder="e.g., $45M (2023)"
+                                        placeholder={t.admin.partnershipEditForm.revenuePlaceholder}
                                     />
                                 </div>
                             </motion.div>
@@ -802,25 +811,26 @@ export default function EditPartnershipPage({ params }) {
                                 transition={{ delay: 0.3 }}
                                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
                             >
-                                <h2 className="text-xl font-semibold text-white mb-6">Partner Links</h2>
+                                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.partnershipEditForm.partnerLinks}</h2>
                                 <DynamicObjectList
-                                    label="Partner Links"
+                                    label={t.admin.partnershipEditForm.partnerLinks}
                                     name="partnerLinks"
                                     formik={formik}
                                     fields={[
-                                        { name: "title", placeholder: "Link Title" },
-                                        { name: "url", placeholder: "URL" },
+                                        { name: "title", placeholder: t.admin.partnershipEditForm.linkTitle },
+                                        { name: "url", placeholder: t.admin.partnershipEditForm.url },
                                         { 
                                             name: "type", 
-                                            placeholder: "Type",
+                                            placeholder: t.admin.partnershipEditForm.type,
                                             options: [
-                                                { value: "website", label: "Website" },
-                                                { value: "press", label: "Press" },
-                                                { value: "research", label: "Research" },
-                                                { value: "case-study", label: "Case Study" },
+                                                { value: "website", label: t.admin.partnershipEditForm.linkTypes.website },
+                                                { value: "press", label: t.admin.partnershipEditForm.linkTypes.press },
+                                                { value: "research", label: t.admin.partnershipEditForm.linkTypes.research },
+                                                { value: "case-study", label: t.admin.partnershipEditForm.linkTypes.caseStudy },
                                             ]
                                         },
                                     ]}
+                                    t={t}
                                 />
                             </motion.div>
 
@@ -831,16 +841,17 @@ export default function EditPartnershipPage({ params }) {
                                 transition={{ delay: 0.4 }}
                                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
                             >
-                                <h2 className="text-xl font-semibold text-white mb-6">Timeline</h2>
+                                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.partnershipEditForm.timeline}</h2>
                                 <DynamicObjectList
-                                    label="Timeline Events"
+                                    label={t.admin.partnershipEditForm.timelineEvents}
                                     name="timeline"
                                     formik={formik}
                                     fields={[
-                                        { name: "year", placeholder: "Year" },
-                                        { name: "event", placeholder: "Event" },
-                                        { name: "description", placeholder: "Description" },
+                                        { name: "year", placeholder: t.admin.partnershipEditForm.year },
+                                        { name: "event", placeholder: t.admin.partnershipEditForm.event },
+                                        { name: "description", placeholder: t.admin.partnershipEditForm.eventDescription },
                                     ]}
+                                    t={t}
                                 />
                             </motion.div>
 
@@ -851,15 +862,16 @@ export default function EditPartnershipPage({ params }) {
                                 transition={{ delay: 0.5 }}
                                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
                             >
-                                <h2 className="text-xl font-semibold text-white mb-6">Achievements</h2>
+                                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.partnershipEditForm.achievements}</h2>
                                 <DynamicObjectList
-                                    label="Achievements"
+                                    label={t.admin.partnershipEditForm.achievements}
                                     name="achievements"
                                     formik={formik}
                                     fields={[
-                                        { name: "title", placeholder: "Achievement Title" },
-                                        { name: "description", placeholder: "Description" },
+                                        { name: "title", placeholder: t.admin.partnershipEditForm.achievementTitle },
+                                        { name: "description", placeholder: t.admin.partnershipEditForm.achievementDescription },
                                     ]}
+                                    t={t}
                                 />
                             </motion.div>
 
@@ -870,27 +882,30 @@ export default function EditPartnershipPage({ params }) {
                                 transition={{ delay: 0.6 }}
                                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
                             >
-                                <h2 className="text-xl font-semibold text-white mb-6">Media & Links</h2>
+                                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.partnershipEditForm.mediaAndLinks}</h2>
                                 <div className="space-y-6">
                                     <FileUpload
-                                        label="Partnership Image (Main)"
+                                        label={t.admin.partnershipEditForm.partnershipImage}
                                         name="image"
                                         accept="image/*"
                                         formik={formik}
                                         multiple={false}
+                                        t={t}
                                     />
                                     <DynamicList
-                                        label="YouTube Video Links"
+                                        label={t.admin.partnershipEditForm.youtubeVideoLinks}
                                         name="youtubeLinks"
                                         formik={formik}
-                                        placeholder="https://youtu.be/VIDEO_ID"
+                                        placeholder={t.admin.partnershipEditForm.videoLinkPlaceholder}
+                                        t={t}
                                     />
                                     <FileUpload
-                                        label="Attachments (Images, Videos, Documents)"
+                                        label={t.admin.partnershipEditForm.attachments}
                                         name="attachments"
                                         accept="image/*,video/*,.pdf,.doc,.docx"
                                         formik={formik}
                                         multiple
+                                        t={t}
                                     />
                                 </div>
                             </motion.div>
@@ -907,7 +922,7 @@ export default function EditPartnershipPage({ params }) {
                                     onClick={() => router.back()}
                                     className="px-6 py-3 border border-white/10 text-white rounded-lg hover:bg-white/10 transition-colors"
                                 >
-                                    Cancel
+                                    {t.admin.partnershipEditForm.cancel}
                                 </button>
 
                                 <button
@@ -916,7 +931,7 @@ export default function EditPartnershipPage({ params }) {
                                     className="px-6 py-3 bg-[#65a30d] hover:bg-[#528000] disabled:bg-gray-600 text-white rounded-lg flex items-center space-x-2 transition-colors disabled:cursor-not-allowed"
                                 >
                                     <Save className="h-5 w-5" />
-                                    <span>{isSubmitting ? "Updating..." : "Update Partnership"}</span>
+                                    <span>{isSubmitting ? t.admin.partnershipEditForm.updating : t.admin.partnershipEditForm.updatePartnership}</span>
                                 </button>
                             </motion.div>
                         </Form>

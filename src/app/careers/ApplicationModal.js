@@ -4,8 +4,13 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Upload, FileText, User, Briefcase, CheckCircle, AlertCircle } from 'lucide-react';
 import { uploadCV } from '../../shared/uploadCV';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { translations } from '@/locales/translations';
 
 const ApplicationModal = ({ isOpen, onClose, job }) => {
+  const { language } = useLanguage();
+  const t = translations[language];
+  
   const [formData, setFormData] = useState({
     applicantName: '',
     cvFile: null
@@ -33,7 +38,7 @@ const ApplicationModal = ({ isOpen, onClose, job }) => {
       if (!allowedTypes.includes(file.type)) {
         setSubmitStatus({
           type: 'error',
-          message: 'Only PDF, DOC, and DOCX files are allowed for CV uploads'
+          message: t.careers.modal.fileTypeError
         });
         return;
       }
@@ -42,7 +47,7 @@ const ApplicationModal = ({ isOpen, onClose, job }) => {
       if (file.size > 10 * 1024 * 1024) {
         setSubmitStatus({
           type: 'error',
-          message: 'CV file size must be less than 10MB'
+          message: t.careers.modal.fileSizeError
         });
         return;
       }
@@ -81,7 +86,7 @@ const ApplicationModal = ({ isOpen, onClose, job }) => {
     if (!formData.applicantName.trim() || !formData.cvFile) {
       setSubmitStatus({
         type: 'error',
-        message: 'Please fill in your name and upload your CV'
+        message: t.careers.modal.validationError
       });
       return;
     }
@@ -96,7 +101,7 @@ const ApplicationModal = ({ isOpen, onClose, job }) => {
       
       setSubmitStatus({
         type: 'success',
-        message: 'Application submitted successfully! We will review your CV and get back to you soon.'
+        message: t.careers.modal.applicationSuccess
       });
 
       // Reset form after successful submission
@@ -109,7 +114,7 @@ const ApplicationModal = ({ isOpen, onClose, job }) => {
     } catch (error) {
       setSubmitStatus({
         type: 'error',
-        message: error.message || 'Failed to submit application. Please try again.'
+        message: error.message || t.careers.modal.applicationError
       });
     } finally {
       setIsSubmitting(false);
@@ -150,7 +155,7 @@ const ApplicationModal = ({ isOpen, onClose, job }) => {
                 <Briefcase className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">Apply for Position</h2>
+                <h2 className="text-xl font-bold text-white">{t.careers.modal.title}</h2>
                 <p className="text-sm text-gray-400">{job.title}</p>
               </div>
             </div>
@@ -169,14 +174,14 @@ const ApplicationModal = ({ isOpen, onClose, job }) => {
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 <User className="w-4 h-4 inline mr-2" />
-                Full Name
+                {t.careers.modal.fullName}
               </label>
               <input
                 type="text"
                 name="applicantName"
                 value={formData.applicantName}
                 onChange={handleInputChange}
-                placeholder="Enter your full name"
+                placeholder={t.careers.modal.fullNamePlaceholder}
                 className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#65a30d] focus:border-transparent transition-all duration-300"
                 disabled={isSubmitting}
                 required
@@ -187,7 +192,7 @@ const ApplicationModal = ({ isOpen, onClose, job }) => {
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 <FileText className="w-4 h-4 inline mr-2" />
-                CV/Resume
+                {t.careers.modal.cvResume}
               </label>
               <div
                 className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-all duration-300 ${
@@ -215,18 +220,18 @@ const ApplicationModal = ({ isOpen, onClose, job }) => {
                       disabled={isSubmitting}
                       className="text-sm text-gray-400 hover:text-white transition-colors duration-200 disabled:opacity-50"
                     >
-                      Remove file
+                      {t.careers.modal.removeFile}
                     </button>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     <Upload className="w-8 h-8 text-gray-400 mx-auto" />
                     <div>
-                      <p className="text-white font-medium">Drop your CV here</p>
-                      <p className="text-sm text-gray-400">or click to browse</p>
+                      <p className="text-white font-medium">{t.careers.modal.dropCV}</p>
+                      <p className="text-sm text-gray-400">{t.careers.modal.orClickToBrowse}</p>
                     </div>
                     <p className="text-xs text-gray-500">
-                      PDF, DOC, DOCX up to 10MB
+                      {t.careers.modal.fileTypes}
                     </p>
                     <input
                       type="file"
@@ -271,12 +276,12 @@ const ApplicationModal = ({ isOpen, onClose, job }) => {
               {isSubmitting ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Submitting...</span>
+                  <span>{t.careers.modal.submitting}</span>
                 </>
               ) : (
                 <>
                   <CheckCircle className="w-5 h-5" />
-                  <span>Submit Application</span>
+                  <span>{t.careers.modal.submitApplication}</span>
                 </>
               )}
             </button>

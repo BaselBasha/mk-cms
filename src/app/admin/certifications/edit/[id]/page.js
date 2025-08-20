@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import AdminHeader from "@/shared/AdminHeader";
 import { ArrowLeft, Upload, X, Plus, Save, AlertCircle, Award, Calendar, FileText, CheckCircle } from "lucide-react";
 import { uploadMultipleFiles } from "@/shared/uploadMultipleFiles";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
 
 // Form Components
 const FormInput = ({ label, name, type = "text", required = false, ...props }) => (
@@ -25,7 +27,7 @@ const FormInput = ({ label, name, type = "text", required = false, ...props }) =
     </div>
 );
 
-const FormSelect = ({ label, name, options, required = false, ...props }) => (
+const FormSelect = ({ label, name, options, required = false, t, ...props }) => (
     <div className="space-y-2">
         <label className="block text-sm font-medium text-white">
             {label} {required && <span className="text-red-400">*</span>}
@@ -36,7 +38,7 @@ const FormSelect = ({ label, name, options, required = false, ...props }) => (
             className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#65a30d]"
             {...props}
         >
-            <option value="">Select {label}</option>
+            <option value="">{t.admin.form.select} {label}</option>
             {options.map((option) => (
                 <option key={option.value} value={option.value}>
                     {option.label}
@@ -60,7 +62,7 @@ const FormTextarea = ({ label, name, required = false, ...props }) => (
     </div>
 );
 
-const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
+const FileUpload = ({ label, name, accept, formik, multiple = false, t }) => {
     const handleFileChange = async (event) => {
         const files = Array.from(event.target.files);
         if (files.length === 0) return;
@@ -129,7 +131,7 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
                         className="flex items-center justify-center w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white cursor-pointer hover:border-[#65a30d] transition-colors"
                     >
                         <Upload className="h-5 w-5 mr-2" />
-                        Add More Files
+                        {t.admin.certificationEditForm.addMoreFiles}
                     </label>
                 </div>
 
@@ -145,7 +147,7 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
                                     <div>
                                         <p className="text-white text-sm">{getFileDisplayName(file)}</p>
                                         <p className="text-gray-400 text-xs">
-                                            {isExistingFile(file) ? 'Existing file' : getFileSize(file)}
+                                            {isExistingFile(file) ? t.admin.certificationEditForm.existingFile : getFileSize(file)}
                                         </p>
                                         {isExistingFile(file) && (
                                             <a 
@@ -154,7 +156,7 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
                                                 rel="noopener noreferrer"
                                                 className="text-blue-400 hover:text-blue-300 text-xs"
                                             >
-                                                View file
+                                                {t.admin.certificationEditForm.viewFile}
                                             </a>
                                         )}
                                     </div>
@@ -175,7 +177,7 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
     );
 };
 
-const ImageUpload = ({ label, name, formik, existingImage }) => {
+const ImageUpload = ({ label, name, formik, existingImage, t }) => {
     const handleImageChange = async (event) => {
         const files = Array.from(event.target.files);
         if (files.length === 0) return;
@@ -221,7 +223,7 @@ const ImageUpload = ({ label, name, formik, existingImage }) => {
                             <X className="h-4 w-4" />
                         </button>
                         <div className="mt-2 text-xs text-gray-400 text-center">
-                            Current image - click X to remove
+                            {t.admin.certificationEditForm.currentImage}
                         </div>
                     </div>
                 )}
@@ -240,7 +242,7 @@ const ImageUpload = ({ label, name, formik, existingImage }) => {
                         className="flex items-center justify-center w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white cursor-pointer hover:border-[#65a30d] transition-colors"
                     >
                         <Upload className="h-5 w-5 mr-2" />
-                        {hasExistingImage ? 'Replace Image' : 'Upload Image'}
+                        {hasExistingImage ? t.admin.certificationEditForm.replaceImage : t.admin.certificationEditForm.uploadImage}
                     </label>
                 </div>
 
@@ -265,7 +267,7 @@ const ImageUpload = ({ label, name, formik, existingImage }) => {
                             <X className="h-4 w-4" />
                         </button>
                         <div className="mt-2 text-xs text-gray-400 text-center">
-                            New image preview
+                            {t.admin.certificationEditForm.newImagePreview}
                         </div>
                     </div>
                 )}
@@ -274,7 +276,7 @@ const ImageUpload = ({ label, name, formik, existingImage }) => {
     );
 };
 
-const DynamicList = ({ label, name, formik, placeholder }) => {
+const DynamicList = ({ label, name, formik, placeholder, t }) => {
     const addItem = () => {
         const currentItems = formik.values[name] || [];
         formik.setFieldValue(name, [...currentItems, ""]);
@@ -302,7 +304,7 @@ const DynamicList = ({ label, name, formik, placeholder }) => {
                     className="flex items-center space-x-2 px-3 py-1 bg-[#65a30d] hover:bg-[#528000] text-white rounded-lg text-sm transition-colors"
                 >
                     <Plus className="h-4 w-4" />
-                    <span>Add</span>
+                    <span>{t.admin.certificationEditForm.add}</span>
                 </button>
             </div>
             <div className="space-y-3">
@@ -330,6 +332,8 @@ const DynamicList = ({ label, name, formik, placeholder }) => {
 };
 
 export default function EditCertificationPage({ params }) {
+    const { language, isRTL } = useLanguage();
+    const t = translations[language];
     const router = useRouter();
     const dispatch = useDispatch();
     const { currentItem: certification, loading, error } = useSelector((state) => state.certifications);
@@ -367,7 +371,7 @@ export default function EditCertificationPage({ params }) {
     if (loading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
-                <div className="text-white text-xl">Loading certification...</div>
+                <div className="text-white text-xl">{t.admin.certificationEditForm.loadingCertification}</div>
             </div>
         );
     }
@@ -377,13 +381,13 @@ export default function EditCertificationPage({ params }) {
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
                 <div className="text-center">
                     <AlertCircle className="h-16 w-16 text-red-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-white mb-2">Error Loading Certification</h3>
+                    <h3 className="text-xl font-semibold text-white mb-2">{t.admin.certificationEditForm.errorLoadingCertification}</h3>
                     <p className="text-gray-400 mb-6">{error}</p>
                     <button
                         onClick={() => router.back()}
                         className="bg-[#65a30d] hover:bg-[#528000] text-white px-6 py-3 rounded-lg transition-colors"
                     >
-                        Go Back
+                        {t.admin.certificationEditForm.goBack}
                     </button>
                 </div>
             </div>
@@ -393,7 +397,7 @@ export default function EditCertificationPage({ params }) {
     if (!certification) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
-                <div className="text-white text-xl">Certification not found</div>
+                <div className="text-white text-xl">{t.admin.certificationEditForm.certificationNotFound}</div>
             </div>
         );
     }
@@ -414,7 +418,10 @@ export default function EditCertificationPage({ params }) {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 font-sans">
+        <div 
+            className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 font-sans"
+            dir={isRTL ? 'rtl' : 'ltr'}
+        >
             <AdminHeader currentPage="Certifications" />
 
             <div className="container mx-auto px-6 py-8 mt-20">
@@ -427,10 +434,10 @@ export default function EditCertificationPage({ params }) {
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-4xl font-bold text-white mb-4">
-                                Edit Certification
+                                {t.admin.certificationEditForm.editCertification}
                             </h1>
                             <p className="text-xl text-gray-400">
-                                Update certification information and details
+                                {t.admin.certificationEditForm.updateCertificationInfo}
                             </p>
                         </div>
                     </div>
@@ -447,7 +454,7 @@ export default function EditCertificationPage({ params }) {
                         >
                             <CheckCircle className="h-5 w-5 text-green-400 mr-3" />
                             <span className="text-green-400">
-                                Certification updated successfully!
+                                {t.admin.certificationEditForm.certificationUpdated}
                             </span>
                         </motion.div>
                     )}
@@ -460,7 +467,7 @@ export default function EditCertificationPage({ params }) {
                         >
                             <AlertCircle className="h-5 w-5 text-red-400 mr-3" />
                             <span className="text-red-400">
-                                Error updating certification. Please try again.
+                                {t.admin.certificationEditForm.errorUpdating}
                             </span>
                         </motion.div>
                     )}
@@ -546,36 +553,36 @@ export default function EditCertificationPage({ params }) {
                                 animate={{ opacity: 1, y: 0 }}
                                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
                             >
-                                <h2 className="text-xl font-semibold text-white mb-6">Basic Information</h2>
+                                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.certificationEditForm.basicInformation}</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <FormInput
-                                        label="Certification Title"
+                                        label={t.admin.certificationEditForm.certificationTitle}
                                         name="title"
                                         required
-                                        placeholder="Enter certification title"
+                                        placeholder={t.admin.certificationEditForm.titlePlaceholder}
                                     />
                                     <FormInput
-                                        label="Issuing Body"
+                                        label={t.admin.certificationEditForm.issuingBody}
                                         name="issuingBody"
                                         required
-                                        placeholder="e.g., Amazon Web Services"
+                                        placeholder={t.admin.certificationEditForm.issuingBodyPlaceholder}
                                     />
                                     <div className="md:col-span-2">
                                         <FormTextarea
-                                            label="Summary"
+                                            label={t.admin.certificationEditForm.summary}
                                             name="summary"
                                             rows={3}
                                             required
-                                            placeholder="Brief description of the certification"
+                                            placeholder={t.admin.certificationEditForm.summaryPlaceholder}
                                         />
                                     </div>
                                     <div className="md:col-span-2">
                                         <FormTextarea
-                                            label="Description"
+                                            label={t.admin.certificationEditForm.description}
                                             name="description"
                                             rows={6}
                                             required
-                                            placeholder="Detailed description of the certification"
+                                            placeholder={t.admin.certificationEditForm.descriptionPlaceholder}
                                         />
                                     </div>
                                 </div>
@@ -588,41 +595,43 @@ export default function EditCertificationPage({ params }) {
                                 transition={{ delay: 0.1 }}
                                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
                             >
-                                <h2 className="text-xl font-semibold text-white mb-6">Certification Details</h2>
+                                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.certificationEditForm.certificationDetails}</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <FormInput
-                                        label="Issue Date"
+                                        label={t.admin.certificationEditForm.issueDate}
                                         name="issueDate"
                                         type="date"
                                         required
                                     />
                                     <FormInput
-                                        label="Valid Until"
+                                        label={t.admin.certificationEditForm.validUntil}
                                         name="validUntil"
                                         type="date"
                                         required
                                     />
                                     <FormSelect
-                                        label="Category"
+                                        label={t.admin.certificationEditForm.category}
                                         name="category"
                                         required
+                                        t={t}
                                         options={[
-                                            { value: "Quality", label: "Quality" },
-                                            { value: "Environmental", label: "Environmental" },
-                                            { value: "Organic", label: "Organic" },
-                                            { value: "Food Safety", label: "Food Safety" },
-                                            { value: "Accreditation", label: "Accreditation" },
-                                            { value: "National", label: "National" },
+                                            { value: "Quality", label: t.admin.certificationEditForm.categoryOptions.quality },
+                                            { value: "Environmental", label: t.admin.certificationEditForm.categoryOptions.environmental },
+                                            { value: "Organic", label: t.admin.certificationEditForm.categoryOptions.organic },
+                                            { value: "Food Safety", label: t.admin.certificationEditForm.categoryOptions.foodSafety },
+                                            { value: "Accreditation", label: t.admin.certificationEditForm.categoryOptions.accreditation },
+                                            { value: "National", label: t.admin.certificationEditForm.categoryOptions.national },
                                         ]}
                                     />
                                     <FormSelect
-                                        label="Priority"
+                                        label={t.admin.certificationEditForm.priority}
                                         name="priority"
                                         required
+                                        t={t}
                                         options={[
-                                            { value: "High", label: "High" },
-                                            { value: "Medium", label: "Medium" },
-                                            { value: "Low", label: "Low" },
+                                            { value: "High", label: t.admin.certificationEditForm.priorityOptions.high },
+                                            { value: "Medium", label: t.admin.certificationEditForm.priorityOptions.medium },
+                                            { value: "Low", label: t.admin.certificationEditForm.priorityOptions.low },
                                         ]}
                                     />
                                 </div>
@@ -635,12 +644,13 @@ export default function EditCertificationPage({ params }) {
                                 transition={{ delay: 0.2 }}
                                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
                             >
-                                <h2 className="text-xl font-semibold text-white mb-6">Features</h2>
+                                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.certificationEditForm.features}</h2>
                                 <DynamicList
-                                    label="Certification Features"
+                                    label={t.admin.certificationEditForm.certificationFeatures}
                                     name="features"
                                     formik={formik}
-                                    placeholder="Enter feature"
+                                    placeholder={t.admin.certificationEditForm.featurePlaceholder}
+                                    t={t}
                                 />
                             </motion.div>
 
@@ -651,14 +661,15 @@ export default function EditCertificationPage({ params }) {
                                 transition={{ delay: 0.3 }}
                                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
                             >
-                                <h2 className="text-xl font-semibold text-white mb-6">Certification Image</h2>
+                                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.certificationEditForm.certificationImage}</h2>
                                 <div className="grid grid-cols-1 gap-6">
-                                    <ImageUpload
-                                        label="Certification Image"
-                                        name="image"
-                                        formik={formik}
-                                        existingImage={certification?.image}
-                                    />
+                                                                     <ImageUpload
+                                     label={t.admin.certificationEditForm.certificationImage}
+                                     name="image"
+                                     formik={formik}
+                                     existingImage={certification?.image}
+                                     t={t}
+                                 />
                                 </div>
                             </motion.div>
 
@@ -669,16 +680,17 @@ export default function EditCertificationPage({ params }) {
                                 transition={{ delay: 0.4 }}
                                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
                             >
-                                <h2 className="text-xl font-semibold text-white mb-6">Files</h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <FileUpload
-                                        label="Certification Documents"
-                                        name="documents"
-                                        accept=".pdf,.doc,.docx"
-                                        formik={formik}
-                                        multiple
-                                    />
-                                </div>
+                                                                 <h2 className="text-xl font-semibold text-white mb-6">{t.admin.certificationEditForm.files}</h2>
+                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                     <FileUpload
+                                         label={t.admin.certificationEditForm.certificationDocuments}
+                                         name="documents"
+                                         accept=".pdf,.doc,.docx"
+                                         formik={formik}
+                                         multiple
+                                         t={t}
+                                     />
+                                 </div>
                             </motion.div>
 
                             {/* Submit Button */}
@@ -688,21 +700,21 @@ export default function EditCertificationPage({ params }) {
                                 transition={{ delay: 0.4 }}
                                 className="flex justify-end space-x-4"
                             >
-                                <button
-                                    type="button"
-                                    onClick={() => router.back()}
-                                    className="px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="flex items-center space-x-2 px-6 py-3 bg-[#65a30d] hover:bg-[#528000] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <Save className="h-5 w-5" />
-                                    <span>{isSubmitting ? "Updating..." : "Update Certification"}</span>
-                                </button>
+                                                                 <button
+                                     type="button"
+                                     onClick={() => router.back()}
+                                     className="px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors"
+                                 >
+                                     {t.admin.certificationEditForm.cancel}
+                                 </button>
+                                 <button
+                                     type="submit"
+                                     disabled={isSubmitting}
+                                     className="flex items-center space-x-2 px-6 py-3 bg-[#65a30d] hover:bg-[#528000] text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                 >
+                                     <Save className="h-5 w-5" />
+                                     <span>{isSubmitting ? t.admin.certificationEditForm.updating : t.admin.certificationEditForm.updateCertification}</span>
+                                 </button>
                             </motion.div>
                         </Form>
                     )}

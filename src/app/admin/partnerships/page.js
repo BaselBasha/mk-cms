@@ -6,6 +6,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchPartnerships, deletePartnership } from "@/redux/partnershipsSlice";
 import { motion, AnimatePresence } from "framer-motion";
 import AdminHeader from "@/shared/AdminHeader";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
 import {
   Plus,
   Edit,
@@ -21,7 +23,7 @@ import {
 } from "lucide-react";
 
 // Partnership Card Component
-const PartnershipCard = ({ partnership, onEdit, onDelete, onView }) => {
+const PartnershipCard = ({ partnership, onEdit, onDelete, onView, t }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   // Get partnership image
@@ -127,7 +129,7 @@ const PartnershipCard = ({ partnership, onEdit, onDelete, onView }) => {
 
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2 text-sm text-gray-400">
-          <span>Created: {new Date(partnership.createdAt).toLocaleDateString()}</span>
+          <span>{t.admin.partnerships.created} {new Date(partnership.createdAt).toLocaleDateString()}</span>
         </div>
         <div className="flex items-center space-x-2">
           <button
@@ -159,6 +161,8 @@ const PartnershipCard = ({ partnership, onEdit, onDelete, onView }) => {
 
 // Main Partnerships Admin Page
 export default function PartnershipsAdminPage() {
+  const { language, isRTL } = useLanguage();
+  const t = translations[language];
   const router = useRouter();
   const dispatch = useDispatch();
   const { items: partnerships, loading, error } = useSelector((state) => state.partnerships);
@@ -230,13 +234,17 @@ export default function PartnershipsAdminPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#65a30d]"></div>
+        <span className="ml-3 text-white">{t.admin.partnerships.loading}</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      <AdminHeader currentPage="Partnerships" />
+    <div 
+      className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
+      <AdminHeader currentPage={t.admin.partnerships.pageTitle} />
 
       <div className="container mx-auto px-6 py-8 mt-20">
         {/* Header */}
@@ -248,10 +256,10 @@ export default function PartnershipsAdminPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold text-white mb-4">
-                Partnerships Management
+                {t.admin.partnerships.management}
               </h1>
               <p className="text-xl text-gray-400">
-                Manage all partnerships and collaborations
+                {t.admin.partnerships.subtitle}
               </p>
             </div>
             <motion.button
@@ -261,7 +269,7 @@ export default function PartnershipsAdminPage() {
               className="flex items-center space-x-2 px-6 py-3 bg-[#65a30d] hover:bg-[#84cc16] text-white rounded-xl font-medium transition-colors"
             >
               <Plus className="h-5 w-5" />
-              <span>Add Partnership</span>
+              <span>{t.admin.partnerships.addPartnership}</span>
             </motion.button>
           </div>
         </motion.div>
@@ -277,7 +285,7 @@ export default function PartnershipsAdminPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <input
                 type="text"
-                placeholder="Search partnerships..."
+                placeholder={t.admin.partnerships.searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#65a30d]"
@@ -289,11 +297,11 @@ export default function PartnershipsAdminPage() {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#65a30d]"
             >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="pending">Pending</option>
-              <option value="completed">Completed</option>
-              <option value="terminated">Terminated</option>
+              <option value="all">{t.admin.partnerships.allStatus}</option>
+              <option value="active">{t.admin.partnerships.status.active}</option>
+              <option value="pending">{t.admin.partnerships.status.pending}</option>
+              <option value="completed">{t.admin.partnerships.status.completed}</option>
+              <option value="terminated">{t.admin.partnerships.status.terminated}</option>
             </select>
 
             <select
@@ -301,13 +309,13 @@ export default function PartnershipsAdminPage() {
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#65a30d]"
             >
-              <option value="all">All Categories</option>
-              <option value="technology">Technology</option>
-              <option value="agriculture">Agriculture</option>
-              <option value="energy">Energy</option>
-              <option value="infrastructure">Infrastructure</option>
-              <option value="research">Research</option>
-              <option value="education">Education</option>
+              <option value="all">{t.admin.partnerships.allCategories}</option>
+              <option value="technology">{t.admin.partnerships.categories.technology}</option>
+              <option value="agriculture">{t.admin.partnerships.categories.agriculture}</option>
+              <option value="energy">{t.admin.partnerships.categories.energy}</option>
+              <option value="infrastructure">{t.admin.partnerships.categories.infrastructure}</option>
+              <option value="research">{t.admin.partnerships.categories.research}</option>
+              <option value="education">{t.admin.partnerships.categories.education}</option>
             </select>
 
             <div className="flex items-center space-x-2">
@@ -316,10 +324,10 @@ export default function PartnershipsAdminPage() {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#65a30d]"
               >
-                <option value="createdAt">Created Date</option>
-                <option value="title">Title</option>
-                <option value="partnerName">Partner Name</option>
-                <option value="status">Status</option>
+                <option value="createdAt">{t.admin.partnerships.sort.createdDate}</option>
+                <option value="title">{t.admin.partnerships.sort.title}</option>
+                <option value="partnerName">{t.admin.partnerships.sort.partnerName}</option>
+                <option value="status">{t.admin.partnerships.sort.status}</option>
               </select>
               <button
                 onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
@@ -341,6 +349,7 @@ export default function PartnershipsAdminPage() {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onView={handleView}
+                t={t}
               />
             ))}
           </AnimatePresence>
@@ -354,11 +363,11 @@ export default function PartnershipsAdminPage() {
             className="text-center py-20"
           >
             <Building className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-2xl font-semibold text-white mb-2">No Partnerships Found</h3>
+            <h3 className="text-2xl font-semibold text-white mb-2">{t.admin.partnerships.noPartnershipsFound}</h3>
             <p className="text-gray-400 mb-6">
               {searchTerm || statusFilter !== "all" || categoryFilter !== "all"
-                ? "Try adjusting your filters or search terms."
-                : "Get started by creating your first partnership."}
+                ? t.admin.partnerships.tryAdjustingFilters
+                : t.admin.partnerships.getStartedMessage}
             </p>
             {!searchTerm && statusFilter === "all" && categoryFilter === "all" && (
               <button
@@ -366,7 +375,7 @@ export default function PartnershipsAdminPage() {
                 className="bg-[#65a30d] hover:bg-[#84cc16] text-white px-6 py-3 rounded-lg flex items-center space-x-2 mx-auto transition-colors"
               >
                 <Plus className="h-5 w-5" />
-                <span>Add Partnership</span>
+                <span>{t.admin.partnerships.addPartnership}</span>
               </button>
             )}
           </motion.div>
@@ -390,22 +399,22 @@ export default function PartnershipsAdminPage() {
               className="bg-black/90 border border-white/10 rounded-xl p-6 max-w-md w-full mx-4"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-xl font-semibold text-white mb-4">Confirm Delete</h3>
+              <h3 className="text-xl font-semibold text-white mb-4">{t.admin.partnerships.confirmDelete}</h3>
               <p className="text-gray-300 mb-6">
-                Are you sure you want to delete "{partnershipToDelete?.title}"? This action cannot be undone.
+                {t.admin.partnerships.deleteConfirm.replace('{title}', partnershipToDelete?.title)}
               </p>
               <div className="flex items-center justify-end space-x-4">
                 <button
                   onClick={() => setShowDeleteModal(false)}
                   className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
                 >
-                  Cancel
+                  {t.admin.partnerships.cancel}
                 </button>
                 <button
                   onClick={confirmDelete}
                   className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
                 >
-                  Delete
+                  {t.admin.partnerships.confirmDeleteButton}
                 </button>
               </div>
             </motion.div>

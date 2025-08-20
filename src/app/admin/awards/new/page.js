@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import AdminHeader from "@/shared/AdminHeader";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
 import {
   ArrowLeft,
   Save,
@@ -237,7 +239,7 @@ const FormTextarea = ({
 };
 
 // --- Form Select Component ---
-const FormSelect = ({ label, name, options, formik, required = false }) => {
+const FormSelect = ({ label, name, options, formik, required = false, t }) => {
   const [isFocused, setIsFocused] = useState(false);
   const hasError = formik.touched[name] && formik.errors[name];
 
@@ -263,7 +265,7 @@ const FormSelect = ({ label, name, options, formik, required = false }) => {
               : "border-white/10 hover:border-white/20"
           }`}
         >
-          <option value="">Select {label}</option>
+          <option value="">{t.admin.form.required.replace('This field is required', `Select ${label}`)}</option>
           {options.map((option) => (
             <option key={option} value={option}>
               {option}
@@ -287,7 +289,7 @@ const FormSelect = ({ label, name, options, formik, required = false }) => {
 };
 
 // --- File Upload Component ---
-const FileUpload = ({ label, name, accept, formik, multiple = false, required = false }) => {
+const FileUpload = ({ label, name, accept, formik, multiple = false, required = false, t }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
@@ -368,10 +370,11 @@ const FileUpload = ({ label, name, accept, formik, multiple = false, required = 
         <div className="text-center">
           <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
           <p className="text-sm text-gray-400">
-            {isDragOver ? "Drop files here" : "Click or drag files to upload"}
+            {t.admin.form.dragDropFiles}
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            {accept ? `Accepted formats: ${accept}` : "All file types accepted"}
+            {accept.includes("image") && t.admin.form.imageTypes}
+            {accept.includes("pdf") && t.admin.form.documentTypes}
           </p>
         </div>
 
@@ -433,7 +436,7 @@ const FileUpload = ({ label, name, accept, formik, multiple = false, required = 
 };
 
 // --- Dynamic List Component ---
-const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
+const DynamicList = ({ label, name, formik, placeholder = "Add item...", t }) => {
   const hasError = formik.touched[name] && formik.errors[name];
 
   const addItem = () => {
@@ -493,7 +496,7 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
           className="flex items-center space-x-2 text-[#65a30d] hover:text-[#84cc16] transition-colors duration-300"
         >
           <Plus className="w-4 h-4" />
-          <span>Add {label}</span>
+          <span>{t.admin.awardForm.addItem.replace('{item}', label)}</span>
         </button>
       </div>
       
@@ -509,6 +512,8 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
 
 // --- Main Component ---
 export default function AdminAwardForm() {
+  const { language, isRTL } = useLanguage();
+  const t = translations[language];
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
   const dispatch = useDispatch();
@@ -632,26 +637,29 @@ export default function AdminAwardForm() {
   });
 
   const categoryOptions = [
-    "Excellence",
-    "Innovation", 
-    "Quality",
-    "Sustainability",
-    "Leadership",
-    "Industry Recognition"
+    t.admin.awardForm.categories.excellence,
+    t.admin.awardForm.categories.innovation,
+    t.admin.awardForm.categories.quality,
+    t.admin.awardForm.categories.sustainability,
+    t.admin.awardForm.categories.leadership,
+    t.admin.awardForm.categories.industryRecognition
   ];
 
   const levelOptions = [
-    "Local",
-    "National",
-    "Regional", 
-    "International",
-    "Global"
+    t.admin.awardForm.levels.local,
+    t.admin.awardForm.levels.national,
+    t.admin.awardForm.levels.regional,
+    t.admin.awardForm.levels.international,
+    t.admin.awardForm.levels.global
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 font-sans">
+    <div 
+      className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 font-sans"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
       <ParticleBackground />
-      <AdminHeader currentPage="Awards" />
+      <AdminHeader currentPage={t.admin.awards.pageTitle} />
 
       <div className="container mx-auto px-6 py-8 mt-20">
         {/* Header */}
@@ -663,10 +671,10 @@ export default function AdminAwardForm() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold text-white mb-4">
-                Create New Award
+                {t.admin.awards.addNewAward}
               </h1>
               <p className="text-xl text-gray-400">
-                Add a new award or recognition to the platform
+                {t.admin.form.briefOverview}
               </p>
             </div>
           </div>
@@ -688,12 +696,12 @@ export default function AdminAwardForm() {
               {submitStatus === 'success' ? (
                 <>
                   <CheckCircle className="w-5 h-5" />
-                  <span>Award created successfully! Redirecting to awards list...</span>
+                  <span>{t.admin.awardForm.awardCreated}</span>
                 </>
               ) : (
                 <>
                   <AlertCircle className="w-5 h-5" />
-                  <span>Please check all required fields and try again.</span>
+                  <span>{t.admin.awardForm.errorCreating}</span>
                 </>
               )}
             </motion.div>
@@ -720,34 +728,34 @@ export default function AdminAwardForm() {
             {/* Left Column */}
             <div className="space-y-6">
               <FormInput
-                label="Award Title"
+                label={t.admin.awardForm.awardTitle}
                 name="title"
-                placeholder="Enter award title"
+                placeholder={t.admin.awardForm.titlePlaceholder}
                 formik={formik}
                 icon={<Trophy className="w-4 h-4" />}
                 required
               />
 
               <FormTextarea
-                label="Summary"
+                label={t.admin.awardForm.summary}
                 name="summary"
-                placeholder="Brief description of the award"
+                placeholder={t.admin.awardForm.summaryPlaceholder}
                 formik={formik}
                 required
                 rows={3}
               />
 
               <FormInput
-                label="Awarding Body"
+                label={t.admin.awardForm.awardingBody}
                 name="awardingBody"
-                placeholder="Organization that granted the award"
+                placeholder={t.admin.awardForm.awardingBodyPlaceholder}
                 formik={formik}
                 icon={<Building className="w-4 h-4" />}
                 required
               />
 
               <FormInput
-                label="Award Date"
+                label={t.admin.awardForm.awardDate}
                 name="awardDate"
                 type="date"
                 formik={formik}
@@ -756,53 +764,58 @@ export default function AdminAwardForm() {
               />
 
               <FormSelect
-                label="Category"
+                label={t.admin.awardForm.category}
                 name="category"
                 options={categoryOptions}
                 formik={formik}
                 required
+                t={t}
               />
 
               <FormSelect
-                label="Level"
+                label={t.admin.awardForm.level}
                 name="level"
                 options={levelOptions}
                 formik={formik}
                 required
+                t={t}
               />
             </div>
 
             {/* Right Column */}
             <div className="space-y-6">
               <FormTextarea
-                label="Description"
+                label={t.admin.awardForm.description}
                 name="description"
-                placeholder="Detailed description of the award and its significance"
+                placeholder={t.admin.awardForm.descriptionPlaceholder}
                 formik={formik}
                 required
                 rows={6}
               />
 
               <DynamicList
-                label="Key Features"
+                label={t.admin.awardForm.keyFeatures}
                 name="features"
                 formik={formik}
-                placeholder="Add a key feature..."
+                placeholder={t.admin.awardForm.featuresPlaceholder}
+                t={t}
               />
 
               <FileUpload
-                label="Award Image"
+                label={t.admin.awardForm.awardImage}
                 name="image"
                 accept="image/*"
                 formik={formik}
+                t={t}
               />
 
               <FileUpload
-                label="Supporting Documents"
+                label={t.admin.awardForm.supportingDocuments}
                 name="documents"
                 accept=".pdf,.doc,.docx"
                 formik={formik}
                 multiple
+                t={t}
               />
             </div>
           </div>
@@ -827,12 +840,12 @@ export default function AdminAwardForm() {
               {isSubmitting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Creating...</span>
+                  <span>{t.admin.awardForm.creating}</span>
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  <span>Create Award</span>
+                  <span>{t.admin.awardForm.createAward}</span>
                 </>
               )}
             </motion.button>

@@ -7,6 +7,9 @@ import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "@/redux/authSlice";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 // --- Particle Background Component ---
 const ParticleBackground = () => {
@@ -107,6 +110,9 @@ const ParticleBackground = () => {
 };
 
 export default function AdminLoginPage() {
+  const { language, isRTL } = useLanguage();
+  const t = translations[language];
+  
   const dispatch = useDispatch();
   const router = useRouter();
   const { loading, error, user } = useSelector((state) => state.auth);
@@ -145,22 +151,31 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-transparent text-gray-200 font-sans relative">
+    <div 
+      className="min-h-screen flex items-center justify-center bg-transparent text-gray-200 font-sans relative"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
       <ParticleBackground />
+      
+      {/* Language Switcher */}
+      <div className="absolute top-6 right-6 z-10">
+        <LanguageSwitcher />
+      </div>
+      
       <div className="w-full max-w-md mx-auto bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-8 md:p-12 flex flex-col items-center">
         <img src="/MK-GROUP.png" alt="MK Group Logo" className="h-16 w-auto mb-6" />
-        <h1 className="text-3xl font-bold text-white mb-2">Admin Login</h1>
-        <p className="text-gray-400 mb-8 text-center">Sign in to access the admin dashboard</p>
+        <h1 className="text-3xl font-bold text-white mb-2">{t.admin.login.title}</h1>
+        <p className="text-gray-400 mb-8 text-center">{t.admin.login.subtitle}</p>
 
         <form className="w-full space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-300">Username or Email</label>
+            <label className="block text-sm font-medium text-gray-300">{t.admin.login.username}</label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 name="username"
-                placeholder="Enter your username or email"
+                placeholder={t.admin.login.usernamePlaceholder}
                 className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#65a30d] focus:border-transparent transition-all"
                 autoComplete="username"
                 value={form.username}
@@ -170,13 +185,13 @@ export default function AdminLoginPage() {
             </div>
           </div>
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-300">Password</label>
+            <label className="block text-sm font-medium text-gray-300">{t.admin.login.password}</label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
                 type="password"
                 name="password"
-                placeholder="Enter your password"
+                placeholder={t.admin.login.passwordPlaceholder}
                 className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#65a30d] focus:border-transparent transition-all"
                 autoComplete="current-password"
                 value={form.password}
@@ -196,7 +211,7 @@ export default function AdminLoginPage() {
                 className="flex items-center p-3 bg-red-500/20 border border-red-500/30 rounded-xl text-red-400 text-sm"
               >
                 <AlertCircle className="h-4 w-4 mr-2" />
-                {error || 'Invalid credentials. Please try again.'}
+                {error || t.admin.login.invalidCredentials}
               </motion.div>
             )}
             {status === 'success' && (
@@ -207,7 +222,7 @@ export default function AdminLoginPage() {
                 className="flex items-center p-3 bg-green-500/20 border border-green-500/30 rounded-xl text-green-400 text-sm"
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
-                Login successful! Redirecting...
+                {t.admin.login.loginSuccess}
               </motion.div>
             )}
           </AnimatePresence>
@@ -218,17 +233,17 @@ export default function AdminLoginPage() {
             disabled={loading}
           >
             <LogIn className="h-5 w-5" />
-            <span>{loading ? 'Logging in...' : 'Login'}</span>
+            <span>{loading ? t.admin.login.loggingIn : t.admin.login.loginButton}</span>
           </button>
           {/* Signup link */}
           <div className="mt-4 text-center">
-            <span className="text-gray-400">Don't have an account? </span>
-            <Link href="/admin/signup" className="text-[#65a30d] hover:underline">Sign up</Link>
+            <span className="text-gray-400">{t.admin.login.noAccount} </span>
+            <Link href="/admin/signup" className="text-[#65a30d] hover:underline">{t.admin.login.signUp}</Link>
           </div>
         </form>
 
         <div className="mt-8 text-center text-gray-400 text-xs">
-          &copy; {new Date().getFullYear()} MK Group. All rights reserved.
+          &copy; {new Date().getFullYear()} {t.admin.login.copyright}
         </div>
       </div>
     </div>

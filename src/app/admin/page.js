@@ -19,6 +19,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 // --- Particle Background Component ---
 const ParticleBackground = () => {
@@ -146,31 +149,39 @@ const StatsCard = ({ title, value, icon, color, trend, loading }) => (
 );
 
 // --- Quick Action Card Component ---
-const QuickActionCard = ({ title, description, icon, href, color }) => (
-  <Link href={href}>
-    <motion.div
-      whileHover={{ y: -5, scale: 1.02 }}
-      className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 cursor-pointer group h-full"
-    >
-      <div
-        className={`w-16 h-16 ${color} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
+const QuickActionCard = ({ title, description, icon, href, color }) => {
+  const { language } = useLanguage();
+  const t = translations[language];
+  
+  return (
+    <Link href={href}>
+      <motion.div
+        whileHover={{ y: -5, scale: 1.02 }}
+        className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 cursor-pointer group h-full"
       >
-        {icon}
-      </div>
-      <h3 className="text-xl font-bold text-white mb-2 group-hover:text-[#65a30d] transition-colors">
-        {title}
-      </h3>
-      <p className="text-gray-400 mb-4">{description}</p>
-      <div className="flex items-center text-[#65a30d] font-medium">
-        <span>Get Started</span>
-        <Plus className="h-4 w-4 ml-2" />
-      </div>
-    </motion.div>
-  </Link>
-);
+        <div
+          className={`w-16 h-16 ${color} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
+        >
+          {icon}
+        </div>
+        <h3 className="text-xl font-bold text-white mb-2 group-hover:text-[#65a30d] transition-colors">
+          {title}
+        </h3>
+        <p className="text-gray-400 mb-4">{description}</p>
+        <div className="flex items-center text-[#65a30d] font-medium">
+          <span>{t.admin.quickActions.getStarted}</span>
+          <Plus className="h-4 w-4 ml-2" />
+        </div>
+      </motion.div>
+    </Link>
+  );
+};
 
 // --- Main Dashboard Component ---
 export default function AdminDashboard() {
+  const { language, isRTL } = useLanguage();
+  const t = translations[language];
+  
   const [stats, setStats] = useState({
     projects: { total: 0, thisMonth: 0 },
     certifications: { total: 0, thisMonth: 0 },
@@ -223,43 +234,43 @@ export default function AdminDashboard() {
 
   const quickActions = [
     {
-      title: "Add Project",
-      description: "Create a new project with details, media, and metrics",
+      title: t.admin.quickActions.addProject,
+      description: t.admin.quickActions.addProjectDesc,
       icon: <FileText className="h-8 w-8 text-[#65a30d]" />,
       href: "/admin/projects/new",
       color: "bg-[#65a30d]/20",
     },
     {
-      title: "Add Certification",
-      description: "Upload new certifications and compliance documents",
+      title: t.admin.quickActions.addCertification,
+      description: t.admin.quickActions.addCertificationDesc,
       icon: <Shield className="h-8 w-8 text-blue-400" />,
       href: "/admin/certifications/new",
       color: "bg-blue-500/20",
     },
     {
-      title: "Add Partnership",
-      description: "Register new business partnerships and collaborations",
+      title: t.admin.quickActions.addPartnership,
+      description: t.admin.quickActions.addPartnershipDesc,
       icon: <Users className="h-8 w-8 text-purple-400" />,
       href: "/admin/partnerships/new",
       color: "bg-purple-500/20",
     },
     {
-      title: "Add Award",
-      description: "Document new awards and recognitions received",
+      title: t.admin.quickActions.addAward,
+      description: t.admin.quickActions.addAwardDesc,
       icon: <Award className="h-8 w-8 text-yellow-400" />,
       href: "/admin/awards/new",
       color: "bg-yellow-500/20",
     },
     {
-      title: "Add Career",
-      description: "Post new job opportunities and career positions",
+      title: t.admin.quickActions.addCareer,
+      description: t.admin.quickActions.addCareerDesc,
       icon: <Briefcase className="h-8 w-8 text-orange-400" />,
       href: "/admin/careers/new",
-      color: "bg-orange-500/20",
+      color: "bg-blue-500/20",
     },
     {
-      title: "Add Press Release",
-      description: "Publish new press releases and media coverage",
+      title: t.admin.quickActions.addPressRelease,
+      description: t.admin.quickActions.addPressReleaseDesc,
       icon: <Newspaper className="h-8 w-8 text-red-400" />,
       href: "/admin/press/new",
       color: "bg-red-500/20",
@@ -267,9 +278,17 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="bg-transparent text-gray-200 font-sans min-h-screen">
+    <div 
+      className="bg-transparent text-gray-200 font-sans min-h-screen"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
       <ParticleBackground />
-      <AdminHeader currentPage="Dashboard" />
+      <AdminHeader currentPage={t.admin.nav.dashboard} />
+
+      {/* Language Switcher */}
+      <div className="absolute top-6 right-6 z-10">
+        <LanguageSwitcher />
+      </div>
 
       <div className="container mx-auto px-6 py-8 mt-20">
         {/* Welcome Section */}
@@ -279,10 +298,10 @@ export default function AdminDashboard() {
           className="mb-12"
         >
           <h1 className="text-4xl font-bold text-white mb-4">
-            Welcome back, Admin
+            {t.admin.dashboard.welcome}
           </h1>
           <p className="text-xl text-gray-400">
-            Manage your content and monitor your platform's performance
+            {t.admin.dashboard.subtitle}
           </p>
         </motion.div>
 
@@ -295,7 +314,7 @@ export default function AdminDashboard() {
         >
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-white">
-              Statistics Overview
+              {t.admin.dashboard.statsOverview}
             </h2>
             <button
               onClick={handleRefresh}
@@ -307,48 +326,48 @@ export default function AdminDashboard() {
                   refreshing ? "animate-spin" : ""
                 }`}
               />
-              <span className="text-gray-400">Refresh</span>
+              <span className="text-gray-400">{t.admin.dashboard.refresh}</span>
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatsCard
-              title="Total Projects"
+              title={t.admin.stats.totalProjects}
               value={stats.projects.total}
               icon={<FileText className="h-6 w-6 text-[#65a30d]" />}
               color="bg-[#65a30d]/20"
-              trend={`+${stats.projects.thisMonth} this month`}
+              trend={`+${stats.projects.thisMonth} ${t.admin.stats.thisMonth}`}
               loading={loading}
             />
             <StatsCard
-              title="Certifications"
+              title={t.admin.stats.certifications}
               value={stats.certifications.total}
               icon={<Shield className="h-6 w-6 text-blue-400" />}
               color="bg-blue-500/20"
-              trend={`+${stats.certifications.thisMonth} this month`}
+              trend={`+${stats.certifications.thisMonth} ${t.admin.stats.thisMonth}`}
               loading={loading}
             />
             <StatsCard
-              title="Active Partnerships"
+              title={t.admin.stats.activePartnerships}
               value={stats.partnerships.total}
               icon={<Users className="h-6 w-6 text-purple-400" />}
               color="bg-purple-500/20"
-              trend={`+${stats.partnerships.thisMonth} this month`}
+              trend={`+${stats.partnerships.thisMonth} ${t.admin.stats.thisMonth}`}
               loading={loading}
             />
             <StatsCard
-              title="Awards Won"
+              title={t.admin.stats.awardsWon}
               value={stats.awards.total}
               icon={<Award className="h-6 w-6 text-yellow-400" />}
               color="bg-yellow-500/20"
-              trend={`+${stats.awards.thisMonth} this month`}
+              trend={`+${stats.awards.thisMonth} ${t.admin.stats.thisMonth}`}
               loading={loading}
             />
             <StatsCard
-              title="Open Positions"
+              title={t.admin.stats.openPositions}
               value={stats.careers.total}
               icon={<Briefcase className="h-6 w-6 text-orange-400" />}
               color="bg-orange-500/20"
-              trend={`+${stats.careers.thisMonth} this month`}
+              trend={`+${stats.careers.thisMonth} ${t.admin.stats.thisMonth}`}
               loading={loading}
             />
           </div>
@@ -361,7 +380,7 @@ export default function AdminDashboard() {
           transition={{ delay: 0.2 }}
           className="mb-12"
         >
-          <h2 className="text-2xl font-bold text-white mb-6">Quick Actions</h2>
+          <h2 className="text-2xl font-bold text-white mb-6">{t.admin.dashboard.quickActions}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {quickActions.map((action, index) => (
               <motion.div
@@ -383,7 +402,7 @@ export default function AdminDashboard() {
           transition={{ delay: 0.3 }}
           className="mb-12"
         >
-          <h2 className="text-2xl font-bold text-white mb-6">Job Candidates</h2>
+          <h2 className="text-2xl font-bold text-white mb-6">{t.admin.dashboard.jobCandidates}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -398,13 +417,13 @@ export default function AdminDashboard() {
                       <Users className="h-8 w-8 text-white" />
                     </div>
                     <h3 className="text-xl font-bold text-white group-hover:text-[#65a30d] transition-colors duration-300 mb-3">
-                      Review All Candidates
+                      {t.admin.dashboard.reviewCandidates}
                     </h3>
                     <p className="text-gray-400 leading-relaxed mb-4">
-                      View and manage all job applications, review CVs, and track candidate status
+                      {t.admin.dashboard.candidatesDescription}
                     </p>
                     <div className="flex items-center text-[#65a30d] font-medium">
-                      <span>View Candidates</span>
+                      <span>{t.admin.dashboard.viewCandidates}</span>
                       <svg className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>

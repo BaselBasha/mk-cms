@@ -6,6 +6,8 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useDispatch, useSelector } from "react-redux";
 import AdminHeader from "@/shared/AdminHeader";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
 import {
   Plus,
   X,
@@ -246,7 +248,7 @@ const FormTextarea = ({
 };
 
 // --- Form Select Component ---
-const FormSelect = ({ label, name, options, formik, required = false }) => {
+const FormSelect = ({ label, name, options, formik, required = false, t }) => {
   const [isFocused, setIsFocused] = useState(false);
   const hasError = formik.touched[name] && formik.errors[name];
 
@@ -271,7 +273,7 @@ const FormSelect = ({ label, name, options, formik, required = false }) => {
                 : "border-white/10 hover:border-white/20"
             }`}
         >
-          <option value="">Select {label}</option>
+          <option value="">{t.admin.form.required.replace('This field is required', `Select ${label}`)}</option>
           {options.map((option) => (
             <option key={option} value={option}>
               {option}
@@ -295,7 +297,7 @@ const FormSelect = ({ label, name, options, formik, required = false }) => {
 };
 
 // --- File Upload Component ---
-const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
+const FileUpload = ({ label, name, accept, formik, multiple = false, t }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
@@ -391,10 +393,11 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
         <div className="text-center">
           <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
           <p className="text-sm text-gray-400">
-            {isDragOver ? "Drop files here" : "Click or drag files to upload"}
+            {t.admin.form.dragDropFiles}
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            {accept ? `Accepted formats: ${accept}` : "All file types accepted"}
+            {accept.includes("image") && t.admin.form.imageTypes}
+            {accept.includes("pdf") && t.admin.form.documentTypes}
           </p>
         </div>
 
@@ -449,7 +452,7 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
 };
 
 // --- Dynamic List Component ---
-const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
+const DynamicList = ({ label, name, formik, placeholder = "Add item...", t }) => {
   const addItem = () => {
     const currentItems = formik.values[name] || [];
     formik.setFieldValue(name, [...currentItems, ""]);
@@ -500,7 +503,7 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
           className="flex items-center space-x-2 text-[#65a30d] hover:text-[#84cc16] transition-colors duration-300"
         >
           <Plus className="w-4 h-4" />
-          <span>Add {label}</span>
+          <span>{t.admin.careerForm.addItem.replace('{item}', label)}</span>
         </button>
       </div>
     </div>
@@ -509,6 +512,8 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
 
 // --- Main Component ---
 export default function AdminCareerForm() {
+  const { language, isRTL } = useLanguage();
+  const t = translations[language];
   const router = useRouter();
   const dispatch = useDispatch();
 
@@ -617,45 +622,48 @@ export default function AdminCareerForm() {
   });
 
   const departmentOptions = [
-    "Engineering",
-    "Sales",
-    "Marketing",
-    "Operations",
-    "Finance",
-    "HR",
-    "IT",
-    "Research & Development",
-    "Quality Assurance",
-    "Supply Chain"
+    t.admin.careerForm.departments.engineering,
+    t.admin.careerForm.departments.sales,
+    t.admin.careerForm.departments.marketing,
+    t.admin.careerForm.departments.operations,
+    t.admin.careerForm.departments.finance,
+    t.admin.careerForm.departments.hr,
+    t.admin.careerForm.departments.it,
+    t.admin.careerForm.departments.researchDevelopment,
+    t.admin.careerForm.departments.qualityAssurance,
+    t.admin.careerForm.departments.supplyChain
   ];
 
   const typeOptions = [
-    "Full-time",
-    "Part-time",
-    "Contract",
-    "Internship",
-    "Remote"
+    t.admin.careerForm.jobTypes.fullTime,
+    t.admin.careerForm.jobTypes.partTime,
+    t.admin.careerForm.jobTypes.contract,
+    t.admin.careerForm.jobTypes.internship,
+    t.admin.careerForm.jobTypes.remote
   ];
 
   const experienceOptions = [
-    "Entry Level",
-    "Junior",
-    "Mid Level",
-    "Senior",
-    "Executive"
+    t.admin.careerForm.experienceLevels.entryLevel,
+    t.admin.careerForm.experienceLevels.junior,
+    t.admin.careerForm.experienceLevels.midLevel,
+    t.admin.careerForm.experienceLevels.senior,
+    t.admin.careerForm.experienceLevels.executive
   ];
 
   const currencyOptions = [
-    "USD",
-    "EUR",
-    "GBP",
-    "EGP"
+    t.admin.careerForm.currencies.usd,
+    t.admin.careerForm.currencies.eur,
+    t.admin.careerForm.currencies.gbp,
+    t.admin.careerForm.currencies.egp
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 font-sans">
+    <div 
+      className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 font-sans"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
       <ParticleBackground />
-      <AdminHeader currentPage="Careers" />
+      <AdminHeader currentPage={t.admin.careers.pageTitle} />
 
       <div className="container mx-auto px-6 py-8 mt-20">
         {/* Header */}
@@ -667,10 +675,10 @@ export default function AdminCareerForm() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold text-white mb-4">
-                Create New Job Position
+                {t.admin.careers.addNewCareer}
               </h1>
               <p className="text-xl text-gray-400">
-                Add a new career opportunity to the platform
+                {t.admin.form.briefOverview}
               </p>
             </div>
           </div>
@@ -690,12 +698,12 @@ export default function AdminCareerForm() {
             {success ? (
               <>
                 <CheckCircle className="w-5 h-5" />
-                <span>Job position created successfully!</span>
+                <span>{t.admin.careerForm.jobCreated}</span>
               </>
             ) : (
               <>
                 <AlertCircle className="w-5 h-5" />
-                <span>Failed to create job position. Please try again.</span>
+                <span>{t.admin.careerForm.errorCreating}</span>
               </>
             )}
           </motion.div>
@@ -707,58 +715,61 @@ export default function AdminCareerForm() {
             {/* Left Column */}
             <div className="space-y-6">
               <FormInput
-                label="Job Title"
+                label={t.admin.careerForm.jobTitle}
                 name="title"
-                placeholder="Enter job title"
+                placeholder={t.admin.careerForm.titlePlaceholder}
                 formik={formik}
                 icon={<Briefcase className="w-4 h-4" />}
                 required
               />
 
               <FormTextarea
-                label="Summary"
+                label={t.admin.careerForm.summary}
                 name="summary"
-                placeholder="Brief description of the position"
+                placeholder={t.admin.careerForm.summaryPlaceholder}
                 formik={formik}
                 required
                 rows={3}
               />
 
               <FormSelect
-                label="Department"
+                label={t.admin.careerForm.department}
                 name="department"
                 options={departmentOptions}
                 formik={formik}
                 required
+                t={t}
               />
 
               <FormInput
-                label="Location"
+                label={t.admin.careerForm.location}
                 name="location"
-                placeholder="Job location"
+                placeholder={t.admin.careerForm.locationPlaceholder}
                 formik={formik}
                 icon={<MapPin className="w-4 h-4" />}
                 required
               />
 
               <FormSelect
-                label="Job Type"
+                label={t.admin.careerForm.jobType}
                 name="type"
                 options={typeOptions}
                 formik={formik}
                 required
+                t={t}
               />
 
               <FormSelect
-                label="Experience Level"
+                label={t.admin.careerForm.experienceLevel}
                 name="experience"
                 options={experienceOptions}
                 formik={formik}
                 required
+                t={t}
               />
 
               <FormInput
-                label="Application Deadline"
+                label={t.admin.careerForm.applicationDeadline}
                 name="applicationDeadline"
                 type="date"
                 formik={formik}
@@ -770,40 +781,43 @@ export default function AdminCareerForm() {
             {/* Right Column */}
             <div className="space-y-6">
               <FormTextarea
-                label="Description"
+                label={t.admin.careerForm.description}
                 name="description"
-                placeholder="Detailed job description"
+                placeholder={t.admin.careerForm.descriptionPlaceholder}
                 formik={formik}
                 required
                 rows={6}
               />
 
               <DynamicList
-                label="Requirements"
+                label={t.admin.careerForm.requirements}
                 name="requirements"
                 formik={formik}
-                placeholder="Add a requirement..."
+                placeholder={t.admin.careerForm.requirementsPlaceholder}
+                t={t}
               />
 
               <DynamicList
-                label="Responsibilities"
+                label={t.admin.careerForm.responsibilities}
                 name="responsibilities"
                 formik={formik}
-                placeholder="Add a responsibility..."
+                placeholder={t.admin.careerForm.responsibilitiesPlaceholder}
+                t={t}
               />
 
               <DynamicList
-                label="Benefits"
+                label={t.admin.careerForm.benefits}
                 name="benefits"
                 formik={formik}
-                placeholder="Add a benefit..."
+                placeholder={t.admin.careerForm.benefitsPlaceholder}
+                t={t}
               />
 
               {/* Salary Range */}
               <div className="space-y-4">
                 <label className="flex items-center space-x-2 text-sm font-medium text-gray-300">
                   <DollarSign className="w-4 h-4" />
-                  <span>Salary Range</span>
+                  <span>{t.admin.careerForm.salaryRange}</span>
                 </label>
 
                 <div className="grid grid-cols-3 gap-4">
@@ -811,7 +825,7 @@ export default function AdminCareerForm() {
                     <input
                       type="number"
                       name="salary.min"
-                      placeholder="Min"
+                      placeholder={t.admin.careerForm.minSalary}
                       value={formik.values.salary.min}
                       onChange={formik.handleChange}
                       className="w-full px-3 py-2 bg-black/20 backdrop-blur-md border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#65a30d] focus:border-transparent transition-all duration-300"
@@ -821,7 +835,7 @@ export default function AdminCareerForm() {
                     <input
                       type="number"
                       name="salary.max"
-                      placeholder="Max"
+                      placeholder={t.admin.careerForm.maxSalary}
                       value={formik.values.salary.max}
                       onChange={formik.handleChange}
                       className="w-full px-3 py-2 bg-black/20 backdrop-blur-md border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#65a30d] focus:border-transparent transition-all duration-300"
@@ -845,10 +859,11 @@ export default function AdminCareerForm() {
               </div>
 
               <FileUpload
-                label="Job Image"
+                label={t.admin.careerForm.jobImage}
                 name="image"
                 accept="image/*"
                 formik={formik}
+                t={t}
               />
             </div>
           </div>
@@ -865,12 +880,12 @@ export default function AdminCareerForm() {
               {loading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Creating...</span>
+                  <span>{t.admin.careerForm.creating}</span>
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  <span>Create Job Position</span>
+                  <span>{t.admin.careerForm.createJobPosition}</span>
                 </>
               )}
             </motion.button>

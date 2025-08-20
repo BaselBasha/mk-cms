@@ -6,8 +6,12 @@ import { Edit, Trash2, Eye, Plus, Search, Calendar, Trophy, AlertCircle } from "
 import Link from "next/link";
 import { motion } from "framer-motion";
 import AdminHeader from "@/shared/AdminHeader";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
 
 export default function AdminAwardsPage() {
+  const { language, isRTL } = useLanguage();
+  const t = translations[language];
   const dispatch = useDispatch();
   const { items: awards, loading, error } = useSelector((state) => state.awards);
   const [searchTerm, setSearchTerm] = useState("");
@@ -52,28 +56,31 @@ export default function AdminAwardsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
-        <div className="text-white text-xl">Loading awards...</div>
+        <div className="text-white text-xl">{t.admin.awards.loadingAwards}</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      <AdminHeader currentPage="Awards" />
+    <div 
+      className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
+      <AdminHeader currentPage={t.admin.awards.pageTitle} />
       
       <div className="container mx-auto px-6 py-8 mt-20">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Awards Management</h1>
-            <p className="text-gray-400">Manage all awards and recognitions</p>
+            <h1 className="text-3xl font-bold text-white mb-2">{t.admin.awards.management}</h1>
+            <p className="text-gray-400">{t.admin.awards.subtitle}</p>
           </div>
           <Link
             href="/admin/awards/new"
             className="bg-[#65a30d] hover:bg-[#84cc16] text-white px-6 py-3 rounded-lg flex items-center space-x-2 transition-colors"
           >
             <Plus className="h-5 w-5" />
-            <span>Add New Award</span>
+            <span>{t.admin.awards.addNewAward}</span>
           </Link>
         </div>
 
@@ -85,7 +92,7 @@ export default function AdminAwardsPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="Search awards..."
+                placeholder={t.admin.awards.searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
@@ -98,18 +105,18 @@ export default function AdminAwardsPage() {
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
             >
-              <option value="">All Categories</option>
-              <option value="excellence">Excellence</option>
-              <option value="innovation">Innovation</option>
-              <option value="leadership">Leadership</option>
-              <option value="service">Service</option>
-              <option value="achievement">Achievement</option>
+              <option value="">{t.admin.awards.allCategories}</option>
+              <option value="excellence">{t.admin.awards.categories.excellence}</option>
+              <option value="innovation">{t.admin.awards.categories.innovation}</option>
+              <option value="leadership">{t.admin.awards.categories.leadership}</option>
+              <option value="service">{t.admin.awards.categories.service}</option>
+              <option value="achievement">{t.admin.awards.categories.achievement}</option>
             </select>
 
             {/* Year Filter */}
             <input
               type="number"
-              placeholder="Filter by year..."
+              placeholder={t.admin.awards.filterByYear}
               value={yearFilter}
               onChange={(e) => setYearFilter(e.target.value)}
               className="px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
@@ -117,7 +124,7 @@ export default function AdminAwardsPage() {
 
             {/* Results Count */}
             <div className="flex items-center justify-end text-gray-400">
-              <span>{filteredAwards.length} of {awards?.length || 0} awards</span>
+              <span>{t.admin.awards.resultsCount.replace('{filtered}', filteredAwards.length).replace('{total}', awards?.length || 0)}</span>
             </div>
           </div>
         </div>
@@ -174,14 +181,14 @@ export default function AdminAwardsPage() {
                 <div className="space-y-2 text-sm">
                   {award.awardingBody && (
                     <div className="flex items-center space-x-2 text-gray-300">
-                      <span className="font-medium">Awarding Body:</span>
+                      <span className="font-medium">{t.admin.awards.awardingBody}</span>
                       <span>{award.awardingBody}</span>
                     </div>
                   )}
                   
                   {award.category && (
                     <div className="flex items-center space-x-2 text-gray-300">
-                      <span className="font-medium">Category:</span>
+                      <span className="font-medium">{t.admin.awards.category}</span>
                       <span>{award.category}</span>
                     </div>
                   )}
@@ -202,7 +209,7 @@ export default function AdminAwardsPage() {
                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm flex items-center justify-center space-x-1 transition-colors"
                   >
                     <Eye className="h-4 w-4" />
-                    <span>View</span>
+                    <span>{t.admin.awards.view}</span>
                   </Link>
                   
                   <Link
@@ -210,7 +217,7 @@ export default function AdminAwardsPage() {
                     className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded-lg text-sm flex items-center justify-center space-x-1 transition-colors"
                   >
                     <Edit className="h-4 w-4" />
-                    <span>Edit</span>
+                    <span>{t.admin.awards.edit}</span>
                   </Link>
                   
                   <button
@@ -221,7 +228,7 @@ export default function AdminAwardsPage() {
                     className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm flex items-center justify-center space-x-1 transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />
-                    <span>Delete</span>
+                    <span>{t.admin.awards.delete}</span>
                   </button>
                 </div>
               </div>
@@ -233,14 +240,14 @@ export default function AdminAwardsPage() {
         {filteredAwards.length === 0 && !loading && (
           <div className="text-center py-20">
             <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">No awards found</h3>
-            <p className="text-gray-400 mb-6">Try adjusting your search or filters</p>
+            <h3 className="text-xl font-semibold text-white mb-2">{t.admin.awards.noAwardsFound}</h3>
+            <p className="text-gray-400 mb-6">{t.admin.awards.noAwardsSubtitle}</p>
             <Link
               href="/admin/awards/new"
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg inline-flex items-center space-x-2 transition-colors"
             >
               <Plus className="h-5 w-5" />
-              <span>Add Your First Award</span>
+              <span>{t.admin.awards.addFirstAward}</span>
             </Link>
           </div>
         )}
@@ -250,22 +257,22 @@ export default function AdminAwardsPage() {
       {showDeleteModal && selectedAward && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-gray-900 border border-white/10 rounded-xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-semibold text-white mb-4">Delete Award</h3>
+            <h3 className="text-xl font-semibold text-white mb-4">{t.admin.awards.deleteAward}</h3>
             <p className="text-gray-400 mb-6">
-              Are you sure you want to delete "{selectedAward.title}"? This action cannot be undone.
+              {t.admin.awards.deleteConfirm.replace('{title}', selectedAward.title)}
             </p>
             <div className="flex space-x-3">
               <button
                 onClick={() => setShowDeleteModal(false)}
                 className="flex-1 px-4 py-2 border border-white/10 text-white rounded-lg hover:bg-white/10 transition-colors"
               >
-                Cancel
+                {t.admin.awards.cancel}
               </button>
               <button
                 onClick={() => handleDelete(selectedAward._id)}
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
               >
-                Delete
+                {t.admin.awards.confirmDelete}
               </button>
             </div>
           </div>

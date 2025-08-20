@@ -8,6 +8,8 @@ import * as Yup from "yup";
 import { motion } from "framer-motion";
 import { ArrowLeft, Upload, X, Plus, Save, AlertCircle } from "lucide-react";
 import { uploadMultipleFiles } from "@/shared/uploadMultipleFiles";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
 
 
 // Form Components
@@ -25,7 +27,7 @@ const FormInput = ({ label, name, type = "text", required = false, ...props }) =
     </div>
 );
 
-const FormSelect = ({ label, name, options, required = false, ...props }) => (
+const FormSelect = ({ label, name, options, required = false, t, ...props }) => (
     <div className="space-y-2">
         <label className="block text-sm font-medium text-white">
             {label} {required && <span className="text-red-400">*</span>}
@@ -36,7 +38,7 @@ const FormSelect = ({ label, name, options, required = false, ...props }) => (
             className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
             {...props}
         >
-            <option value="">Select {label}</option>
+            <option value="">{t.admin.form.select} {label}</option>
             {options.map((option) => (
                 <option key={option.value} value={option.value}>
                     {option.label}
@@ -46,7 +48,7 @@ const FormSelect = ({ label, name, options, required = false, ...props }) => (
     </div>
 );
 
-const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
+const FileUpload = ({ label, name, accept, formik, multiple = false, t }) => {
     const handleFileChange = async (event) => {
         const files = Array.from(event.target.files);
         if (files.length === 0) return;
@@ -83,7 +85,7 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
                         className="flex items-center justify-center w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white cursor-pointer hover:border-blue-500 transition-colors"
                     >
                         <Upload className="h-5 w-5 mr-2" />
-                        Choose Files
+                        {t.admin.projectEditForm.chooseFiles}
                     </label>
                 </div>
 
@@ -121,7 +123,7 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
     );
 };
 
-const DynamicList = ({ label, name, formik, placeholder }) => {
+const DynamicList = ({ label, name, formik, placeholder, t }) => {
     const addItem = () => {
         const currentItems = formik.values[name] || [];
         formik.setFieldValue(name, [...currentItems, ""]);
@@ -170,7 +172,7 @@ const DynamicList = ({ label, name, formik, placeholder }) => {
                     className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                 >
                     <Plus className="h-4 w-4" />
-                    <span>Add {label}</span>
+                    <span>{t.admin.projectEditForm.addItem.replace('{item}', label)}</span>
                 </button>
             </div>
         </div>
@@ -178,6 +180,8 @@ const DynamicList = ({ label, name, formik, placeholder }) => {
 };
 
 export default function EditProjectPage({ params }) {
+    const { language, isRTL } = useLanguage();
+    const t = translations[language];
     const router = useRouter();
     const dispatch = useDispatch();
     const [project, setProject] = useState(null);
@@ -226,7 +230,7 @@ export default function EditProjectPage({ params }) {
     if (loading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
-                <div className="text-white text-xl">Loading project...</div>
+                <div className="text-white text-xl">{t.admin.projectEditForm.loadingProject}</div>
             </div>
         );
     }
@@ -236,13 +240,13 @@ export default function EditProjectPage({ params }) {
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
                 <div className="text-center">
                     <AlertCircle className="h-16 w-16 text-red-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-white mb-2">Error Loading Project</h3>
+                    <h3 className="text-xl font-semibold text-white mb-2">{t.admin.projectEditForm.errorLoadingProject}</h3>
                     <p className="text-gray-400 mb-6">{error}</p>
                     <button
                         onClick={() => router.back()}
                         className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
                     >
-                        Go Back
+                        {t.admin.projectEditForm.goBack}
                     </button>
                 </div>
             </div>
@@ -252,7 +256,7 @@ export default function EditProjectPage({ params }) {
     if (!project) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
-                <div className="text-white text-xl">Project not found</div>
+                <div className="text-white text-xl">{t.admin.projectEditForm.projectNotFound}</div>
             </div>
         );
     }
@@ -277,7 +281,10 @@ export default function EditProjectPage({ params }) {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
+        <div 
+            className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900"
+            dir={isRTL ? 'rtl' : 'ltr'}
+        >
             {/* Header */}
             <div className="bg-black/30 border-b border-white/10">
                 <div className="container mx-auto px-6 py-6">
@@ -288,11 +295,11 @@ export default function EditProjectPage({ params }) {
                                 className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors"
                             >
                                 <ArrowLeft className="h-5 w-5" />
-                                <span>Back</span>
+                                <span>{t.admin.projectEditForm.back}</span>
                             </button>
                             <div>
-                                <h1 className="text-3xl font-bold text-white mb-2">Edit Project</h1>
-                                <p className="text-gray-400">Update project information</p>
+                                <h1 className="text-3xl font-bold text-white mb-2">{t.admin.projectEditForm.editProject}</h1>
+                                <p className="text-gray-400">{t.admin.projectEditForm.updateProjectInfo}</p>
                             </div>
                         </div>
                     </div>
@@ -356,28 +363,28 @@ export default function EditProjectPage({ params }) {
                                 animate={{ opacity: 1, y: 0 }}
                                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
                             >
-                                <h2 className="text-xl font-semibold text-white mb-6">Basic Information</h2>
+                                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.projectEditForm.basicInformation}</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <FormInput
-                                        label="Project Title"
+                                        label={t.admin.projectEditForm.projectTitle}
                                         name="title"
                                         required
-                                        placeholder="Enter project title"
+                                        placeholder={t.admin.projectEditForm.titlePlaceholder}
                                     />
                                     <FormInput
-                                        label="Summary"
+                                        label={t.admin.projectEditForm.summary}
                                         name="summary"
                                         required
-                                        placeholder="Brief project summary"
+                                        placeholder={t.admin.projectEditForm.summaryPlaceholder}
                                     />
                                     <div className="md:col-span-2">
                                         <FormInput
-                                            label="Description"
+                                            label={t.admin.projectEditForm.description}
                                             name="description"
                                             as="textarea"
                                             rows={4}
                                             required
-                                            placeholder="Detailed project description"
+                                            placeholder={t.admin.projectEditForm.descriptionPlaceholder}
                                         />
                                     </div>
                                 </div>
@@ -390,63 +397,65 @@ export default function EditProjectPage({ params }) {
                                 transition={{ delay: 0.1 }}
                                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
                             >
-                                <h2 className="text-xl font-semibold text-white mb-6">Project Details</h2>
+                                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.projectEditForm.projectDetails}</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <FormInput
-                                        label="Location"
+                                        label={t.admin.projectEditForm.location}
                                         name="location"
                                         required
-                                        placeholder="Project location"
+                                        placeholder={t.admin.projectEditForm.locationPlaceholder}
                                     />
                                     <FormInput
-                                        label="Area"
+                                        label={t.admin.projectEditForm.area}
                                         name="area"
                                         required
-                                        placeholder="Project area"
+                                        placeholder={t.admin.projectEditForm.areaPlaceholder}
                                     />
                                     <FormInput
-                                        label="Start Date"
+                                        label={t.admin.projectEditForm.startDate}
                                         name="startDate"
                                         type="date"
                                         required
                                     />
                                     <FormInput
-                                        label="End Date"
+                                        label={t.admin.projectEditForm.endDate}
                                         name="endDate"
                                         type="date"
                                         required
                                     />
                                     <FormSelect
-                                        label="Status"
+                                        label={t.admin.projectEditForm.status}
                                         name="status"
                                         required
+                                        t={t}
                                         options={[
-                                            { value: "planning", label: "Planning" },
-                                            { value: "in-progress", label: "In Progress" },
-                                            { value: "completed", label: "Completed" },
-                                            { value: "on-hold", label: "On Hold" },
-                                            { value: "cancelled", label: "Cancelled" },
+                                            { value: "planning", label: t.admin.projectEditForm.statusOptions.planning },
+                                            { value: "in-progress", label: t.admin.projectEditForm.statusOptions.inProgress },
+                                            { value: "completed", label: t.admin.projectEditForm.statusOptions.completed },
+                                            { value: "on-hold", label: t.admin.projectEditForm.statusOptions.onHold },
+                                            { value: "cancelled", label: t.admin.projectEditForm.statusOptions.cancelled },
                                         ]}
                                     />
                                     <FormSelect
-                                        label="Priority"
+                                        label={t.admin.projectEditForm.priority}
                                         name="priority"
+                                        t={t}
                                         options={[
-                                            { value: "low", label: "Low" },
-                                            { value: "medium", label: "Medium" },
-                                            { value: "high", label: "High" },
-                                            { value: "urgent", label: "Urgent" },
+                                            { value: "low", label: t.admin.projectEditForm.priorityOptions.low },
+                                            { value: "medium", label: t.admin.projectEditForm.priorityOptions.medium },
+                                            { value: "high", label: t.admin.projectEditForm.priorityOptions.high },
+                                            { value: "urgent", label: t.admin.projectEditForm.priorityOptions.urgent },
                                         ]}
                                     />
                                     <FormInput
-                                        label="Budget"
+                                        label={t.admin.projectEditForm.budget}
                                         name="budget"
-                                        placeholder="Project budget"
+                                        placeholder={t.admin.projectEditForm.budgetPlaceholder}
                                     />
                                     <FormInput
-                                        label="Success Partner"
+                                        label={t.admin.projectEditForm.successPartner}
                                         name="successPartner"
-                                        placeholder="Success partner name"
+                                        placeholder={t.admin.projectEditForm.successPartnerPlaceholder}
                                     />
                                 </div>
                             </motion.div>
@@ -458,29 +467,32 @@ export default function EditProjectPage({ params }) {
                                 transition={{ delay: 0.2 }}
                                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
                             >
-                                <h2 className="text-xl font-semibold text-white mb-6">Media & Links</h2>
+                                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.projectEditForm.mediaAndLinks}</h2>
                                 <div className="space-y-6">
                                     <DynamicList
-                                        label="YouTube Video Links"
+                                        label={t.admin.projectEditForm.youtubeVideoLinks}
                                         name="youtubeLinks"
                                         formik={formik}
-                                        placeholder="https://youtu.be/VIDEO_ID"
+                                        placeholder={t.admin.projectEditForm.videoLinkPlaceholder}
+                                        t={t}
                                     />
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <FileUpload
-                                            label="Project Images"
+                                            label={t.admin.projectEditForm.projectImages}
                                             name="images"
                                             accept="image/*"
                                             formik={formik}
                                             multiple
+                                            t={t}
                                         />
                                         <FileUpload
-                                            label="Project Documents"
+                                            label={t.admin.projectEditForm.projectDocuments}
                                             name="documents"
                                             accept=".pdf,.doc,.docx,.txt"
                                             formik={formik}
                                             multiple
+                                            t={t}
                                         />
                                     </div>
                                 </div>
@@ -493,19 +505,21 @@ export default function EditProjectPage({ params }) {
                                 transition={{ delay: 0.3 }}
                                 className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6"
                             >
-                                <h2 className="text-xl font-semibold text-white mb-6">Additional Information</h2>
+                                <h2 className="text-xl font-semibold text-white mb-6">{t.admin.projectEditForm.additionalInformation}</h2>
                                 <div className="space-y-6">
                                     <DynamicList
-                                        label="Key Metrics"
+                                        label={t.admin.projectEditForm.keyMetrics}
                                         name="keyMetrics"
                                         formik={formik}
-                                        placeholder="Enter key metric"
+                                        placeholder={t.admin.projectEditForm.keyMetricsPlaceholder}
+                                        t={t}
                                     />
                                     <DynamicList
-                                        label="Awards"
+                                        label={t.admin.projectEditForm.awards}
                                         name="awards"
                                         formik={formik}
-                                        placeholder="Enter award name"
+                                        placeholder={t.admin.projectEditForm.awardsPlaceholder}
+                                        t={t}
                                     />
                                 </div>
                             </motion.div>
@@ -522,7 +536,7 @@ export default function EditProjectPage({ params }) {
                                     onClick={() => router.back()}
                                     className="px-6 py-3 border border-white/10 text-white rounded-lg hover:bg-white/10 transition-colors"
                                 >
-                                    Cancel
+                                    {t.admin.projectEditForm.cancel}
                                 </button>
 
                                 <button
@@ -531,7 +545,7 @@ export default function EditProjectPage({ params }) {
                                     className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white rounded-lg flex items-center space-x-2 transition-colors"
                                 >
                                     <Save className="h-5 w-5" />
-                                    <span>{isSubmitting ? "Updating..." : "Update Project"}</span>
+                                    <span>{isSubmitting ? t.admin.projectEditForm.updating : t.admin.projectEditForm.updateProject}</span>
                                 </button>
                             </motion.div>
 
@@ -542,7 +556,7 @@ export default function EditProjectPage({ params }) {
                                     animate={{ opacity: 1 }}
                                     className="bg-green-600/20 border border-green-500/50 text-green-400 p-4 rounded-lg"
                                 >
-                                    Project updated successfully! Redirecting...
+                                    {t.admin.projectEditForm.projectUpdated}
                                 </motion.div>
                             )}
 
@@ -552,7 +566,7 @@ export default function EditProjectPage({ params }) {
                                     animate={{ opacity: 1 }}
                                     className="bg-red-600/20 border border-red-500/50 text-red-400 p-4 rounded-lg"
                                 >
-                                    Failed to update project. Please try again.
+                                    {t.admin.projectEditForm.errorUpdating}
                                 </motion.div>
                             )}
                         </Form>

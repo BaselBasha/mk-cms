@@ -6,8 +6,12 @@ import { Edit, Trash2, Eye, Plus, Search, Calendar, MapPin, DollarSign, AlertCir
 import Link from "next/link";
 import { motion } from "framer-motion";
 import AdminHeader from "@/shared/AdminHeader";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
 
 export default function AdminCareersPage() {
+  const { language, isRTL } = useLanguage();
+  const t = translations[language];
   const dispatch = useDispatch();
   const { items: careers, loading, error } = useSelector((state) => state.careers);
   const [searchTerm, setSearchTerm] = useState("");
@@ -52,28 +56,31 @@ export default function AdminCareersPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
-        <div className="text-white text-xl">Loading careers...</div>
+        <div className="text-white text-xl">{t.admin.careers.loadingCareers}</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      <AdminHeader currentPage="Careers" />
+    <div 
+      className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
+      <AdminHeader currentPage={t.admin.careers.pageTitle} />
       
       <div className="container mx-auto px-6 py-8 mt-20">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Careers Management</h1>
-            <p className="text-gray-400">Manage all career opportunities</p>
+            <h1 className="text-3xl font-bold text-white mb-2">{t.admin.careers.management}</h1>
+            <p className="text-gray-400">{t.admin.careers.subtitle}</p>
           </div>
           <Link
             href="/admin/careers/new"
             className="bg-[#65a30d] hover:bg-[#84cc16] text-white px-6 py-3 rounded-lg flex items-center space-x-2 transition-colors"
           >
             <Plus className="h-5 w-5" />
-            <span>Add New Career</span>
+            <span>{t.admin.careers.addNewCareer}</span>
           </Link>
         </div>
 
@@ -85,7 +92,7 @@ export default function AdminCareersPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="Search careers..."
+                placeholder={t.admin.careers.searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
@@ -98,18 +105,18 @@ export default function AdminCareersPage() {
               onChange={(e) => setTypeFilter(e.target.value)}
               className="px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
             >
-              <option value="">All Types</option>
-              <option value="Full-time">Full Time</option>
-              <option value="Part-time">Part Time</option>
-              <option value="Contract">Contract</option>
-              <option value="Internship">Internship</option>
-              <option value="Remote">Remote</option>
+              <option value="">{t.admin.careers.allTypes}</option>
+              <option value="Full-time">{t.admin.careers.types.fullTime}</option>
+              <option value="Part-time">{t.admin.careers.types.partTime}</option>
+              <option value="Contract">{t.admin.careers.types.contract}</option>
+              <option value="Internship">{t.admin.careers.types.internship}</option>
+              <option value="Remote">{t.admin.careers.types.remote}</option>
             </select>
 
             {/* Location Filter */}
             <input
               type="text"
-              placeholder="Filter by location..."
+              placeholder={t.admin.careers.filterByLocation}
               value={locationFilter}
               onChange={(e) => setLocationFilter(e.target.value)}
               className="px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
@@ -117,7 +124,7 @@ export default function AdminCareersPage() {
 
             {/* Results Count */}
             <div className="flex items-center justify-end text-gray-400">
-              <span>{filteredCareers.length} of {careers?.length || 0} careers</span>
+              <span>{t.admin.careers.resultsCount.replace('{filtered}', filteredCareers.length).replace('{total}', careers?.length || 0)}</span>
             </div>
           </div>
         </div>
@@ -171,7 +178,7 @@ export default function AdminCareersPage() {
                   {career.applicationDeadline && (
                     <div className="flex items-center space-x-2 text-gray-300">
                       <Calendar className="h-4 w-4" />
-                      <span>Deadline: {new Date(career.applicationDeadline).toLocaleDateString()}</span>
+                      <span>{t.admin.careers.deadline} {new Date(career.applicationDeadline).toLocaleDateString()}</span>
                     </div>
                   )}
                 </div>
@@ -179,7 +186,7 @@ export default function AdminCareersPage() {
                 {/* Requirements */}
                 {career.requirements && career.requirements.length > 0 && (
                   <div className="mt-3">
-                    <h4 className="text-sm font-medium text-white mb-2">Requirements:</h4>
+                    <h4 className="text-sm font-medium text-white mb-2">{t.admin.careers.requirements}</h4>
                     <ul className="text-xs text-gray-400 space-y-1">
                       {career.requirements.slice(0, 3).map((req, index) => (
                         <li key={`req-${career._id}-${index}`} className="flex items-start space-x-2">
@@ -201,7 +208,7 @@ export default function AdminCareersPage() {
                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm flex items-center justify-center space-x-1 transition-colors"
                   >
                     <Eye className="h-4 w-4" />
-                    <span>View</span>
+                    <span>{t.admin.careers.view}</span>
                   </Link>
                   
                   <Link
@@ -209,7 +216,7 @@ export default function AdminCareersPage() {
                     className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded-lg text-sm flex items-center justify-center space-x-1 transition-colors"
                   >
                     <Edit className="h-4 w-4" />
-                    <span>Edit</span>
+                    <span>{t.admin.careers.edit}</span>
                   </Link>
                   
                   <button
@@ -220,7 +227,7 @@ export default function AdminCareersPage() {
                     className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm flex items-center justify-center space-x-1 transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />
-                    <span>Delete</span>
+                    <span>{t.admin.careers.delete}</span>
                   </button>
                 </div>
               </div>
@@ -232,14 +239,14 @@ export default function AdminCareersPage() {
         {filteredCareers.length === 0 && !loading && (
           <div className="text-center py-20">
             <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">No careers found</h3>
-            <p className="text-gray-400 mb-6">Try adjusting your search or filters</p>
+            <h3 className="text-xl font-semibold text-white mb-2">{t.admin.careers.noCareersFound}</h3>
+            <p className="text-gray-400 mb-6">{t.admin.careers.noCareersSubtitle}</p>
             <Link
               href="/admin/careers/new"
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg inline-flex items-center space-x-2 transition-colors"
             >
               <Plus className="h-5 w-5" />
-              <span>Add Your First Career</span>
+              <span>{t.admin.careers.addFirstCareer}</span>
             </Link>
           </div>
         )}
@@ -249,22 +256,22 @@ export default function AdminCareersPage() {
       {showDeleteModal && selectedCareer && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-gray-900 border border-white/10 rounded-xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-semibold text-white mb-4">Delete Career</h3>
+            <h3 className="text-xl font-semibold text-white mb-4">{t.admin.careers.deleteCareer}</h3>
             <p className="text-gray-400 mb-6">
-              Are you sure you want to delete "{selectedCareer.title}"? This action cannot be undone.
+              {t.admin.careers.deleteConfirm.replace('{title}', selectedCareer.title)}
             </p>
             <div className="flex space-x-3">
               <button
                 onClick={() => setShowDeleteModal(false)}
                 className="flex-1 px-4 py-2 border border-white/10 text-white rounded-lg hover:bg-white/10 transition-colors"
               >
-                Cancel
+                {t.admin.careers.cancel}
               </button>
               <button
                 onClick={() => handleDelete(selectedCareer._id)}
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
               >
-                Delete
+                {t.admin.careers.confirmDelete}
               </button>
             </div>
           </div>

@@ -30,6 +30,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { createPress } from '@/redux/pressSlice';
 import { uploadFile } from "@/shared/uploadFile";
 import { uploadMultipleFiles } from "@/shared/uploadMultipleFiles";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
 
 // --- Particle Background Component ---
 const ParticleBackground = () => {
@@ -292,7 +294,7 @@ const FormTextarea = ({
 };
 
 // --- File Upload Component ---
-const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
+const FileUpload = ({ label, name, accept, formik, multiple = false, t }) => {
   const [dragActive, setDragActive] = useState(false);
 
   const handleDrag = (e) => {
@@ -348,11 +350,11 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
             <Upload className="h-6 w-6 text-[#334155]" />
           </div>
           <p className="text-gray-300 font-medium">
-            Drag & drop files here or click to browse
+            {t.admin.form.dragDropFiles}
           </p>
           <p className="text-gray-400 text-sm">
-            {accept.includes("image") && "Images: JPG, PNG, GIF"}
-            {accept.includes("pdf") && "Documents: PDF, DOC, DOCX"}
+            {accept.includes("image") && t.admin.form.imageTypes}
+            {accept.includes("pdf") && t.admin.form.documentTypes}
           </p>
         </div>
       </div>
@@ -402,7 +404,7 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
 };
 
 // --- Dynamic List Component ---
-const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
+const DynamicList = ({ label, name, formik, placeholder = "Add item...", t }) => {
   const addItem = () => {
     const currentItems = formik.values[name] || [];
     formik.setFieldValue(name, [...currentItems, ""]);
@@ -451,7 +453,7 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
           className="flex items-center space-x-2 px-4 py-2 bg-[#334155]/20 hover:bg-[#334155]/30 border border-[#334155]/30 rounded-xl text-white transition-colors"
         >
           <Plus className="h-4 w-4" />
-          <span>Add {label}</span>
+          <span>{t.admin.pressForm.addItem.replace('{item}', label)}</span>
         </button>
       </div>
     </div>
@@ -460,6 +462,8 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
 
 // --- Main Press Form Component ---
 export default function AdminPressForm() {
+  const { language, isRTL } = useLanguage();
+  const t = translations[language];
   const dispatch = useDispatch();
   const { loading: reduxLoading, error: reduxError } = useSelector(
     (state) => state.press
@@ -532,7 +536,10 @@ export default function AdminPressForm() {
   });
 
   return (
-    <div className="bg-transparent text-gray-200 font-sans min-h-screen">
+    <div 
+      className="bg-transparent text-gray-200 font-sans min-h-screen"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
       <ParticleBackground />
       <AdminHeader />
       <div className="container mx-auto px-6 py-8">
@@ -543,10 +550,10 @@ export default function AdminPressForm() {
           className="mb-8"
         >
           <h1 className="text-4xl font-bold text-white mb-4">
-            Add New Press Article
+            {t.admin.press.addNewPress}
           </h1>
           <p className="text-xl text-gray-400">
-            Create a new press/news article with all required details and media
+            {t.admin.form.briefOverview}
           </p>
         </motion.div>
         {/* Success/Error Messages */}
@@ -560,7 +567,7 @@ export default function AdminPressForm() {
             >
               <CheckCircle className="h-5 w-5 text-green-400 mr-3" />
               <span className="text-green-400">
-                Article created successfully!
+                {t.admin.pressForm.articleCreated}
               </span>
             </motion.div>
           )}
@@ -573,7 +580,7 @@ export default function AdminPressForm() {
             >
               <AlertCircle className="h-5 w-5 text-red-400 mr-3" />
               <span className="text-red-400">
-                Error creating article. Please try again.
+                {t.admin.pressForm.errorCreating}
               </span>
             </motion.div>
           )}
@@ -589,14 +596,14 @@ export default function AdminPressForm() {
           {/* Basic Information */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
             <h2 className="text-2xl font-bold text-white mb-6">
-              Basic Information
+              {t.admin.pressForm.basicInformation}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
                 <FormInput
-                  label="Article Title"
+                  label={t.admin.pressForm.articleTitle}
                   name="title"
-                  placeholder="Enter article title"
+                  placeholder={t.admin.pressForm.titlePlaceholder}
                   formik={formik}
                   icon={<Newspaper className="h-4 w-4" />}
                   required
@@ -604,9 +611,9 @@ export default function AdminPressForm() {
               </div>
               <div className="md:col-span-2">
                 <FormTextarea
-                  label="Summary"
+                  label={t.admin.pressForm.summary}
                   name="summary"
-                  placeholder="Brief summary of the article"
+                  placeholder={t.admin.pressForm.summaryPlaceholder}
                   formik={formik}
                   required
                   rows={3}
@@ -614,9 +621,9 @@ export default function AdminPressForm() {
               </div>
               <div className="md:col-span-2">
                 <FormTextarea
-                  label="Content"
+                  label={t.admin.pressForm.content}
                   name="content"
-                  placeholder="Full article content"
+                  placeholder={t.admin.pressForm.contentPlaceholder}
                   formik={formik}
                   required
                   rows={8}
@@ -627,27 +634,27 @@ export default function AdminPressForm() {
           {/* Article Details */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
             <h2 className="text-2xl font-bold text-white mb-6">
-              Article Details
+              {t.admin.pressForm.articleDetails}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormInput
-                label="Author"
+                label={t.admin.pressForm.author}
                 name="author"
-                placeholder="Author name"
+                placeholder={t.admin.pressForm.authorPlaceholder}
                 formik={formik}
                 icon={<User className="h-4 w-4" />}
                 required
               />
               <FormInput
-                label="Publication"
+                label={t.admin.pressForm.publication}
                 name="publication"
-                placeholder="Source or publication"
+                placeholder={t.admin.pressForm.publicationPlaceholder}
                 formik={formik}
                 icon={<Globe className="h-4 w-4" />}
                 required
               />
               <FormInput
-                label="Publish Date"
+                label={t.admin.pressForm.publishDate}
                 name="publishDate"
                 type="date"
                 formik={formik}
@@ -655,15 +662,15 @@ export default function AdminPressForm() {
                 required
               />
               <FormInput
-                label="URL"
+                label={t.admin.pressForm.url}
                 name="url"
-                placeholder="Article URL"
+                placeholder={t.admin.pressForm.urlPlaceholder}
                 formik={formik}
                 icon={<LinkIcon className="h-4 w-4" />}
               />
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-white">
-                  Category <span className="text-red-400">*</span>
+                  {t.admin.pressForm.category} <span className="text-red-400">*</span>
                 </label>
                 <select
                   name="category"
@@ -672,12 +679,12 @@ export default function AdminPressForm() {
                   onBlur={formik.handleBlur}
                   className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#65a30d]"
                 >
-                  <option value="">Select Category</option>
-                  <option value="news">News</option>
-                  <option value="interview">Interview</option>
-                  <option value="feature">Feature</option>
-                  <option value="review">Review</option>
-                  <option value="announcement">Announcement</option>
+                  <option value="">{t.admin.pressForm.selectCategory}</option>
+                  <option value="news">{t.admin.pressForm.categories.news}</option>
+                  <option value="interview">{t.admin.pressForm.categories.interview}</option>
+                  <option value="feature">{t.admin.pressForm.categories.feature}</option>
+                  <option value="review">{t.admin.pressForm.categories.review}</option>
+                  <option value="announcement">{t.admin.pressForm.categories.announcement}</option>
                 </select>
                 {formik.touched.category && formik.errors.category && (
                   <div className="text-red-400 text-sm">{formik.errors.category}</div>
@@ -691,58 +698,63 @@ export default function AdminPressForm() {
                   onChange={formik.handleChange}
                   className="h-5 w-5 text-[#65a30d] bg-black/30 border border-white/10 rounded focus:ring-[#65a30d] focus:ring-2"
                 />
-                <label className="text-white text-sm">Active</label>
+                <label className="text-white text-sm">{t.admin.pressForm.active}</label>
               </div>
             </div>
           </div>
           {/* Media Attachments */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
             <h2 className="text-2xl font-bold text-white mb-6">
-              Media Attachments
+              {t.admin.pressForm.mediaAttachments}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FileUpload
-                label="Article Image"
+                label={t.admin.pressForm.articleImage}
                 name="image"
                 accept="image/*"
                 formik={formik}
                 multiple
+                t={t}
               />
               <DynamicList
-                label="YouTube Links"
+                label={t.admin.pressForm.youtubeLinks}
                 name="youtubeLinks"
                 formik={formik}
-                placeholder="e.g., https://www.youtube.com/watch?v=abc123"
+                placeholder={t.admin.pressForm.youtubePlaceholder}
+                t={t}
               />
               <FileUpload
-                label="Documents (PDF, DOC, DOCX)"
+                label={t.admin.pressForm.documents}
                 name="documents"
                 accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 formik={formik}
                 multiple
+                t={t}
               />
             </div>
           </div>
           {/* Tags */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Tags</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">{t.admin.pressForm.tags}</h2>
             <DynamicList
-              label="Tags"
+              label={t.admin.pressForm.tags}
               name="tags"
               formik={formik}
-              placeholder="e.g., Agriculture, Innovation, Award"
+              placeholder={t.admin.pressForm.tagsPlaceholder}
+              t={t}
             />
           </div>
           {/* Related Articles */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
             <h2 className="text-2xl font-bold text-white mb-6">
-              Related Articles
+              {t.admin.pressForm.relatedArticles}
             </h2>
             <DynamicList
-              label="Related Article URLs"
+              label={t.admin.pressForm.relatedArticles}
               name="relatedArticles"
               formik={formik}
-              placeholder="e.g., https://example.com/article1"
+              placeholder={t.admin.pressForm.relatedArticlesPlaceholder}
+              t={t}
             />
           </div>
           {/* Form Actions */}
@@ -752,7 +764,7 @@ export default function AdminPressForm() {
               className="flex items-center space-x-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-gray-300 transition-colors"
             >
               <X className="h-4 w-4" />
-              <span>Cancel</span>
+              <span>{t.admin.pressForm.cancel}</span>
             </Link>
             <div className="flex items-center space-x-4">
               <button
@@ -763,12 +775,12 @@ export default function AdminPressForm() {
                 {isSubmitting ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
-                    <span>Saving...</span>
+                    <span>{t.admin.pressForm.saving}</span>
                   </>
                 ) : (
                   <>
                     <Save className="h-4 w-4" />
-                    <span>Save Article</span>
+                    <span>{t.admin.pressForm.saveArticle}</span>
                   </>
                 )}
               </button>

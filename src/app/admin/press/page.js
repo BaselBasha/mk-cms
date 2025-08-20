@@ -20,8 +20,12 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import AdminHeader from "@/shared/AdminHeader";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
 
 export default function AdminPressPage() {
+  const { language, isRTL } = useLanguage();
+  const t = translations[language];
   const router = useRouter();
   const dispatch = useDispatch();
   const { items: press, loading, error } = useSelector((state) => state.press);
@@ -59,10 +63,11 @@ export default function AdminPressPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 font-sans">
-        <AdminHeader currentPage="Press" />
+        <AdminHeader currentPage={t.admin.press.pageTitle} />
         <div className="container mx-auto px-6 py-8 mt-20">
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-2 border-[#65a30d] border-t-transparent"></div>
+            <span className="ml-3 text-white">{t.admin.press.loading}</span>
           </div>
         </div>
       </div>
@@ -70,8 +75,11 @@ export default function AdminPressPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 font-sans">
-      <AdminHeader currentPage="Press" />
+    <div 
+      className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 font-sans"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
+      <AdminHeader currentPage={t.admin.press.pageTitle} />
       <div className="container mx-auto px-6 py-8 mt-20">
         {/* Header */}
         <motion.div
@@ -81,9 +89,9 @@ export default function AdminPressPage() {
         >
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-4">Press Articles</h1>
+              <h1 className="text-4xl font-bold text-white mb-4">{t.admin.press.management}</h1>
               <p className="text-xl text-gray-400">
-                Manage press articles and media coverage
+                {t.admin.press.subtitle}
               </p>
             </div>
             <Link
@@ -91,7 +99,7 @@ export default function AdminPressPage() {
               className="flex items-center space-x-2 px-6 py-3 bg-[#65a30d] hover:bg-[#84cc16] text-white rounded-lg transition-colors"
             >
               <Plus className="h-5 w-5" />
-              <span>Add Article</span>
+              <span>{t.admin.press.addArticle}</span>
             </Link>
           </div>
         </motion.div>
@@ -107,7 +115,7 @@ export default function AdminPressPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
               type="text"
-              placeholder="Search articles..."
+              placeholder={t.admin.press.searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#65a30d]"
@@ -118,10 +126,10 @@ export default function AdminPressPage() {
             onChange={(e) => setFilterCategory(e.target.value)}
             className="px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#65a30d]"
           >
-            <option value="">All Categories</option>
+            <option value="">{t.admin.press.allCategories}</option>
             {categories.map((category) => (
               <option key={category} value={category}>
-                {category.charAt(0).toUpperCase() + category.slice(1)}
+                {t.admin.press.categories[category]}
               </option>
             ))}
           </select>
@@ -163,10 +171,10 @@ export default function AdminPressPage() {
                         ? 'bg-green-500/20 text-green-400' 
                         : 'bg-red-500/20 text-red-400'
                     }`}>
-                      {article.isActive ? 'Active' : 'Inactive'}
+                      {article.isActive ? t.admin.press.status.active : t.admin.press.status.inactive}
                     </span>
                     <span className="px-3 py-1 bg-[#65a30d]/20 text-[#65a30d] rounded-full text-xs font-medium">
-                      {article.category}
+                      {t.admin.press.categories[article.category] || article.category}
                     </span>
                   </div>
 
@@ -181,16 +189,16 @@ export default function AdminPressPage() {
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center space-x-2 text-sm text-gray-400">
                       <User className="h-4 w-4" />
-                      <span>{article.author}</span>
+                      <span>{t.admin.press.author}: {article.author}</span>
                     </div>
                     <div className="flex items-center space-x-2 text-sm text-gray-400">
                       <Globe className="h-4 w-4" />
-                      <span>{article.publication}</span>
+                      <span>{t.admin.press.publication}: {article.publication}</span>
                     </div>
                     <div className="flex items-center space-x-2 text-sm text-gray-400">
                       <Calendar className="h-4 w-4" />
                       <span>
-                        {new Date(article.publishDate).toLocaleDateString()}
+                        {t.admin.press.publishDate}: {new Date(article.publishDate).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
@@ -203,14 +211,14 @@ export default function AdminPressPage() {
                         className="flex items-center space-x-1 px-3 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors"
                       >
                         <Edit className="h-4 w-4" />
-                        <span className="text-sm">Edit</span>
+                        <span className="text-sm">{t.admin.press.edit}</span>
                       </Link>
                       <button
                         onClick={() => setDeleteId(article._id)}
                         className="flex items-center space-x-1 px-3 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
-                        <span className="text-sm">Delete</span>
+                        <span className="text-sm">{t.admin.press.delete}</span>
                       </button>
                     </div>
                     <Link
@@ -218,7 +226,7 @@ export default function AdminPressPage() {
                       className="flex items-center space-x-1 px-3 py-2 bg-gray-500/20 hover:bg-gray-500/30 text-gray-400 rounded-lg transition-colors"
                     >
                       <Eye className="h-4 w-4" />
-                      <span className="text-sm">View</span>
+                      <span className="text-sm">{t.admin.press.view}</span>
                     </Link>
                   </div>
                 </div>
@@ -235,7 +243,7 @@ export default function AdminPressPage() {
             className="text-center py-12"
           >
             <div className="text-gray-400 mb-4">
-              {searchTerm || filterCategory ? "No articles found matching your criteria." : "No press articles yet."}
+              {searchTerm || filterCategory ? t.admin.press.noArticlesFound : t.admin.press.noArticlesYet}
             </div>
             {!searchTerm && !filterCategory && (
               <Link
@@ -243,7 +251,7 @@ export default function AdminPressPage() {
                 className="inline-flex items-center space-x-2 px-6 py-3 bg-[#65a30d] hover:bg-[#84cc16] text-white rounded-lg transition-colors"
               >
                 <Plus className="h-5 w-5" />
-                <span>Add Your First Article</span>
+                <span>{t.admin.press.addFirstArticle}</span>
               </Link>
             )}
           </motion.div>
@@ -267,10 +275,10 @@ export default function AdminPressPage() {
             >
               <div className="flex items-center space-x-3 mb-4">
                 <AlertCircle className="h-6 w-6 text-red-400" />
-                <h3 className="text-xl font-semibold text-white">Confirm Delete</h3>
+                <h3 className="text-xl font-semibold text-white">{t.admin.press.confirmDelete}</h3>
               </div>
               <p className="text-gray-300 mb-6">
-                Are you sure you want to delete this press article? This action cannot be undone.
+                {t.admin.press.deleteConfirm}
               </p>
               <div className="flex items-center justify-end space-x-4">
                 <button
@@ -278,7 +286,7 @@ export default function AdminPressPage() {
                   disabled={isDeleting}
                   className="px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors disabled:opacity-50"
                 >
-                  Cancel
+                  {t.admin.press.cancel}
                 </button>
                 <button
                   onClick={() => handleDelete(deleteId)}
@@ -288,12 +296,12 @@ export default function AdminPressPage() {
                   {isDeleting ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                      <span>Deleting...</span>
+                      <span>{t.admin.press.deleting}</span>
                     </>
                   ) : (
                     <>
                       <Trash2 className="h-4 w-4" />
-                      <span>Delete</span>
+                      <span>{t.admin.press.confirmDeleteButton}</span>
                     </>
                   )}
                 </button>

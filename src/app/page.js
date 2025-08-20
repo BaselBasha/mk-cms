@@ -23,6 +23,9 @@ import { fetchPublicCertifications } from "@/redux/certificationsSlice";
 import { fetchPublicAwards } from "@/redux/awardsSlice";
 import { fetchPublicPartnerships } from "@/redux/partnershipsSlice";
 import Link from "next/link";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 // --- Particle Background Component ---
 // Creates a dynamic, animated particle background for the entire page.
@@ -131,6 +134,7 @@ const ParticleBackground = () => {
 // --- Main Page Component ---
 export default function App() {
   const dispatch = useDispatch();
+  const { language, isRTL } = useLanguage();
   const { publicItems: projects, loading: projectsLoading } = useSelector(
     (state) => state.projects
   );
@@ -175,7 +179,10 @@ export default function App() {
   const hasPartnerships = partnerships && partnerships.length > 0;
 
   return (
-    <div className="bg-transparent text-gray-200 font-sans overflow-x-hidden relative w-full">
+    <div 
+      className="bg-transparent text-gray-200 font-sans overflow-x-hidden relative w-full"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
       <ParticleBackground />
       <Header />
       <main className="w-full">
@@ -236,6 +243,8 @@ const itemVariants = {
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { language, isRTL } = useLanguage();
+  const t = translations[language];
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -244,30 +253,30 @@ const Header = () => {
   }, []);
 
   const navLinks = [
-    "Home",
-    "About",
-    "Products",
-    "Projects",
-    "Certifications",
-    "Awards",
-    "Partnerships",
-    "Press",
-    "Career",
-    "Contact",
+    t.nav.home,
+    t.nav.about,
+    t.nav.products,
+    t.nav.projects,
+    t.nav.certifications,
+    t.nav.awards,
+    t.nav.partnerships,
+    t.nav.press,
+    t.nav.career,
+    t.nav.contact,
   ];
 
   const scrollToSection = (sectionId) => {
     // Map section names to their actual IDs
     const sectionMap = {
-      home: "home",
-      about: "about",
-      products: "products",
-      projects: "projects",
-      certifications: "certifications",
-      awards: "awards-slider",
-      partnerships: "partnerships",
-      press: "press",
-      contact: "contact",
+      [t.nav.home.toLowerCase()]: "home",
+      [t.nav.about.toLowerCase()]: "about",
+      [t.nav.products.toLowerCase()]: "products",
+      [t.nav.projects.toLowerCase()]: "projects",
+      [t.nav.certifications.toLowerCase()]: "certifications",
+      [t.nav.awards.toLowerCase()]: "awards-slider",
+      [t.nav.partnerships.toLowerCase()]: "partnerships",
+      [t.nav.press.toLowerCase()]: "press",
+      [t.nav.contact.toLowerCase()]: "contact",
     };
 
     const actualId = sectionMap[sectionId.toLowerCase()];
@@ -302,9 +311,9 @@ const Header = () => {
               <button
                 key={link}
                 onClick={() => {
-                  if (link === "Contact") {
+                  if (link === t.nav.contact) {
                     window.open("https://wa.me/201067726594", "_blank");
-                  } else if (link === "Career") {
+                  } else if (link === t.nav.career) {
                     window.location.href = "/careers";
                   } else {
                     scrollToSection(link.toLowerCase());
@@ -316,18 +325,24 @@ const Header = () => {
               </button>
             ))}
           </nav>
-          <button
-            onClick={() => window.open("https://wa.me/201067726594", "_blank")}
-            className="hidden md:inline-block bg-[#65a30d] text-white py-2 px-6 rounded-full hover:bg-[#84cc16] transition-all duration-300 transform hover:scale-105 shadow-lg shadow-[#65a30d]/20"
-          >
-            Get in Touch
-          </button>
-          <button
-            onClick={() => setIsMenuOpen(true)}
-            className="md:hidden text-gray-300"
-          >
-            <Menu size={28} />
-          </button>
+          <div className="hidden lg:flex items-center space-x-4">
+            <LanguageSwitcher />
+            <button
+              onClick={() => window.open("https://wa.me/201067726594", "_blank")}
+              className="bg-[#65a30d] text-white py-2 px-6 rounded-full hover:bg-[#84cc16] transition-all duration-300 transform hover:scale-105 shadow-lg shadow-[#65a30d]/20"
+            >
+              {t.nav.getInTouch}
+            </button>
+          </div>
+          <div className="md:hidden flex items-center space-x-3">
+            <LanguageSwitcher />
+            <button
+              onClick={() => setIsMenuOpen(true)}
+              className="text-gray-300"
+            >
+              <Menu size={28} />
+            </button>
+          </div>
         </div>
       </header>
       {/* Mobile Menu */}
@@ -347,9 +362,9 @@ const Header = () => {
               key={link}
               onClick={() => {
                 setIsMenuOpen(false);
-                if (link === "Contact") {
+                if (link === t.nav.contact) {
                   window.open("https://wa.me/201067726594", "_blank");
-                } else if (link === "Career") {
+                } else if (link === t.nav.career) {
                   window.location.href = "/careers";
                 } else {
                   scrollToSection(link.toLowerCase());
@@ -367,57 +382,61 @@ const Header = () => {
 };
 
 // --- Hero Section ---
-const HeroSection = () => (
-  <section
-    id="home"
-    className="relative h-screen flex items-center justify-center text-white text-center"
-  >
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={{
-        hidden: { opacity: 0 },
-        visible: {
-          opacity: 1,
-          transition: { staggerChildren: 0.2, delayChildren: 0.3 },
-        },
-      }}
-      className="relative z-10 p-6"
+const HeroSection = () => {
+  const { language } = useLanguage();
+  const t = translations[language];
+  
+  return (
+    <section
+      id="home"
+      className="relative h-screen flex items-center justify-center text-white text-center"
     >
-      <motion.h1
-        variants={itemVariants}
-        className="text-5xl md:text-8xl font-bold mb-4 tracking-tight leading-tight"
-        style={{ textShadow: "0 0 20px rgba(0,0,0,0.5)" }}
-      >
-        The Future is{" "}
-        <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#65a30d] to-[#84cc16]">
-          MK-Group
-        </span>
-      </motion.h1>
-      <motion.p
-        variants={itemVariants}
-        className="text-lg md:text-xl max-w-3xl mx-auto mb-8 text-gray-300"
-      >
-        Almisria Alkhaligia: Cultivating tomorrow's resources from the heart of
-        the desert.
-      </motion.p>
-      <motion.a
+      <motion.div
+        initial="hidden"
+        animate="visible"
         variants={{
-          hidden: { opacity: 0, scale: 0.8 },
+          hidden: { opacity: 0 },
           visible: {
             opacity: 1,
-            scale: 1,
-            transition: { duration: 0.5, ease: "backOut" },
+            transition: { staggerChildren: 0.2, delayChildren: 0.3 },
           },
         }}
-        href="#about"
-        className="bg-gradient-to-r from-[#65a30d] to-[#84cc16] text-black font-bold py-4 px-10 rounded-full text-lg hover:shadow-2xl hover:shadow-[#65a30d]/40 transition-all duration-300 transform hover:scale-110"
+        className="relative z-10 p-6"
       >
-        Explore Our Vision
-      </motion.a>
-    </motion.div>
-  </section>
-);
+        <motion.h1
+          variants={itemVariants}
+          className="text-5xl md:text-8xl font-bold mb-4 tracking-tight leading-tight"
+          style={{ textShadow: "0 0 20px rgba(0,0,0,0.5)" }}
+        >
+          {t.hero.title}{" "}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#65a30d] to-[#84cc16]">
+            MK-Group
+          </span>
+        </motion.h1>
+        <motion.p
+          variants={itemVariants}
+          className="text-lg md:text-xl max-w-3xl mx-auto mb-8 text-gray-300"
+        >
+          {t.hero.subtitle}
+        </motion.p>
+        <motion.a
+          variants={{
+            hidden: { opacity: 0, scale: 0.8 },
+            visible: {
+              opacity: 1,
+              scale: 1,
+              transition: { duration: 0.5, ease: "backOut" },
+            },
+          }}
+          href="#about"
+          className="bg-gradient-to-r from-[#65a30d] to-[#84cc16] text-black font-bold py-4 px-10 rounded-full text-lg hover:shadow-2xl hover:shadow-[#65a30d]/40 transition-all duration-300 transform hover:scale-110"
+        >
+          {t.hero.cta}
+        </motion.a>
+      </motion.div>
+    </section>
+  );
+};
 
 // --- Section Title Component ---
 const SectionTitle = ({ children }) => (
@@ -430,56 +449,60 @@ const SectionTitle = ({ children }) => (
 );
 
 // --- Who Are We Section ---
-const WhoAreWeSection = () => (
-  <AnimatedSection id="about" className="py-20 md:py-28">
-    <div className="container mx-auto px-6">
-      <div className="grid md:grid-cols-2 gap-16 items-center">
-        <motion.div variants={itemVariants} className="relative">
-          <img
-            src="https://mkgroup-eg.com/wp-content/uploads/2022/11/DJI_0339-2048x1365.jpg"
-            alt="Jojoba Field"
-            className="rounded-lg w-full h-auto object-cover"
-          />
-          <div className="absolute -inset-2 border-2 border-[#65a30d]/30 rounded-lg -z-10 transform rotate-2"></div>
-        </motion.div>
-        <motion.div variants={itemVariants}>
-          <h2 className="text-4xl font-bold text-gray-100 mb-4">Who We Are</h2>
-          <div className="w-20 h-1 bg-[#65a30d] mb-6"></div>
-          <p className="text-lg text-gray-400 mb-4">
-            Since 2002, MK Jojoba has pioneered desert land reclamation. We see
-            not arid waste, but a canvas for life, cultivating high-quality
-            Jojoba to unlock a sustainable, green future.
-          </p>
-          <p className="text-gray-400 mb-6">
-            Our mission blends ecological integrity with economic prosperity,
-            delivering premium Jojoba oil to a global market that values purity
-            and sustainability.
-          </p>
-        </motion.div>
+const WhoAreWeSection = () => {
+  const { language } = useLanguage();
+  const t = translations[language];
+  
+  return (
+    <AnimatedSection id="about" className="py-20 md:py-28">
+      <div className="container mx-auto px-6">
+        <div className="grid md:grid-cols-2 gap-16 items-center">
+          <motion.div variants={itemVariants} className="relative">
+            <img
+              src="https://mkgroup-eg.com/wp-content/uploads/2022/11/DJI_0339-2048x1365.jpg"
+              alt="Jojoba Field"
+              className="rounded-lg w-full h-auto object-cover"
+            />
+            <div className="absolute -inset-2 border-2 border-[#65a30d]/30 rounded-lg -z-10 transform rotate-2"></div>
+          </motion.div>
+          <motion.div variants={itemVariants}>
+            <h2 className="text-4xl font-bold text-gray-100 mb-4">{t.about.title}</h2>
+            <div className="w-20 h-1 bg-[#65a30d] mb-6"></div>
+            <p className="text-lg text-gray-400 mb-4">
+              {t.about.description1}
+            </p>
+            <p className="text-gray-400 mb-6">
+              {t.about.description2}
+            </p>
+          </motion.div>
+        </div>
       </div>
-    </div>
-  </AnimatedSection>
-);
+    </AnimatedSection>
+  );
+};
 
 // --- Certifications Section (Infinite Scroller) ---
 const CertificationsSection = () => {
+  const { language } = useLanguage();
+  const t = translations[language];
+  
   const logos = [
-    { name: "ISO 9001", icon: <Award className="h-10 w-10 text-[#65a30d]" /> },
+    { name: t.certifications.items.iso9001, icon: <Award className="h-10 w-10 text-[#65a30d]" /> },
     {
-      name: "Organic Certified",
+      name: t.certifications.items.organicCertified,
       icon: <Leaf className="h-10 w-10 text-[#65a30d]" />,
     },
     {
-      name: "Global G.A.P.",
+      name: t.certifications.items.globalGap,
       icon: <Globe className="h-10 w-10 text-[#65a30d]" />,
     },
     {
-      name: "Fair Trade",
+      name: t.certifications.items.fairTrade,
       icon: <Users className="h-10 w-10 text-[#65a30d]" />,
     },
-    { name: "EcoCert", icon: <Sun className="h-10 w-10 text-[#65a30d]" /> },
+    { name: t.certifications.items.ecoCert, icon: <Sun className="h-10 w-10 text-[#65a30d]" /> },
     {
-      name: "Non-GMO Project",
+      name: t.certifications.items.nonGmo,
       icon: <Wind className="h-10 w-10 text-[#65a30d]" />,
     },
   ];
@@ -535,6 +558,8 @@ const CertificationsImageSlider = () => {
   const { publicItems: certifications, loading } = useSelector(
     (state) => state.certifications
   );
+  const { language } = useLanguage();
+  const t = translations[language];
 
   // Transform certifications for display
   const certs = (certifications || []).map((cert) => ({
@@ -552,7 +577,7 @@ const CertificationsImageSlider = () => {
 
   return (
     <AnimatedSection className="py-16 bg-transparent">
-      <SectionTitle>Our Certifications</SectionTitle>
+      <SectionTitle>{t.certifications.title}</SectionTitle>
 
       {loading ? (
         <div className="flex justify-center py-12">
@@ -592,7 +617,7 @@ const CertificationsImageSlider = () => {
               href="/certifications"
               className="bg-[#65a30d] text-white px-8 py-3 rounded-full font-semibold shadow hover:bg-[#84cc16] transition-all duration-300"
             >
-              View All Certifications
+              {t.certifications.viewAll}
             </Link>
           </div>
         </>
@@ -623,6 +648,8 @@ const CertificationsImageSlider = () => {
 // --- Awards Section ---
 const AwardsSection = () => {
   const { publicItems: awards, loading } = useSelector((state) => state.awards);
+  const { language } = useLanguage();
+  const t = translations[language];
 
   // Transform awards for display
   const displayAwards = (awards || []).map((award) => ({
@@ -641,15 +668,16 @@ const AwardsSection = () => {
     <AnimatedSection id="awards" className="py-20 md:py-28">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
-          <SectionTitle>Our Achievements & Recognition</SectionTitle>
+          <SectionTitle>{t.awards.title}</SectionTitle>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto mt-6">
-            Celebrating excellence and innovation in sustainable agriculture
+            {t.awards.subtitle}
           </p>
         </div>
 
         {loading ? (
           <div className="flex justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#65a30d]"></div>
+            <span className="ml-3 text-gray-400">{t.common.loading}</span>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -692,7 +720,7 @@ const AwardsSection = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <span>View All Awards</span>
+            <span>{t.awards.viewAll}</span>
             <ArrowLeft className="w-4 h-4 rotate-180" />
           </motion.a>
         </div>
@@ -704,6 +732,8 @@ const AwardsSection = () => {
 // --- Awards Slider Section ---
 const AwardsSliderSection = () => {
   const { publicItems: awards, loading } = useSelector((state) => state.awards);
+  const { language } = useLanguage();
+  const t = translations[language];
 
   // Transform awards for slider display
   const sliderAwards = (awards || []).map((award) => ({
@@ -723,9 +753,9 @@ const AwardsSliderSection = () => {
     <AnimatedSection id="awards-slider" className="py-20 md:py-28">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
-          <SectionTitle>Featured Awards Gallery</SectionTitle>
+          <SectionTitle>{t.awards.featured}</SectionTitle>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto mt-6">
-            A showcase of our most prestigious recognitions and achievements
+            {t.awards.featuredSubtitle}
           </p>
         </div>
 
@@ -781,7 +811,7 @@ const AwardsSliderSection = () => {
                       </p>
 
                       <div className="flex items-center space-x-2">
-                        <span className="text-xs text-gray-500">Level:</span>
+                        <span className="text-xs text-gray-500">{t.awards.level}:</span>
                         <span className="text-xs text-[#65a30d] font-semibold">
                           {award.level}
                         </span>
@@ -801,7 +831,7 @@ const AwardsSliderSection = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <span>Explore All Awards</span>
+            <span>{t.awards.exploreAll}</span>
             <ArrowLeft className="w-4 h-4 rotate-180" />
           </motion.a>
         </div>
@@ -816,95 +846,110 @@ const GlassCard = ({
   index,
   isProject = false,
   isPartnership = false,
-}) => (
-  <motion.div
-    variants={itemVariants}
-    className="group relative flex-shrink-0 w-80 h-96 bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden shadow-lg cursor-pointer"
-    onClick={() => {
-      if (isProject && item.id) {
-        window.location.href = `/projects/${item.id}`;
-      } else if (isPartnership && item.id) {
-        window.location.href = `/partnerships/${item.id}`;
-      }
-    }}
-  >
-    <img
-      src={item.img}
-      alt={item.name || item.title}
-      className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-in-out group-hover:scale-110 opacity-40 group-hover:opacity-60"
-      onError={(e) => {
-        // Fallback image for partnerships if the poster image fails to load
-        if (isPartnership) {
-          e.target.src =
-            "https://mkgroup-eg.com/wp-content/uploads/2022/11/NVU.png";
+}) => {
+  const { language } = useLanguage();
+  const t = translations[language];
+  
+  const getStatusText = (status) => {
+    if (status === "active") return t.partnerships.status.active;
+    if (status === "completed") return t.partnerships.status.completed;
+    if (status === "inactive") return t.partnerships.status.inactive;
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
+  
+  return (
+    <motion.div
+      variants={itemVariants}
+      className="group relative flex-shrink-0 w-80 h-96 bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden shadow-lg cursor-pointer"
+      onClick={() => {
+        if (isProject && item.id) {
+          window.location.href = `/projects/${item.id}`;
+        } else if (isPartnership && item.id) {
+          window.location.href = `/partnerships/${item.id}`;
         }
       }}
-    />
-    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-    <div className="relative h-full flex flex-col justify-end p-6 text-white">
-      <h3 className="text-2xl font-bold mb-2">{item.name || item.title}</h3>
-      <p className="text-gray-300 line-clamp-2">{item.desc || item.area}</p>
-      {item.budget && (
-        <p className="text-[#65a30d] text-sm mt-1">{item.budget}</p>
-      )}
-      {isPartnership && item.status && (
-        <div className="flex items-center mt-2">
-          <span
-            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-              item.status === "active"
-                ? "bg-green-500/20 text-green-400"
-                : item.status === "completed"
-                ? "bg-blue-500/20 text-blue-400"
-                : item.status === "inactive"
-                ? "bg-gray-500/20 text-gray-400"
-                : "bg-red-500/20 text-red-400"
-            }`}
-          >
-            {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-          </span>
-        </div>
-      )}
-    </div>
-    <div className="absolute inset-0 border-2 border-transparent group-hover:border-[#65a30d] rounded-2xl transition-all duration-300"></div>
-  </motion.div>
-);
+    >
+      <img
+        src={item.img}
+        alt={item.name || item.title}
+        className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-in-out group-hover:scale-110 opacity-40 group-hover:opacity-60"
+        onError={(e) => {
+          // Fallback image for partnerships if the poster image fails to load
+          if (isPartnership) {
+            e.target.src =
+              "https://mkgroup-eg.com/wp-content/uploads/2022/11/NVU.png";
+          }
+        }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+      <div className="relative h-full flex flex-col justify-end p-6 text-white">
+        <h3 className="text-2xl font-bold mb-2">{item.name || item.title}</h3>
+        <p className="text-gray-300 line-clamp-2">{item.desc || item.area}</p>
+        {item.budget && (
+          <p className="text-[#65a30d] text-sm mt-1">{item.budget}</p>
+        )}
+        {isPartnership && item.status && (
+          <div className="flex items-center mt-2">
+            <span
+              className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                item.status === "active"
+                  ? "bg-green-500/20 text-green-400"
+                  : item.status === "completed"
+                  ? "bg-blue-500/20 text-blue-400"
+                  : item.status === "inactive"
+                  ? "bg-gray-500/20 text-gray-400"
+                  : "bg-red-500/20 text-red-400"
+              }`}
+            >
+              {getStatusText(item.status)}
+            </span>
+          </div>
+        )}
+      </div>
+      <div className="absolute inset-0 border-2 border-transparent group-hover:border-[#65a30d] rounded-2xl transition-all duration-300"></div>
+    </motion.div>
+  );
+};
 
 // Utility for drag constraints
 const sliderDragConstraints = { left: -1000, right: 0 };
 
 // --- Products Section ---
 const ProductsSection = () => {
+  const { language } = useLanguage();
+  const t = translations[language];
+  
   const products = [
     {
-      name: "Seeds",
-      desc: "Cold-pressed, virgin oil for cosmetics and skincare.",
+      name: t.products.items.seeds.name,
+      desc: t.products.items.seeds.desc,
       img: "https://mkgroup-eg.com/wp-content/uploads/2024/04/unnamed-file.png",
     },
 
     {
-      name: "Jojoba Wax",
-      desc: "Natural wax for industrial and cosmetic applications.",
+      name: t.products.items.jojobaWax.name,
+      desc: t.products.items.jojobaWax.desc,
       img: "https://mkgroup-eg.com/wp-content/uploads/2024/04/pure-75ml-and-mix50ml.jpg",
     },
 
     {
-      name: "Seeding",
-      desc: "High-yield, drought-resistant seedlings for cultivation.",
+      name: t.products.items.seeding.name,
+      desc: t.products.items.seeding.desc,
       img: "https://mkgroup-eg.com/wp-content/uploads/2024/04/9802741e-1650-4027-aa12-6468aa8083f6.jpg",
     },
     {
-      name: "Organic Oil",
-      desc: "High-yield, drought-resistant seedlings for cultivation.",
+      name: t.products.items.organicOil.name,
+      desc: t.products.items.organicOil.desc,
       img: "https://mkgroup-eg.com/wp-content/uploads/2024/06/WhatsApp-Image-2024-06-01-at-19.33.16_9b87c9bbmm.jpg",
     },
     {
-      name: "Organic Oil",
-      desc: "High-yield, drought-resistant seedlings for cultivation.",
+      name: t.products.items.organicOil.name,
+      desc: t.products.items.organicOil.desc,
       img: "https://mkgroup-eg.com/wp-content/uploads/2024/04/pure-75ml-and-mix50ml.jpg",
     },
     {
-      name: "Pest-Control",
-      desc: "High-yield, drought-resistant seedlings for cultivation.",
+      name: t.products.items.pestControl.name,
+      desc: t.products.items.pestControl.desc,
       img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/Termite-Pest-Control-Frisco-TX.jpg",
     },
   ];
@@ -914,7 +959,7 @@ const ProductsSection = () => {
       id="products"
       className="py-20 md:py-28 overflow-hidden bg-transparent"
     >
-      <SectionTitle>Our Products</SectionTitle>
+      <SectionTitle>{t.products.title}</SectionTitle>
       <div className="relative w-full overflow-hidden mask-gradient">
         <motion.div
           className="flex"
@@ -931,7 +976,7 @@ const ProductsSection = () => {
       </div>
       <div className="flex justify-center mt-6">
         <button className="bg-[#65a30d] text-white px-8 py-3 rounded-full font-semibold shadow hover:bg-[#84cc16] transition-all duration-300">
-          Show All
+          {t.products.showAll}
         </button>
       </div>
       <style jsx>{`
@@ -961,6 +1006,8 @@ const ProjectsSection = () => {
   const { publicItems: projects, loading } = useSelector(
     (state) => state.projects
   );
+  const { language } = useLanguage();
+  const t = translations[language];
 
   // Transform projects for display
   const displayProjects = (projects || []).map((project) => ({
@@ -987,7 +1034,7 @@ const ProjectsSection = () => {
       id="projects"
       className="py-20 md:py-28 overflow-hidden bg-transparent"
     >
-      <SectionTitle>Our Landmark Projects</SectionTitle>
+      <SectionTitle>{t.projects.title}</SectionTitle>
 
       {loading ? (
         <div className="flex justify-center py-12">
@@ -1014,7 +1061,7 @@ const ProjectsSection = () => {
               href="/projects"
               className="bg-[#65a30d] text-white px-8 py-3 rounded-full font-semibold shadow hover:bg-[#84cc16] transition-all duration-300"
             >
-              Show All
+              {t.projects.showAll}
             </Link>
           </div>
         </>
@@ -1044,32 +1091,35 @@ const ProjectsSection = () => {
 
 // --- Why Us Section ---
 const WhyUsSection = () => {
+  const { language } = useLanguage();
+  const t = translations[language];
+  
   const features = [
     {
       icon: <Leaf className="h-10 w-10 text-[#65a30d]" />,
-      title: "Sustainability",
-      desc: "Eco-friendly practices that conserve water and protect biodiversity.",
+      title: t.whyUs.features.sustainability.title,
+      desc: t.whyUs.features.sustainability.desc,
     },
     {
       icon: <Award className="h-10 w-10 text-[#65a30d]" />,
-      title: "Premium Quality",
-      desc: "Rigorous quality control from seed to oil, ensuring the finest product.",
+      title: t.whyUs.features.premiumQuality.title,
+      desc: t.whyUs.features.premiumQuality.desc,
     },
     {
       icon: <Globe className="h-10 w-10 text-[#65a30d]" />,
-      title: "Global Reach",
-      desc: "A trusted supplier for international markets in cosmetics, and more.",
+      title: t.whyUs.features.globalReach.title,
+      desc: t.whyUs.features.globalReach.desc,
     },
     {
       icon: <Users className="h-10 w-10 text-[#65a30d]" />,
-      title: "Expert Team",
-      desc: "Decades of combined experience in agronomy and desert agriculture.",
+      title: t.whyUs.features.expertTeam.title,
+      desc: t.whyUs.features.expertTeam.desc,
     },
   ];
   return (
     <AnimatedSection id="why-us" className="py-20 md:py-28">
       <div className="container mx-auto px-6 text-center">
-        <SectionTitle>Why Choose Us?</SectionTitle>
+        <SectionTitle>{t.whyUs.title}</SectionTitle>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((feature, index) => (
             <motion.div
@@ -1095,30 +1145,33 @@ const WhyUsSection = () => {
 
 // --- Specialization Section ---
 const SpecializationSection = () => {
+  const { language } = useLanguage();
+  const t = translations[language];
+  
   const specializations = [
     {
-      title: "Drip Irrigation Systems",
-      desc: "Maximizing water efficiency in arid climates.",
+      title: t.specializations.items.dripIrrigation.title,
+      desc: t.specializations.items.dripIrrigation.desc,
       img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/shutterstock_767486674-1.jpg",
     },
     {
-      title: "Soil Health & Enrichment",
-      desc: "Revitalizing desert soil with organic matter.",
+      title: t.specializations.items.soilHealth.title,
+      desc: t.specializations.items.soilHealth.desc,
       img: "https://mkgroup-eg.com/wp-content/uploads/2022/11/DJI_0187-Medium.png",
     },
     {
-      title: "Advanced Harvesting",
-      desc: "Utilizing modern technology for peak efficiency.",
+      title: t.specializations.items.advancedHarvesting.title,
+      desc: t.specializations.items.advancedHarvesting.desc,
       img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/Premium-Agribusiness-Consulting-Service.jpeg",
     },
     {
-      title: "Genetic Selection",
-      desc: "Cultivating proprietary varieties for higher yield.",
+      title: t.specializations.items.geneticSelection.title,
+      desc: t.specializations.items.geneticSelection.desc,
       img: "https://mkgroup-eg.com/wp-content/uploads/2022/11/0.png",
     },
     {
-      title: "Genetic Selection",
-      desc: "Cultivating proprietary varieties for higher yield.",
+      title: t.specializations.items.geneticSelection.title,
+      desc: t.specializations.items.geneticSelection.desc,
       img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/money-2724241_1920.webp",
     },
   ];
@@ -1132,7 +1185,7 @@ const SpecializationSection = () => {
       id="specializations"
       className="py-20 md:py-28 overflow-hidden bg-transparent"
     >
-      <SectionTitle>Our Specializations</SectionTitle>
+      <SectionTitle>{t.specializations.title}</SectionTitle>
       <div className="relative w-full overflow-hidden mask-gradient">
         <motion.div
           className="flex"
@@ -1149,7 +1202,7 @@ const SpecializationSection = () => {
       </div>
       <div className="flex justify-center mt-6">
         <button className="bg-[#65a30d] text-white px-8 py-3 rounded-full font-semibold shadow hover:bg-[#84cc16] transition-all duration-300">
-          Show All
+          {t.specializations.showAll}
         </button>
       </div>
       <style jsx>{`
@@ -1178,6 +1231,8 @@ const PartnershipsSection = () => {
   const { publicItems: partnerships, loading } = useSelector(
     (state) => state.partnerships
   );
+  const { language } = useLanguage();
+  const t = translations[language];
 
   // Transform partnerships for display with proper poster image handling
   const displayPartnerships = (partnerships || []).map((partnership) => {
@@ -1227,7 +1282,7 @@ const PartnershipsSection = () => {
       id="partnerships"
       className="py-20 md:py-28 overflow-hidden bg-transparent"
     >
-      <SectionTitle>Our Strategic Partnerships</SectionTitle>
+      <SectionTitle>{t.partnerships.title}</SectionTitle>
 
       {loading ? (
         <div className="flex justify-center py-12">
@@ -1254,7 +1309,7 @@ const PartnershipsSection = () => {
               href="/partnerships"
               className="bg-[#65a30d] text-white px-8 py-3 rounded-full font-semibold shadow hover:bg-[#84cc16] transition-all duration-300"
             >
-              View All Partnerships
+              {t.partnerships.viewAll}
             </Link>
           </div>
         </>
@@ -1287,6 +1342,8 @@ const PressSection = () => {
   const { publicItems: pressArticles, loading } = useSelector(
     (state) => state.press
   );
+  const { language } = useLanguage();
+  const t = translations[language];
 
   // Transform press articles for display
   const displayPress = (pressArticles || []).map((press) => ({
@@ -1303,7 +1360,7 @@ const PressSection = () => {
 
   return (
     <AnimatedSection id="press" className="py-20 md:py-28 overflow-hidden">
-      <SectionTitle>In The Press</SectionTitle>
+      <SectionTitle>{t.press.title}</SectionTitle>
 
       {loading ? (
         <div className="flex justify-center py-12">
@@ -1374,7 +1431,7 @@ const PressSection = () => {
               href="/press"
               className="bg-[#65a30d] text-white px-8 py-3 rounded-full font-semibold shadow hover:bg-[#84cc16] transition-all duration-300"
             >
-              Show All
+              {t.press.showAll}
             </Link>
           </div>
         </>
@@ -1415,25 +1472,29 @@ const PressSection = () => {
 };
 
 // --- Footer Component ---
-const Footer = () => (
-  <footer
-    id="contact"
-    className="bg-black/30 border-t border-white/10 relative z-10"
-  >
-    <div className="container mx-auto px-6 py-16">
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 text-center md:text-left">
-        <div className="flex flex-col items-center md:items-start">
-          <img
-            src="/MK-GROUP.png"
-            alt="MK Jojoba Logo"
-            className="h-16 w-auto mx-auto mb-4"
-          />
-          <p className="text-gray-400 max-w-xs">
-            Pioneering the future of desert agriculture since 2002.
-          </p>
-        </div>
-        <div>
-          <h3 className="text-lg font-bold mb-4 text-gray-100">Quick Links</h3>
+const Footer = () => {
+  const { language } = useLanguage();
+  const t = translations[language];
+  
+  return (
+    <footer
+      id="contact"
+      className="bg-black/30 border-t border-white/10 relative z-10"
+    >
+      <div className="container mx-auto px-6 py-16">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 text-center md:text-left">
+          <div className="flex flex-col items-center md:items-start">
+            <img
+              src="/MK-GROUP.png"
+              alt="MK Jojoba Logo"
+              className="h-16 w-auto mx-auto mb-4"
+            />
+            <p className="text-gray-400 max-w-xs">
+              {t.footer.tagline}
+            </p>
+          </div>
+          <div>
+            <h3 className="text-lg font-bold mb-4 text-gray-100">{t.footer.quickLinks}</h3>
           <ul className="space-y-2">
             <li>
               <button
@@ -1574,19 +1635,19 @@ const Footer = () => (
           </ul>
         </div>
         <div>
-          <h3 className="text-lg font-bold mb-4 text-gray-100">Contact Us</h3>
-          <p className="text-gray-400 mb-2">Alexandria, Egypt - Smoha</p>
+          <h3 className="text-lg font-bold mb-4 text-gray-100">{t.footer.contactUs}</h3>
+          <p className="text-gray-400 mb-2">{t.footer.location}</p>
           <p className="text-gray-400 mb-2">info@mkgroup-eg.com</p>
           <p className="text-gray-400 mb-4">+20 106 772 6594</p>
           <button
             onClick={() => window.open("https://wa.me/201067726594", "_blank")}
             className="bg-[#65a30d] text-white py-2 px-4 rounded-full hover:bg-[#84cc16] transition-all duration-300 transform hover:scale-105 text-sm font-medium"
           >
-            Chat on WhatsApp
+            {t.footer.chatWhatsApp}
           </button>
         </div>
         <div>
-          <h3 className="text-lg font-bold mb-4 text-gray-100">Follow Us</h3>
+          <h3 className="text-lg font-bold mb-4 text-gray-100">{t.footer.followUs}</h3>
           <div className="flex space-x-4 justify-center md:justify-start">
             <a
               href="https://wa.me/201067726594"
@@ -1619,10 +1680,10 @@ const Footer = () => (
       </div>
       <div className="mt-12 border-t border-gray-800 pt-8 text-center text-gray-500">
         <p>
-          &copy; {new Date().getFullYear()} Almisria Alkhaligia Company. All
-          Rights Reserved.
+          &copy; {new Date().getFullYear()} {t.footer.copyright}
         </p>
       </div>
     </div>
   </footer>
-);
+  );
+}

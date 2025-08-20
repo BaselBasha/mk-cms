@@ -6,6 +6,8 @@ import { createPartnership } from "@/redux/partnershipsSlice";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
 import {
   ArrowLeft,
   Upload,
@@ -205,7 +207,7 @@ const FormTextarea = ({
   </div>
 );
 
-const FormSelect = ({ label, name, options, formik, required = false }) => (
+const FormSelect = ({ label, name, options, formik, required = false, t }) => (
   <div className="space-y-2">
     <label className="block text-sm font-medium text-white">
       {label} {required && <span className="text-red-400">*</span>}
@@ -219,7 +221,7 @@ const FormSelect = ({ label, name, options, formik, required = false }) => (
         formik.touched[name] && formik.errors[name] ? "border-red-500" : ""
       }`}
     >
-      <option value="">Select {label}</option>
+      <option value="">{t.admin.form.required.replace('This field is required', `Select ${label}`)}</option>
       {options.map((option) => (
         <option key={option.value} value={option.value}>
           {option.label}
@@ -232,7 +234,7 @@ const FormSelect = ({ label, name, options, formik, required = false }) => (
   </div>
 );
 
-const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
+const FileUpload = ({ label, name, accept, formik, multiple = false, t }) => {
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -287,11 +289,11 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
           >
             <Upload className="h-8 w-8 text-gray-400 mb-2" />
             <p className="text-gray-400 text-center">
-              Drag and drop files here, or{" "}
-              <span className="text-[#65a30d]">click to browse</span>
+              {t.admin.form.dragDropFiles}
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              {accept} {multiple ? "files" : "file"}
+              {accept.includes("image") && t.admin.form.imageTypes}
+              {accept.includes("pdf") && t.admin.form.documentTypes}
             </p>
           </label>
         </div>
@@ -329,7 +331,7 @@ const FileUpload = ({ label, name, accept, formik, multiple = false }) => {
   );
 };
 
-const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
+const DynamicList = ({ label, name, formik, placeholder = "Add item...", t }) => {
   const addItem = () => {
     const currentItems = formik.values[name] || [];
     formik.setFieldValue(name, [...currentItems, ""]);
@@ -378,7 +380,7 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item..." }) => {
           className="flex items-center space-x-2 px-4 py-2 bg-[#65a30d] hover:bg-[#528000] text-white rounded-lg transition-colors"
         >
           <Plus className="h-4 w-4" />
-          <span>Add {label}</span>
+          <span>{t.admin.partnershipForm.addItem.replace('{item}', label)}</span>
         </button>
       </div>
     </div>
@@ -483,6 +485,8 @@ const DynamicObjectList = ({ label, name, formik, fields, placeholder }) => {
 };
 
 export default function AdminPartnershipForm() {
+  const { language, isRTL } = useLanguage();
+  const t = translations[language];
   const router = useRouter();
   const dispatch = useDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -620,9 +624,12 @@ export default function AdminPartnershipForm() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 font-sans">
+    <div 
+      className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-200 font-sans"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
       <ParticleBackground />
-      <AdminHeader currentPage="Partnerships" />
+      <AdminHeader currentPage={t.admin.partnerships.pageTitle} />
       <div className="container mx-auto px-6 py-8 mt-20">
         {/* Header */}
         <motion.div
@@ -631,10 +638,10 @@ export default function AdminPartnershipForm() {
           className="mb-8"
         >
           <h1 className="text-4xl font-bold text-white mb-4">
-            Add New Partnership
+            {t.admin.partnerships.addNewPartnership}
           </h1>
           <p className="text-xl text-gray-400">
-            Create a new partnership entry with all required details and media
+            {t.admin.form.briefOverview}
           </p>
         </motion.div>
         <AnimatePresence>
@@ -647,7 +654,7 @@ export default function AdminPartnershipForm() {
             >
               <CheckCircle className="h-5 w-5 text-green-400 mr-3" />
               <span className="text-green-400">
-                Partnership created successfully!
+                {t.admin.partnershipForm.partnershipCreated}
               </span>
             </motion.div>
           )}
@@ -660,7 +667,7 @@ export default function AdminPartnershipForm() {
             >
               <AlertCircle className="h-5 w-5 text-red-400 mr-3" />
               <span className="text-red-400">
-                Error creating partnership. Please try again.
+                {t.admin.partnershipForm.errorCreating}
               </span>
             </motion.div>
           )}
@@ -675,38 +682,38 @@ export default function AdminPartnershipForm() {
           {/* Basic Information */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
             <h2 className="text-2xl font-bold text-white mb-6">
-              Basic Information
+              {t.admin.partnershipForm.basicInformation}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormInput
-                label="Partnership Title"
+                label={t.admin.partnershipForm.partnershipTitle}
                 name="title"
-                placeholder="e.g., GreenTech Solutions Partnership"
+                placeholder={t.admin.partnershipForm.titlePlaceholder}
                 formik={formik}
                 icon={<Award className="h-4 w-4" />}
                 required
               />
               <FormInput
-                label="Next Milestone"
+                label={t.admin.partnershipForm.nextMilestone}
                 name="nextMilestone"
-                placeholder="e.g., Sub-Saharan Africa Expansion - Q3 2024"
+                placeholder={t.admin.partnershipForm.milestonePlaceholder}
                 formik={formik}
                 icon={<Target className="h-4 w-4" />}
               />
               <div className="md:col-span-2">
                 <FormTextarea
-                  label="Summary"
+                  label={t.admin.partnershipForm.summary}
                   name="summary"
-                  placeholder="Brief description of the partnership"
+                  placeholder={t.admin.partnershipForm.summaryPlaceholder}
                   formik={formik}
                   required
                 />
               </div>
               <div className="md:col-span-2">
                 <FormTextarea
-                  label="Description"
+                  label={t.admin.partnershipForm.description}
                   name="description"
-                  placeholder="Detailed description of the partnership"
+                  placeholder={t.admin.partnershipForm.descriptionPlaceholder}
                   formik={formik}
                   rows={6}
                   required
@@ -718,11 +725,11 @@ export default function AdminPartnershipForm() {
           {/* Partnership Details */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
             <h2 className="text-2xl font-bold text-white mb-6">
-              Partnership Details
+              {t.admin.partnershipForm.partnershipDetails}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormInput
-                label="Start Date"
+                label={t.admin.partnershipForm.startDate}
                 name="startDate"
                 type="date"
                 formik={formik}
@@ -730,26 +737,28 @@ export default function AdminPartnershipForm() {
                 required
               />
               <FormSelect
-                label="Status"
+                label={t.admin.partnershipForm.status}
                 name="status"
                 formik={formik}
                 required
+                t={t}
                 options={[
-                  { value: "active", label: "Active" },
-                  { value: "inactive", label: "Inactive" },
-                  { value: "completed", label: "Completed" },
-                  { value: "cancelled", label: "Cancelled" },
+                  { value: "active", label: t.admin.partnershipForm.statuses.active },
+                  { value: "inactive", label: t.admin.partnershipForm.statuses.inactive },
+                  { value: "completed", label: t.admin.partnershipForm.statuses.completed },
+                  { value: "cancelled", label: t.admin.partnershipForm.statuses.cancelled },
                 ]}
               />
               <FormSelect
-                label="Priority"
+                label={t.admin.partnershipForm.priority}
                 name="priority"
                 formik={formik}
                 required
+                t={t}
                 options={[
-                  { value: "high", label: "High" },
-                  { value: "medium", label: "Medium" },
-                  { value: "low", label: "Low" },
+                  { value: "high", label: t.admin.partnershipForm.priorities.high },
+                  { value: "medium", label: t.admin.partnershipForm.priorities.medium },
+                  { value: "low", label: t.admin.partnershipForm.priorities.low },
                 ]}
               />
             </div>
@@ -758,63 +767,63 @@ export default function AdminPartnershipForm() {
           {/* Partner Information */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
             <h2 className="text-2xl font-bold text-white mb-6">
-              Partner Information
+              {t.admin.partnershipForm.partnerInformation}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormInput
-                label="Partner Name"
+                label={t.admin.partnershipForm.partnerName}
                 name="partnerInformation.name"
-                placeholder="e.g., GreenTech Solutions"
+                placeholder={t.admin.partnershipForm.partnerNamePlaceholder}
                 formik={formik}
                 icon={<Building className="h-4 w-4" />}
                 required
               />
               <FormInput
-                label="Founded"
+                label={t.admin.partnershipForm.founded}
                 name="partnerInformation.founded"
-                placeholder="e.g., 2015"
+                placeholder={t.admin.partnershipForm.foundedPlaceholder}
                 formik={formik}
                 icon={<Calendar className="h-4 w-4" />}
               />
               <FormInput
-                label="Headquarters"
+                label={t.admin.partnershipForm.headquarters}
                 name="partnerInformation.headquarters"
-                placeholder="e.g., Dubai, UAE"
+                placeholder={t.admin.partnershipForm.headquartersPlaceholder}
                 formik={formik}
                 icon={<MapPin className="h-4 w-4" />}
               />
               <FormInput
-                label="Employees"
+                label={t.admin.partnershipForm.employees}
                 name="partnerInformation.employees"
-                placeholder="e.g., 250+"
+                placeholder={t.admin.partnershipForm.employeesPlaceholder}
                 formik={formik}
                 icon={<Users className="h-4 w-4" />}
               />
               <FormInput
-                label="Specialization"
+                label={t.admin.partnershipForm.specialization}
                 name="partnerInformation.specialization"
-                placeholder="e.g., Smart Irrigation & Water Management"
+                placeholder={t.admin.partnershipForm.specializationPlaceholder}
                 formik={formik}
                 icon={<Target className="h-4 w-4" />}
               />
               <FormInput
-                label="Website"
+                label={t.admin.partnershipForm.website}
                 name="partnerInformation.website"
-                placeholder="e.g., https://greentech-solutions.com"
+                placeholder={t.admin.partnershipForm.websitePlaceholder}
                 formik={formik}
                 icon={<Globe className="h-4 w-4" />}
               />
               <FormInput
-                label="CEO"
+                label={t.admin.partnershipForm.ceo}
                 name="partnerInformation.ceo"
-                placeholder="e.g., Dr. Ahmad Hassan"
+                placeholder={t.admin.partnershipForm.ceoPlaceholder}
                 formik={formik}
                 icon={<User className="h-4 w-4" />}
               />
               <FormInput
-                label="Revenue"
+                label={t.admin.partnershipForm.revenue}
                 name="partnerInformation.revenue"
-                placeholder="e.g., $45M (2023)"
+                placeholder={t.admin.partnershipForm.revenuePlaceholder}
                 formik={formik}
                 icon={<DollarSign className="h-4 w-4" />}
               />
@@ -824,23 +833,24 @@ export default function AdminPartnershipForm() {
           {/* Partner Links */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
             <h2 className="text-2xl font-bold text-white mb-6">
-              Partner Links
+              {t.admin.partnershipForm.partnerLinks}
             </h2>
             <DynamicObjectList
-              label="Partner Links"
+              label={t.admin.partnershipForm.partnerLinks}
               name="partnerLinks"
               formik={formik}
+              t={t}
               fields={[
-                { name: "title", placeholder: "Link Title" },
-                { name: "url", placeholder: "URL" },
+                { name: "title", placeholder: t.admin.partnershipForm.linkTitle },
+                { name: "url", placeholder: t.admin.partnershipForm.url },
                 {
                   name: "type",
-                  placeholder: "Type",
+                  placeholder: t.admin.partnershipForm.type,
                   options: [
-                    { value: "website", label: "Website" },
-                    { value: "press", label: "Press" },
-                    { value: "research", label: "Research" },
-                    { value: "case-study", label: "Case Study" },
+                    { value: "website", label: t.admin.partnershipForm.linkTypes.website },
+                    { value: "press", label: t.admin.partnershipForm.linkTypes.press },
+                    { value: "research", label: t.admin.partnershipForm.linkTypes.research },
+                    { value: "case-study", label: t.admin.partnershipForm.linkTypes.caseStudy },
                   ],
                 },
               ]}
@@ -849,29 +859,31 @@ export default function AdminPartnershipForm() {
 
           {/* Timeline */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Timeline</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">{t.admin.partnershipForm.timeline}</h2>
             <DynamicObjectList
-              label="Timeline Events"
+              label={t.admin.partnershipForm.timelineEvents}
               name="timeline"
               formik={formik}
+              t={t}
               fields={[
-                { name: "year", placeholder: "Year" },
-                { name: "event", placeholder: "Event" },
-                { name: "description", placeholder: "Description" },
+                { name: "year", placeholder: t.admin.partnershipForm.year },
+                { name: "event", placeholder: t.admin.partnershipForm.event },
+                { name: "description", placeholder: t.admin.partnershipForm.eventDescription },
               ]}
             />
           </div>
 
           {/* Achievements */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6">Achievements</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">{t.admin.partnershipForm.achievements}</h2>
             <DynamicObjectList
-              label="Achievements"
+              label={t.admin.partnershipForm.achievements}
               name="achievements"
               formik={formik}
+              t={t}
               fields={[
-                { name: "title", placeholder: "Achievement Title" },
-                { name: "description", placeholder: "Description" },
+                { name: "title", placeholder: t.admin.partnershipForm.achievementTitle },
+                { name: "description", placeholder: t.admin.partnershipForm.achievementDescription },
               ]}
             />
           </div>
@@ -879,16 +891,17 @@ export default function AdminPartnershipForm() {
           {/* Media & Links */}
           <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
             <h2 className="text-2xl font-bold text-white mb-6">
-              Media & Links
+              {t.admin.partnershipForm.mediaAndLinks}
             </h2>
             <div className="space-y-6">
               {/* Poster Image (single, required) */}
               <FileUpload
-                label="Poster Image (Main Cover, Required)"
+                label={t.admin.partnershipForm.posterImage}
                 name="image"
                 accept="image/*"
                 formik={formik}
                 multiple={false}
+                t={t}
               />
               {formik.touched.image && formik.errors.image && (
                 <p className="text-red-400 text-sm">{formik.errors.image}</p>
@@ -896,11 +909,12 @@ export default function AdminPartnershipForm() {
 
               {/* Media Gallery Images (multiple, required) */}
               <FileUpload
-                label="Media Gallery Images (Multiple, Required)"
+                label={t.admin.partnershipForm.mediaGalleryImages}
                 name="galleryImages"
                 accept="image/*"
                 formik={formik}
                 multiple={true}
+                t={t}
               />
               {formik.touched.galleryImages && formik.errors.galleryImages && (
                 <p className="text-red-400 text-sm">
@@ -909,10 +923,11 @@ export default function AdminPartnershipForm() {
               )}
 
               <DynamicList
-                label="YouTube Video Links"
+                label={t.admin.partnershipForm.youtubeVideoLinks}
                 name="youtubeLinks"
                 formik={formik}
-                placeholder="https://youtu.be/VIDEO_ID"
+                placeholder={t.admin.partnershipForm.videoLinkPlaceholder}
+                t={t}
               />
             </div>
           </div>
@@ -924,7 +939,7 @@ export default function AdminPartnershipForm() {
               className="flex items-center space-x-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-gray-300 transition-colors"
             >
               <X className="h-4 w-4" />
-              <span>Cancel</span>
+              <span>{t.admin.partnershipForm.cancel}</span>
             </Link>
             <div className="flex items-center space-x-4">
               <button
@@ -939,7 +954,7 @@ export default function AdminPartnershipForm() {
                 }}
                 className="flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors"
               >
-                <span>Debug Form</span>
+                <span>{t.admin.partnershipForm.debugForm}</span>
               </button>
               <button
                 type="submit"
@@ -949,12 +964,12 @@ export default function AdminPartnershipForm() {
                 {isSubmitting ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
-                    <span>Saving...</span>
+                    <span>{t.admin.partnershipForm.saving}</span>
                   </>
                 ) : (
                   <>
                     <Save className="h-4 w-4" />
-                    <span>Save Partnership</span>
+                    <span>{t.admin.partnershipForm.savePartnership}</span>
                   </>
                 )}
               </button>

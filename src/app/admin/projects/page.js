@@ -5,8 +5,12 @@ import { fetchProjects, deleteProject } from "@/redux/projectsSlice";
 import { Edit, Trash2, Eye, Plus, Search, Filter, Calendar, MapPin, DollarSign, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
 
 export default function AdminProjectsPage() {
+  const { language, isRTL } = useLanguage();
+  const t = translations[language];
   const dispatch = useDispatch();
   const { items: projects, loading, error } = useSelector((state) => state.projects);
   const [searchTerm, setSearchTerm] = useState("");
@@ -61,27 +65,30 @@ export default function AdminProjectsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
-        <div className="text-white text-xl">Loading projects...</div>
+        <div className="text-white text-xl">{t.admin.projects.loadingProjects}</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
+    <div 
+      className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
       {/* Header */}
       <div className="bg-black/30 border-b border-white/10">
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Projects Management</h1>
-              <p className="text-gray-400">Manage all your projects</p>
+              <h1 className="text-3xl font-bold text-white mb-2">{t.admin.projects.pageTitle}</h1>
+              <p className="text-gray-400">{t.admin.projects.subtitle}</p>
             </div>
             <Link
               href="/admin/projects/new"
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center space-x-2 transition-colors"
             >
               <Plus className="h-5 w-5" />
-              <span>Add New Project</span>
+              <span>{t.admin.projects.addNewProject}</span>
             </Link>
           </div>
         </div>
@@ -96,7 +103,7 @@ export default function AdminProjectsPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="Search projects..."
+                placeholder={t.admin.projects.searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
@@ -109,12 +116,12 @@ export default function AdminProjectsPage() {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
             >
-              <option value="">All Status</option>
-              <option value="planning">Planning</option>
-              <option value="in-progress">In Progress</option>
-              <option value="completed">Completed</option>
-              <option value="on-hold">On Hold</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="">{t.admin.projects.allStatus}</option>
+              <option value="planning">{t.admin.projects.status.planning}</option>
+              <option value="in-progress">{t.admin.projects.status.inProgress}</option>
+              <option value="completed">{t.admin.projects.status.completed}</option>
+              <option value="on-hold">{t.admin.projects.status.onHold}</option>
+              <option value="cancelled">{t.admin.projects.status.cancelled}</option>
             </select>
 
             {/* Priority Filter */}
@@ -123,16 +130,16 @@ export default function AdminProjectsPage() {
               onChange={(e) => setPriorityFilter(e.target.value)}
               className="px-4 py-2 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-blue-500"
             >
-              <option value="">All Priority</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="urgent">Urgent</option>
+              <option value="">{t.admin.projects.allPriority}</option>
+              <option value="low">{t.admin.projects.priority.low}</option>
+              <option value="medium">{t.admin.projects.priority.medium}</option>
+              <option value="high">{t.admin.projects.priority.high}</option>
+              <option value="urgent">{t.admin.projects.priority.urgent}</option>
             </select>
 
             {/* Results Count */}
             <div className="flex items-center justify-end text-gray-400">
-              <span>{filteredProjects.length} of {projects?.length || 0} projects</span>
+              <span>{filteredProjects.length} {t.admin.projects.resultsCount} {projects?.length || 0}</span>
             </div>
           </div>
         </div>
@@ -156,7 +163,7 @@ export default function AdminProjectsPage() {
                   />
                 ) : (
                   <div className="w-full h-full bg-gray-800 flex items-center justify-center">
-                    <span className="text-gray-400">No Image</span>
+                    <span className="text-gray-400">{t.admin.projects.noImage}</span>
                   </div>
                 )}
                 
@@ -186,19 +193,19 @@ export default function AdminProjectsPage() {
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center space-x-2 text-gray-300">
                     <MapPin className="h-4 w-4" />
-                    <span>{project.location}</span>
+                    <span>{t.admin.projects.location}: {project.location}</span>
                   </div>
                   
                   {project.budget && (
                     <div className="flex items-center space-x-2 text-gray-300">
                       <DollarSign className="h-4 w-4" />
-                      <span>{project.budget}</span>
+                      <span>{t.admin.projects.budget}: {project.budget}</span>
                     </div>
                   )}
 
                   <div className="flex items-center space-x-2 text-gray-300">
                     <Calendar className="h-4 w-4" />
-                    <span>{new Date(project.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}</span>
+                    <span>{t.admin.projects.startDate}: {new Date(project.startDate).toLocaleDateString()} - {t.admin.projects.endDate}: {new Date(project.endDate).toLocaleDateString()}</span>
                   </div>
                 </div>
 
@@ -209,7 +216,7 @@ export default function AdminProjectsPage() {
                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm flex items-center justify-center space-x-1 transition-colors"
                   >
                     <Eye className="h-4 w-4" />
-                    <span>View</span>
+                    <span>{t.admin.projects.view}</span>
                   </Link>
                   
                   <Link
@@ -217,7 +224,7 @@ export default function AdminProjectsPage() {
                     className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded-lg text-sm flex items-center justify-center space-x-1 transition-colors"
                   >
                     <Edit className="h-4 w-4" />
-                    <span>Edit</span>
+                    <span>{t.admin.projects.edit}</span>
                   </Link>
                   
                   <button
@@ -228,7 +235,7 @@ export default function AdminProjectsPage() {
                     className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm flex items-center justify-center space-x-1 transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />
-                    <span>Delete</span>
+                    <span>{t.admin.projects.delete}</span>
                   </button>
                 </div>
               </div>
@@ -240,14 +247,14 @@ export default function AdminProjectsPage() {
         {filteredProjects.length === 0 && !loading && (
           <div className="text-center py-20">
             <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">No projects found</h3>
-            <p className="text-gray-400 mb-6">Try adjusting your search or filters</p>
+            <h3 className="text-xl font-semibold text-white mb-2">{t.admin.projects.noProjectsFound}</h3>
+            <p className="text-gray-400 mb-6">{t.admin.projects.noProjectsSubtitle}</p>
             <Link
               href="/admin/projects/new"
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg inline-flex items-center space-x-2 transition-colors"
             >
               <Plus className="h-5 w-5" />
-              <span>Add Your First Project</span>
+              <span>{t.admin.projects.addFirstProject}</span>
             </Link>
           </div>
         )}
@@ -257,22 +264,22 @@ export default function AdminProjectsPage() {
       {showDeleteModal && selectedProject && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-gray-900 border border-white/10 rounded-xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-semibold text-white mb-4">Delete Project</h3>
+            <h3 className="text-xl font-semibold text-white mb-4">{t.admin.projects.deleteProject}</h3>
             <p className="text-gray-400 mb-6">
-              Are you sure you want to delete "{selectedProject.title}"? This action cannot be undone.
+              {t.admin.projects.deleteConfirmation} "{selectedProject.title}"? {t.admin.projects.deleteWarning}
             </p>
             <div className="flex space-x-3">
               <button
                 onClick={() => setShowDeleteModal(false)}
                 className="flex-1 px-4 py-2 border border-white/10 text-white rounded-lg hover:bg-white/10 transition-colors"
               >
-                Cancel
+                {t.admin.projects.cancel}
               </button>
               <button
                 onClick={() => handleDelete(selectedProject._id)}
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
               >
-                Delete
+                {t.admin.projects.confirmDelete}
               </button>
             </div>
           </div>

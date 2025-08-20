@@ -25,6 +25,9 @@ import {
   Filter,
 } from "lucide-react";
 import Link from "next/link";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 // --- Particle Background Component ---
 const ParticleBackground = () => {
@@ -125,11 +128,14 @@ const ParticleBackground = () => {
 };
 
 const AdminCandidatesPage = () => {
+  const { language, isRTL } = useLanguage();
+  const t = translations[language];
+  
   const [selectedJob, setSelectedJob] = useState(null);
   const [candidates, setCandidates] = useState([]);
   const [loadingCandidates, setLoadingCandidates] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeDepartment, setActiveDepartment] = useState("All");
+  const [activeDepartment, setActiveDepartment] = useState(t.admin.candidates.departments.all);
   const dispatch = useDispatch();
 
   // Redux selectors
@@ -193,22 +199,22 @@ const AdminCandidatesPage = () => {
   };
 
   const departments = [
-    "All",
-    "Engineering",
-    "Sales",
-    "Marketing",
-    "Operations",
-    "Finance",
-    "HR",
-    "IT",
-    "Research & Development",
-    "Quality Assurance",
-    "Supply Chain",
+    t.admin.candidates.departments.all,
+    t.admin.candidates.departments.engineering,
+    t.admin.candidates.departments.sales,
+    t.admin.candidates.departments.marketing,
+    t.admin.candidates.departments.operations,
+    t.admin.candidates.departments.finance,
+    t.admin.candidates.departments.hr,
+    t.admin.candidates.departments.it,
+    t.admin.candidates.departments.researchDevelopment,
+    t.admin.candidates.departments.qualityAssurance,
+    t.admin.candidates.departments.supplyChain,
   ];
 
   const filteredCareers = careers.filter((career) => {
     const matchesDepartment =
-      activeDepartment === "All" || career.department === activeDepartment;
+      activeDepartment === t.admin.candidates.departments.all || career.department === activeDepartment;
     const matchesSearch =
       career.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       career.summary.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -224,7 +230,7 @@ const AdminCandidatesPage = () => {
         <div className="flex items-center justify-center h-screen">
           <div className="text-center">
             <div className="w-8 h-8 border-2 border-[#65a30d] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-400">Loading careers...</p>
+            <p className="text-gray-400">{t.admin.candidates.loadingCareers}</p>
           </div>
         </div>
       </div>
@@ -232,9 +238,17 @@ const AdminCandidatesPage = () => {
   }
 
   return (
-    <div className="bg-transparent text-gray-200 font-sans min-h-screen">
+    <div 
+      className="bg-transparent text-gray-200 font-sans min-h-screen"
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
       <ParticleBackground />
-      <AdminHeader currentPage="Job Candidates" />
+      <AdminHeader currentPage={t.admin.candidates.pageTitle} />
+
+      {/* Language Switcher */}
+      <div className="absolute top-6 right-6 z-10">
+        <LanguageSwitcher />
+      </div>
 
       <div className="container mx-auto px-6 py-8 mt-20">
         {/* Header */}
@@ -242,11 +256,11 @@ const AdminCandidatesPage = () => {
           <div>
             <Link href="/admin" className="flex items-center text-gray-400 hover:text-[#65a30d] transition-colors duration-300 mb-2">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
+              {t.admin.candidates.backToDashboard}
             </Link>
-            <h1 className="text-4xl font-bold text-white">Job Candidates</h1>
+            <h1 className="text-4xl font-bold text-white">{t.admin.candidates.pageTitle}</h1>
             <p className="text-xl text-gray-400 mt-2">
-              Review and manage job applications
+              {t.admin.candidates.subtitle}
             </p>
           </div>
           
@@ -266,7 +280,7 @@ const AdminCandidatesPage = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <input
                     type="text"
-                    placeholder="Search jobs..."
+                    placeholder={t.admin.candidates.searchPlaceholder}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#65a30d] focus:border-transparent transition-all duration-300"
@@ -274,7 +288,7 @@ const AdminCandidatesPage = () => {
                 </div>
                 <div className="flex items-center space-x-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3">
                   <Filter className="w-5 h-5 text-gray-400" />
-                  <span className="text-gray-400 text-sm">Department:</span>
+                  <span className="text-gray-400 text-sm">{t.admin.candidates.departmentLabel}</span>
                   <select
                     value={activeDepartment}
                     onChange={(e) => setActiveDepartment(e.target.value)}
@@ -317,10 +331,10 @@ const AdminCandidatesPage = () => {
                   <Search className="w-12 h-12 text-gray-400" />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-4">
-                  No jobs found
+                  {t.admin.candidates.noJobsFound}
                 </h3>
                 <p className="text-gray-400">
-                  Try adjusting your search terms or filters
+                  {t.admin.candidates.noJobsSubtitle}
                 </p>
               </motion.div>
             )}
@@ -365,7 +379,7 @@ const AdminCandidatesPage = () => {
                   {selectedJob.applicationDeadline && (
                     <div className="flex items-center space-x-2 text-gray-400">
                       <Calendar className="w-4 h-4" />
-                      <span>Deadline: {new Date(selectedJob.applicationDeadline).toLocaleDateString('en-US', {
+                      <span>{t.admin.candidates.deadline} {new Date(selectedJob.applicationDeadline).toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
@@ -375,7 +389,7 @@ const AdminCandidatesPage = () => {
                 </div>
 
                 <div className="mt-6">
-                  <h3 className="text-lg font-semibold text-white mb-3">Job Summary</h3>
+                  <h3 className="text-lg font-semibold text-white mb-3">{t.admin.candidates.jobSummary}</h3>
                   <p className="text-gray-400 leading-relaxed">{selectedJob.summary}</p>
                 </div>
               </div>
@@ -388,19 +402,19 @@ const AdminCandidatesPage = () => {
               className="space-y-6"
             >
               <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-white">Candidates</h3>
-                  <div className="flex items-center space-x-2 text-gray-400">
-                    <Users className="w-4 h-4" />
-                    <span>{candidates.length} applications</span>
-                  </div>
-                </div>
+                                 <div className="flex items-center justify-between mb-6">
+                   <h3 className="text-xl font-bold text-white">{t.admin.candidates.candidates}</h3>
+                   <div className="flex items-center space-x-2 text-gray-400">
+                     <Users className="w-4 h-4" />
+                     <span>{candidates.length} {t.admin.candidates.applications}</span>
+                   </div>
+                 </div>
 
-                {loadingCandidates ? (
-                  <div className="text-center py-8">
-                    <div className="w-8 h-8 border-2 border-[#65a30d] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-gray-400">Loading candidates...</p>
-                  </div>
+                                 {loadingCandidates ? (
+                   <div className="text-center py-8">
+                     <div className="w-8 h-8 border-2 border-[#65a30d] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                     <p className="text-gray-400">{t.admin.candidates.loadingCandidates}</p>
+                   </div>
                 ) : candidates.length > 0 ? (
                   <div className="space-y-4">
                     {candidates.map((candidate, index) => (
@@ -411,23 +425,23 @@ const AdminCandidatesPage = () => {
                       />
                     ))}
                   </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-400">No applications yet</p>
-                    <p className="text-sm text-gray-500">Candidates will appear here once they apply</p>
-                    <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                      <p className="text-yellow-300 text-sm">
-                        <strong>Debug Info:</strong> This could mean either:
-                      </p>
-                      <ul className="text-yellow-400 text-xs mt-2 list-disc list-inside">
-                        <li>No candidates have applied to this job yet</li>
-                        <li>The backend endpoint is not responding</li>
-                                                 <li>There&apos;s a database connection issue</li>
-                      </ul>
-                    </div>
-                  </div>
-                )}
+                                 ) : (
+                   <div className="text-center py-8">
+                     <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                     <p className="text-gray-400">{t.admin.candidates.noApplicationsYet}</p>
+                     <p className="text-sm text-gray-500">{t.admin.candidates.noApplicationsSubtitle}</p>
+                     <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                       <p className="text-yellow-300 text-sm">
+                         <strong>{t.admin.candidates.debugInfo}</strong>
+                       </p>
+                       <ul className="text-yellow-400 text-xs mt-2 list-disc list-inside">
+                         <li>{t.admin.candidates.debugNoCandidates}</li>
+                         <li>{t.admin.candidates.debugBackendIssue}</li>
+                         <li>{t.admin.candidates.debugDatabaseIssue}</li>
+                       </ul>
+                     </div>
+                   </div>
+                 )}
               </div>
             </motion.div>
           </div>
@@ -438,7 +452,11 @@ const AdminCandidatesPage = () => {
 };
 
 // Job Card Component
-const JobCard = ({ job, onSelect }) => (
+const JobCard = ({ job, onSelect }) => {
+  const { language } = useLanguage();
+  const t = translations[language];
+  
+  return (
   <div
     onClick={() => onSelect(job)}
     className="group relative bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden shadow-2xl hover:shadow-[#65a30d]/20 transition-all duration-500 cursor-pointer"
@@ -475,19 +493,23 @@ const JobCard = ({ job, onSelect }) => (
           <Users className="w-4 h-4" />
           <span>{job.experience}</span>
         </div>
-        <div className="flex items-center text-[#65a30d] font-medium text-sm">
-          <span>View Applications</span>
-          <svg className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </div>
+                 <div className="flex items-center text-[#65a30d] font-medium text-sm">
+           <span>{t.admin.candidates.viewApplications}</span>
+           <svg className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+           </svg>
+         </div>
       </div>
     </div>
   </div>
-);
+  );
+};
 
 // Candidate Card Component
 const CandidateCard = ({ candidate, onStatusUpdate }) => {
+  const { language } = useLanguage();
+  const t = translations[language];
+  
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const handleStatusUpdate = async (newStatus) => {
@@ -518,68 +540,68 @@ const CandidateCard = ({ candidate, onStatusUpdate }) => {
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <h4 className="font-semibold text-white mb-1">{candidate.applicantName}</h4>
-          <p className="text-sm text-gray-400">
-            Applied {new Date(candidate.appliedAt).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric'
-            })}
-          </p>
+                     <p className="text-sm text-gray-400">
+             {t.admin.candidates.applied} {new Date(candidate.appliedAt).toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
+               year: 'numeric',
+               month: 'short',
+               day: 'numeric'
+             })}
+           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <select
-            value={candidate.status}
-            onChange={(e) => handleStatusUpdate(e.target.value)}
-            disabled={updatingStatus}
-            className={`px-2 py-1 rounded-full text-xs font-medium border transition-all duration-300 ${
-              candidate.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30' :
-              candidate.status === 'reviewed' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' :
-              candidate.status === 'shortlisted' ? 'bg-[#65a30d]/20 text-[#65a30d] border-[#65a30d]/30' :
-              'bg-red-500/20 text-red-300 border-red-500/30'
-            } ${updatingStatus ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
-          >
-            <option value="pending" className="bg-gray-800">Pending</option>
-            <option value="reviewed" className="bg-gray-800">Reviewed</option>
-            <option value="shortlisted" className="bg-gray-800">Shortlisted</option>
-            <option value="rejected" className="bg-gray-800">Rejected</option>
-          </select>
+                     <select
+             value={candidate.status}
+             onChange={(e) => handleStatusUpdate(e.target.value)}
+             disabled={updatingStatus}
+             className={`px-2 py-1 rounded-full text-xs font-medium border transition-all duration-300 ${
+               candidate.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30' :
+               candidate.status === 'reviewed' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' :
+               candidate.status === 'shortlisted' ? 'bg-[#65a30d]/20 text-[#65a30d] border-[#65a30d]/30' :
+               'bg-red-500/20 text-red-300 border-red-500/30'
+             } ${updatingStatus ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
+           >
+             <option value="pending" className="bg-gray-800">{t.admin.candidates.status.pending}</option>
+             <option value="reviewed" className="bg-gray-800">{t.admin.candidates.status.reviewed}</option>
+             <option value="shortlisted" className="bg-gray-800">{t.admin.candidates.status.shortlisted}</option>
+             <option value="rejected" className="bg-gray-800">{t.admin.candidates.status.rejected}</option>
+           </select>
         </div>
       </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-400">CV File:</span>
-          <span className="text-white font-mono text-xs">{candidate.cvFile.name}</span>
-        </div>
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-400">File Size:</span>
-          <span className="text-white">{(candidate.cvFile.size / 1024).toFixed(1)} KB</span>
-        </div>
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-400">File Type:</span>
-          <span className="text-white">{candidate.cvFile.mimeType}</span>
-        </div>
-      </div>
+             <div className="space-y-2">
+         <div className="flex items-center justify-between text-sm">
+           <span className="text-gray-400">{t.admin.candidates.cvFile}</span>
+           <span className="text-white font-mono text-xs">{candidate.cvFile.name}</span>
+         </div>
+         <div className="flex items-center justify-between text-sm">
+           <span className="text-gray-400">{t.admin.candidates.fileSize}</span>
+           <span className="text-white">{(candidate.cvFile.size / 1024).toFixed(1)} KB</span>
+         </div>
+         <div className="flex items-center justify-between text-sm">
+           <span className="text-gray-400">{t.admin.candidates.fileType}</span>
+           <span className="text-white">{candidate.cvFile.mimeType}</span>
+         </div>
+       </div>
 
-      <div className="flex items-center space-x-2 mt-4">
-        <a
-          href={candidate.cvFile.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center space-x-2 px-3 py-2 bg-[#65a30d]/20 text-[#65a30d] rounded-lg hover:bg-[#65a30d]/30 transition-colors duration-300 text-sm"
-        >
-          <Eye className="w-4 h-4" />
-          <span>View CV</span>
-        </a>
-        <a
-          href={candidate.cvFile.url}
-          download={candidate.cvFile.name}
-          className="flex items-center space-x-2 px-3 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors duration-300 text-sm"
-        >
-          <Download className="w-4 h-4" />
-          <span>Download</span>
-        </a>
-      </div>
+             <div className="flex items-center space-x-2 mt-4">
+         <a
+           href={candidate.cvFile.url}
+           target="_blank"
+           rel="noopener noreferrer"
+           className="flex items-center space-x-2 px-3 py-2 bg-[#65a30d]/20 text-[#65a30d] rounded-lg hover:bg-[#65a30d]/30 transition-colors duration-300 text-sm"
+         >
+           <Eye className="w-4 h-4" />
+           <span>{t.admin.candidates.viewCV}</span>
+         </a>
+         <a
+           href={candidate.cvFile.url}
+           download={candidate.cvFile.name}
+           className="flex items-center space-x-2 px-3 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors duration-300 text-sm"
+         >
+           <Download className="w-4 h-4" />
+           <span>{t.admin.candidates.download}</span>
+         </a>
+       </div>
     </div>
   );
 };
