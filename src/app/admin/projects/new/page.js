@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -518,7 +519,9 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item...", t }) =>
 export default function AdminProjectForm() {
   const { language, isRTL } = useLanguage();
   const t = translations[language];
+  const [formLang, setFormLang] = useState(language);
   const dispatch = useDispatch();
+  const router = useRouter();
   const { loading: reduxLoading, error: reduxError } = useSelector(
     (state) => state.projects
   );
@@ -564,26 +567,50 @@ export default function AdminProjectForm() {
     onSubmit: async (values) => {
       setIsSubmitting(true);
       try {
-        console.log('Form values:', values);
+        console.log('[UI][Projects] Submitting with lang:', formLang);
+        try { console.log('[UI][Projects] Raw values:', JSON.stringify(values)); } catch (_) {}
         const imageUploads = await uploadMultipleFiles(values.images);
         const documentUploads = await uploadMultipleFiles(values.documents);
         
-        console.log('Image uploads:', imageUploads);
-        console.log('Document uploads:', documentUploads);
+        console.log('[UI][Projects] Image uploads:', imageUploads);
+        console.log('[UI][Projects] Document uploads:', documentUploads);
+
+        // Map enums if saving in Arabic to satisfy Project-ar schema
+        let mappedStatus = values.status;
+        let mappedPriority = values.priority;
+        if (formLang === 'ar') {
+          const statusMap = {
+            'planning': 'تخطيط',
+            'in-progress': 'قيد التنفيذ',
+            'completed': 'مكتمل',
+            'on-hold': 'معلق',
+            'cancelled': 'ملغي',
+          };
+          const priorityMap = {
+            'low': 'منخفض',
+            'medium': 'متوسط',
+            'high': 'عالي',
+            'urgent': 'عاجل',
+          };
+          mappedStatus = statusMap[values.status] || values.status;
+          mappedPriority = priorityMap[values.priority] || values.priority;
+        }
 
         const projectData = {
           ...values,
+          status: mappedStatus,
+          priority: mappedPriority,
           images: imageUploads,
           documents: documentUploads,
         };
 
-        console.log('Project data being sent:', projectData);
-        await dispatch(createProject(projectData)).unwrap();
+        try { console.log('[UI][Projects] Final payload:', JSON.stringify(projectData)); } catch (_) {}
+        await dispatch(createProject({ data: projectData, lang: formLang })).unwrap();
         setSubmitStatus("success");
         setTimeout(() => {
           formik.resetForm();
-          setSubmitStatus(null);
-        }, 3000);
+          router.push('/admin/projects');
+        }, 2000);
       } catch (error) {
         setSubmitStatus("error");
         console.error("Submission error:", error);
@@ -629,6 +656,17 @@ export default function AdminProjectForm() {
           <p className="text-xl text-gray-400">
             {t.admin.form.briefOverview}
           </p>
+          <div className="mt-4 flex items-center space-x-2">
+            <label className="text-sm text-gray-300">Language</label>
+            <select
+              value={formLang}
+              onChange={(e) => setFormLang(e.target.value)}
+              className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none"
+            >
+              <option value="en">English</option>
+              <option value="ar">العربية</option>
+            </select>
+          </div>
         </motion.div>
 
         {/* Success/Error Messages */}

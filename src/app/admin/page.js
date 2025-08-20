@@ -188,6 +188,7 @@ export default function AdminDashboard() {
     partnerships: { total: 0, thisMonth: 0 },
     awards: { total: 0, thisMonth: 0 },
     careers: { total: 0, thisMonth: 0 },
+    companies: { total: 0, thisMonth: 0 },
   });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -274,6 +275,13 @@ export default function AdminDashboard() {
       icon: <Newspaper className="h-8 w-8 text-red-400" />,
       href: "/admin/press/new",
       color: "bg-red-500/20",
+    },
+    {
+      title: t.admin.nav.addNewCompany,
+      description: language === 'ar' ? 'أضف شركة جديدة' : 'Create a new company with logo and details',
+      icon: <Users className="h-8 w-8 text-teal-400" />,
+      href: "/admin/companies/new",
+      color: "bg-teal-500/20",
     },
   ];
 
@@ -368,6 +376,14 @@ export default function AdminDashboard() {
               icon={<Briefcase className="h-6 w-6 text-orange-400" />}
               color="bg-orange-500/20"
               trend={`+${stats.careers.thisMonth} ${t.admin.stats.thisMonth}`}
+              loading={loading}
+            />
+            <StatsCard
+              title={t.admin.nav.companies}
+              value={stats.companies.total}
+              icon={<Users className="h-6 w-6 text-teal-400" />}
+              color="bg-teal-500/20"
+              trend={`+${stats.companies.thisMonth} ${t.admin.stats.thisMonth}`}
               loading={loading}
             />
           </div>

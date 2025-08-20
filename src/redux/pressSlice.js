@@ -2,9 +2,16 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { ENDPOINTS } from '../shared/endpoints';
 import { getToken } from "../shared/auth";
 
+const getLanguage = () => {
+  if (typeof window !== 'undefined') {
+    try { return localStorage.getItem('language') || 'en'; } catch (_) { return 'en'; }
+  }
+  return 'en';
+};
+
 export const fetchPress = createAsyncThunk("press/fetchAll", async () => {
   const res = await fetch(`${ENDPOINTS.press}/admin`, {
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
   if (!res.ok) throw new Error("Failed to fetch press");
   const data = await res.json();
@@ -15,7 +22,7 @@ export const fetchPublicPress = createAsyncThunk(
   "press/fetchPublicAll",
   async () => {
     console.log("Fetching public press articles...");
-    const res = await fetch(`${ENDPOINTS.press}/public`);
+    const res = await fetch(`${ENDPOINTS.press}/public`, { headers: { 'Accept-Language': getLanguage() } });
     if (!res.ok) throw new Error("Failed to fetch public press");
     const data = await res.json();
     console.log("Public press API response:", data);
@@ -27,7 +34,7 @@ export const fetchPressById = createAsyncThunk(
   "press/fetchById",
   async (id) => {
     const res = await fetch(`${ENDPOINTS.press}/admin/${id}`, {
-      headers: { Authorization: `Bearer ${getToken()}` },
+      headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
     });
     if (!res.ok) throw new Error("Failed to fetch press");
     const data = await res.json();
@@ -38,21 +45,22 @@ export const fetchPressById = createAsyncThunk(
 export const fetchPublicPressById = createAsyncThunk(
   "press/fetchPublicById",
   async (id) => {
-    const res = await fetch(`${ENDPOINTS.press}/public/${id}`);
+    const res = await fetch(`${ENDPOINTS.press}/public/${id}`, { headers: { 'Accept-Language': getLanguage() } });
     if (!res.ok) throw new Error("Failed to fetch public press");
     const data = await res.json();
     return data.press || data;
   }
 );
 
-export const createPress = createAsyncThunk("press/create", async (data) => {
+export const createPress = createAsyncThunk("press/create", async ({ data, lang }) => {
   const res = await fetch(ENDPOINTS.press, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${getToken()}`,
+      'Accept-Language': lang || getLanguage(),
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, lang: lang || getLanguage() }),
   });
   if (!res.ok) throw new Error("Failed to create press");
   const response = await res.json();
@@ -61,14 +69,15 @@ export const createPress = createAsyncThunk("press/create", async (data) => {
 
 export const updatePress = createAsyncThunk(
   "press/update",
-  async ({ id, data }) => {
+  async ({ id, data, lang }) => {
     const res = await fetch(`${ENDPOINTS.press}/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${getToken()}`,
+        'Accept-Language': lang || getLanguage(),
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, lang: lang || getLanguage() }),
     });
     if (!res.ok) throw new Error("Failed to update press");
     const response = await res.json();
@@ -79,7 +88,7 @@ export const updatePress = createAsyncThunk(
 export const deletePress = createAsyncThunk("press/delete", async (id) => {
   const res = await fetch(`${ENDPOINTS.press}/${id}`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
   if (!res.ok) throw new Error("Failed to delete press");
   return id;

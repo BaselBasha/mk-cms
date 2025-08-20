@@ -464,6 +464,7 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item...", t }) =>
 export default function AdminPressForm() {
   const { language, isRTL } = useLanguage();
   const t = translations[language];
+  const [formLang, setFormLang] = useState(language);
   const dispatch = useDispatch();
   const { loading: reduxLoading, error: reduxError } = useSelector(
     (state) => state.press
@@ -511,21 +512,38 @@ export default function AdminPressForm() {
     onSubmit: async (values) => {
       setIsSubmitting(true);
       try {
+        console.log('[UI][Press] Submitting with lang:', formLang);
+        try { console.log('[UI][Press] Raw values:', JSON.stringify(values)); } catch (_) {}
         const imageUploads = await uploadMultipleFiles(values.image);
         const documentUploads = await uploadMultipleFiles(values.documents);
 
+        // Map enums when saving Arabic
+        let mappedCategory = values.category;
+        if (formLang === 'ar') {
+          const categoryMap = {
+            'news': 'أخبار',
+            'interview': 'مقابلة',
+            'feature': 'ميزة',
+            'review': 'مراجعة',
+            'announcement': 'إعلان',
+          };
+          mappedCategory = categoryMap[values.category] || values.category;
+        }
+
         const pressData = {
           ...values,
+          category: mappedCategory,
+          publishDate: values.publishDate ? new Date(values.publishDate).toISOString() : values.publishDate,
           image: imageUploads.map((f) => f.url),
           documents: documentUploads.map((f) => f.url),
         };
 
-        await dispatch(createPress(pressData)).unwrap();
+        try { console.log('[UI][Press] Final payload:', JSON.stringify(pressData)); } catch (_) {}
+        await dispatch(createPress({ data: pressData, lang: formLang })).unwrap();
         setSubmitStatus("success");
         setTimeout(() => {
           formik.resetForm();
-          setSubmitStatus(null);
-        }, 3000);
+        }, 2000);
       } catch (error) {
         setSubmitStatus("error");
         console.error("Submission error:", error);
@@ -555,6 +573,17 @@ export default function AdminPressForm() {
           <p className="text-xl text-gray-400">
             {t.admin.form.briefOverview}
           </p>
+          <div className="mt-4 flex items-center space-x-2">
+            <label className="text-sm text-gray-300">Language</label>
+            <select
+              value={formLang}
+              onChange={(e) => setFormLang(e.target.value)}
+              className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none"
+            >
+              <option value="en">English</option>
+              <option value="ar">العربية</option>
+            </select>
+          </div>
         </motion.div>
         {/* Success/Error Messages */}
         <AnimatePresence>
@@ -677,7 +706,7 @@ export default function AdminPressForm() {
                   value={formik.values.category}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#65a30d]"
+                  className={`w-full px-4 py-3 bg-black/30 border rounded-lg text-white focus:outline-none focus:border-[#65a30d] ${formik.touched.category && formik.errors.category ? 'border-red-500' : 'border-white/10'}`}
                 >
                   <option value="">{t.admin.pressForm.selectCategory}</option>
                   <option value="news">{t.admin.pressForm.categories.news}</option>
@@ -770,6 +799,16 @@ export default function AdminPressForm() {
               <button
                 type="submit"
                 disabled={isSubmitting}
+                onClick={() => {
+                  try {
+                    console.log('[UI][Press] Save clicked');
+                    console.log('[UI][Press] Formik isValid:', formik.isValid);
+                    console.log('[UI][Press] Current values:', JSON.stringify(formik.values));
+                    console.log('[UI][Press] Current errors:', formik.errors);
+                  } catch (_) {}
+                  const touched = Object.keys(formik.values).reduce((acc, key) => { acc[key] = true; return acc; }, {});
+                  formik.setTouched(touched, true);
+                }}
                 className="flex items-center space-x-2 px-8 py-3 bg-[#334155] hover:bg-[#1e293b]/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-white font-medium transition-colors"
               >
                 {isSubmitting ? (

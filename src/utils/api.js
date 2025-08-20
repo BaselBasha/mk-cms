@@ -17,13 +17,23 @@ const getAuthToken = () => {
   return null;
 };
 
-// Generic API request function
+// Helper function to get current language
+const getCurrentLanguage = () => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('language') || 'en';
+  }
+  return 'en';
+};
+
+// Generic API request function with language support
 const apiRequest = async (endpoint, options = {}) => {
   const token = getAuthToken();
+  const language = getCurrentLanguage();
   
   const config = {
     headers: {
       'Content-Type': 'application/json',
+      'Accept-Language': language,
       ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     },
@@ -52,15 +62,16 @@ const apiRequest = async (endpoint, options = {}) => {
   }
 };
 
-// Stats API functions
+// Stats API functions with language support
 export const fetchDashboardStats = async () => {
   try {
-    const [projects, certifications, partnerships, awards, careers] = await Promise.allSettled([
+    const [projects, certifications, partnerships, awards, careers, companies] = await Promise.allSettled([
       apiRequest('/projects/stats/admin'),
       apiRequest('/certifications/stats/admin'),
       apiRequest('/partnerships/stats/admin'),
       apiRequest('/awards/stats/admin'),
       apiRequest('/careers/stats/admin'),
+      apiRequest('/companies/stats/admin'),
     ]);
 
     return {
@@ -69,6 +80,7 @@ export const fetchDashboardStats = async () => {
       partnerships: partnerships.status === 'fulfilled' ? partnerships.value : { total: 0, thisMonth: 0 },
       awards: awards.status === 'fulfilled' ? awards.value : { total: 0, thisMonth: 0 },
       careers: careers.status === 'fulfilled' ? careers.value : { total: 0, thisMonth: 0 },
+      companies: companies.status === 'fulfilled' ? companies.value : { total: 0, thisMonth: 0 },
     };
   } catch (error) {
     console.error('Failed to fetch dashboard stats:', error);
@@ -79,26 +91,71 @@ export const fetchDashboardStats = async () => {
       partnerships: { total: 0, thisMonth: 0 },
       awards: { total: 0, thisMonth: 0 },
       careers: { total: 0, thisMonth: 0 },
+      companies: { total: 0, thisMonth: 0 },
     };
   }
 };
 
-// Generic CRUD functions
+// Generic CRUD functions with language support
 export const api = {
   get: (endpoint) => apiRequest(endpoint),
-  post: (endpoint, data) => apiRequest(endpoint, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }),
-  put: (endpoint, data) => apiRequest(endpoint, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  }),
-  patch: (endpoint, data) => apiRequest(endpoint, {
-    method: 'PATCH',
-    body: JSON.stringify(data),
-  }),
+  post: (endpoint, data) => {
+    const language = getCurrentLanguage();
+    return apiRequest(endpoint, {
+      method: 'POST',
+      body: JSON.stringify({ ...data, lang: language }),
+    });
+  },
+  put: (endpoint, data) => {
+    const language = getCurrentLanguage();
+    return apiRequest(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify({ ...data, lang: language }),
+    });
+  },
+  patch: (endpoint, data) => {
+    const language = getCurrentLanguage();
+    return apiRequest(endpoint, {
+      method: 'PATCH',
+      body: JSON.stringify({ ...data, lang: language }),
+    });
+  },
   delete: (endpoint) => apiRequest(endpoint, {
     method: 'DELETE',
   }),
+};
+
+// Language-aware API functions
+export const languageApi = {
+  get: (endpoint, language) => {
+    const lang = language || getCurrentLanguage();
+    return apiRequest(`${endpoint}?lang=${lang}`);
+  },
+  post: (endpoint, data, language) => {
+    const lang = language || getCurrentLanguage();
+    return apiRequest(endpoint, {
+      method: 'POST',
+      body: JSON.stringify({ ...data, lang }),
+    });
+  },
+  put: (endpoint, data, language) => {
+    const lang = language || getCurrentLanguage();
+    return apiRequest(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify({ ...data, lang }),
+    });
+  },
+  patch: (endpoint, data, language) => {
+    const lang = language || getCurrentLanguage();
+    return apiRequest(endpoint, {
+      method: 'PATCH',
+      body: JSON.stringify({ ...data, lang }),
+    });
+  },
+  delete: (endpoint, language) => {
+    const lang = language || getCurrentLanguage();
+    return apiRequest(`${endpoint}?lang=${lang}`, {
+      method: 'DELETE',
+    });
+  },
 }; 

@@ -53,6 +53,7 @@ const AdminHeader = ({ currentPage = "Dashboard" }) => {
     { name: t.admin.nav.awards, href: "/admin/awards" },
     { name: t.admin.nav.careers, href: "/admin/careers" },
     { name: t.admin.nav.press, href: "/admin/press" },
+    { name: t.admin.nav.companies, href: "/admin/companies" },
   ];
 
   return (
@@ -78,7 +79,7 @@ const AdminHeader = ({ currentPage = "Dashboard" }) => {
           <nav className="flex items-center space-x-6">
             {navItems.map((item) => (
               <a
-                key={item.name}
+                key={item.href}
                 href={item.href}
                 className={`transition-colors duration-200 ${
                   currentPage === item.name

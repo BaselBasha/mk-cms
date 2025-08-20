@@ -2,9 +2,16 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { ENDPOINTS } from '../shared/endpoints';
 import { getToken } from "../shared/auth";
 
+const getLanguage = () => {
+  if (typeof window !== 'undefined') {
+    try { return localStorage.getItem('language') || 'en'; } catch (_) { return 'en'; }
+  }
+  return 'en';
+};
+
 export const fetchProjects = createAsyncThunk("projects/fetchAll", async () => {
   const res = await fetch(`${ENDPOINTS.projects}/admin`, {
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
   if (!res.ok) throw new Error("Failed to fetch projects");
   const data = await res.json();
@@ -15,7 +22,7 @@ export const fetchPublicProjects = createAsyncThunk(
   "projects/fetchPublic",
   async () => {
     console.log("Fetching public projects...");
-    const res = await fetch(`${ENDPOINTS.projects}/public`);
+    const res = await fetch(`${ENDPOINTS.projects}/public`, { headers: { 'Accept-Language': getLanguage() } });
     if (!res.ok) throw new Error("Failed to fetch public projects");
     const data = await res.json();
     console.log("Public projects API response:", data);
@@ -27,7 +34,7 @@ export const fetchProjectById = createAsyncThunk(
   "projects/fetchById",
   async (id) => {
     const res = await fetch(`${ENDPOINTS.projects}/admin/${id}`, {
-      headers: { Authorization: `Bearer ${getToken()}` },
+      headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
     });
     if (!res.ok) throw new Error("Failed to fetch project");
     const data = await res.json();
@@ -38,7 +45,7 @@ export const fetchProjectById = createAsyncThunk(
 export const fetchPublicProjectById = createAsyncThunk(
   "projects/fetchPublicById",
   async (id) => {
-    const res = await fetch(`${ENDPOINTS.projects}/public/${id}`);
+    const res = await fetch(`${ENDPOINTS.projects}/public/${id}`, { headers: { 'Accept-Language': getLanguage() } });
     if (!res.ok) throw new Error("Failed to fetch public project");
     const data = await res.json();
     return data.project || data;
@@ -47,16 +54,23 @@ export const fetchPublicProjectById = createAsyncThunk(
 
 export const createProject = createAsyncThunk(
   "projects/create",
-  async (data) => {
+  async ({ data, lang }) => {
+    const currentLang = lang || getLanguage();
+    try { console.log('[Redux][projects] Creating project. Lang:', currentLang, 'Payload:', JSON.stringify(data)); } catch (_) {}
     const res = await fetch(ENDPOINTS.projects, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${getToken()}`,
+        'Accept-Language': currentLang,
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, lang: currentLang }),
     });
-    if (!res.ok) throw new Error("Failed to create project");
+    if (!res.ok) {
+      const text = await res.text();
+      console.error('[Redux][projects] Create failed -> Status:', res.status, 'Body:', text);
+      throw new Error("Failed to create project");
+    }
     const response = await res.json();
     return response.project || response; // Handle both { project: {...} } and {...} formats
   }
@@ -64,14 +78,15 @@ export const createProject = createAsyncThunk(
 
 export const updateProject = createAsyncThunk(
   "projects/update",
-  async ({ id, data }) => {
+  async ({ id, data, lang }) => {
     const res = await fetch(`${ENDPOINTS.projects}/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${getToken()}`,
+        'Accept-Language': lang || getLanguage(),
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, lang: lang || getLanguage() }),
     });
     if (!res.ok) throw new Error("Failed to update project");
     const response = await res.json();
@@ -82,7 +97,7 @@ export const updateProject = createAsyncThunk(
 export const deleteProject = createAsyncThunk("projects/delete", async (id) => {
   const res = await fetch(`${ENDPOINTS.projects}/${id}`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
   if (!res.ok) throw new Error("Failed to delete project");
   return id;

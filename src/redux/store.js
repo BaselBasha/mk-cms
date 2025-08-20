@@ -6,6 +6,7 @@ import newsReducer from './newsSlice';
 import partnershipsReducer from './partnershipsSlice';
 import projectsReducer from './projectsSlice';
 import pressReducer from './pressSlice';
+import companiesReducer from './companiesSlice';
 import authReducer from './authSlice';
 
 const store = configureStore({
@@ -17,6 +18,7 @@ const store = configureStore({
     partnerships: partnershipsReducer,
     projects: projectsReducer,
     press: pressReducer,
+    companies: companiesReducer,
     auth: authReducer,
   },
 });

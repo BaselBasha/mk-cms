@@ -514,6 +514,7 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item...", t }) =>
 export default function AdminCareerForm() {
   const { language, isRTL } = useLanguage();
   const t = translations[language];
+  const [formLang, setFormLang] = useState(language);
   const router = useRouter();
   const dispatch = useDispatch();
 
@@ -603,6 +604,8 @@ export default function AdminCareerForm() {
     }),
     onSubmit: async (values) => {
       try {
+        console.log('[UI][Careers] Submitting with lang:', formLang);
+        try { console.log('[UI][Careers] Raw values:', JSON.stringify(values)); } catch (_) {}
         const formData = {
           ...values,
           applicationDeadline: new Date(values.applicationDeadline).toISOString(),
@@ -613,7 +616,8 @@ export default function AdminCareerForm() {
           }
         };
 
-        await dispatch(createCareer(formData)).unwrap();
+        try { console.log('[UI][Careers] Final payload:', JSON.stringify(formData)); } catch (_) {}
+        await dispatch(createCareer({ data: formData, lang: formLang })).unwrap();
         formik.resetForm();
       } catch (error) {
         console.error('Submission failed:', error);
@@ -680,6 +684,17 @@ export default function AdminCareerForm() {
               <p className="text-xl text-gray-400">
                 {t.admin.form.briefOverview}
               </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <label className="text-sm text-gray-300">Language</label>
+              <select
+                value={formLang}
+                onChange={(e) => setFormLang(e.target.value)}
+                className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none"
+              >
+                <option value="en">English</option>
+                <option value="ar">العربية</option>
+              </select>
             </div>
           </div>
         </motion.div>
@@ -873,6 +888,16 @@ export default function AdminCareerForm() {
             <motion.button
               type="submit"
               disabled={loading}
+              onClick={() => {
+                try {
+                  console.log('[UI][Careers] Save clicked');
+                  console.log('[UI][Careers] Formik isValid:', formik.isValid);
+                  console.log('[UI][Careers] Current values:', JSON.stringify(formik.values));
+                  console.log('[UI][Careers] Current errors:', formik.errors);
+                } catch (_) {}
+                const touched = Object.keys(formik.values).reduce((acc, key) => { acc[key] = true; return acc; }, {});
+                formik.setTouched(touched, true);
+              }}
               className="flex items-center space-x-2 bg-[#65a30d] text-white px-8 py-3 rounded-lg hover:bg-[#84cc16] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}

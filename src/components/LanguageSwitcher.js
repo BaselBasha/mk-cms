@@ -12,6 +12,13 @@ const LanguageSwitcher = () => {
   const toggleLanguage = () => {
     const newLanguage = language === 'en' ? 'ar' : 'en';
     changeLanguage(newLanguage);
+    // Force a soft reload so server components/pages pick up the new language immediately
+    try {
+      if (typeof window !== 'undefined') {
+        // Use replace to avoid adding history entries
+        window.location.replace(window.location.href);
+      }
+    } catch (_) {}
   };
 
   return (

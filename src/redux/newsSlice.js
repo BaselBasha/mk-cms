@@ -2,9 +2,16 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { ENDPOINTS } from '../shared/endpoints';
 import { getToken } from "../shared/auth";
 
+const getLanguage = () => {
+  if (typeof window !== 'undefined') {
+    try { return localStorage.getItem('language') || 'en'; } catch (_) { return 'en'; }
+  }
+  return 'en';
+};
+
 export const fetchNews = createAsyncThunk("news/fetchAll", async () => {
   const res = await fetch(`${ENDPOINTS.news}/admin`, {
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
   if (!res.ok) throw new Error("Failed to fetch news");
   const data = await res.json();
@@ -12,7 +19,7 @@ export const fetchNews = createAsyncThunk("news/fetchAll", async () => {
 });
 
 export const fetchPublicNews = createAsyncThunk("news/fetchPublic", async () => {
-  const res = await fetch(`${ENDPOINTS.news}/public`);
+  const res = await fetch(`${ENDPOINTS.news}/public`, { headers: { 'Accept-Language': getLanguage() } });
   if (!res.ok) throw new Error("Failed to fetch public news");
   const data = await res.json();
   return data.news || data;
@@ -20,7 +27,7 @@ export const fetchPublicNews = createAsyncThunk("news/fetchPublic", async () => 
 
 export const fetchNewsById = createAsyncThunk("news/fetchById", async (id) => {
   const res = await fetch(`${ENDPOINTS.news}/admin/${id}`, {
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
   if (!res.ok) throw new Error("Failed to fetch news");
   const data = await res.json();
@@ -28,7 +35,7 @@ export const fetchNewsById = createAsyncThunk("news/fetchById", async (id) => {
 });
 
 export const fetchPublicNewsById = createAsyncThunk("news/fetchPublicById", async (id) => {
-  const res = await fetch(`${ENDPOINTS.news}/public/${id}`);
+  const res = await fetch(`${ENDPOINTS.news}/public/${id}`, { headers: { 'Accept-Language': getLanguage() } });
   if (!res.ok) throw new Error("Failed to fetch public news");
   const data = await res.json();
   return data.news || data;
@@ -36,14 +43,15 @@ export const fetchPublicNewsById = createAsyncThunk("news/fetchPublicById", asyn
 
 export const createNews = createAsyncThunk(
   "news/create",
-  async (data) => {
+  async ({ data, lang }) => {
     const res = await fetch(ENDPOINTS.news, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${getToken()}`,
+        'Accept-Language': lang || getLanguage(),
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, lang: lang || getLanguage() }),
     });
     if (!res.ok) throw new Error("Failed to create news");
     const response = await res.json();
@@ -53,14 +61,15 @@ export const createNews = createAsyncThunk(
 
 export const updateNews = createAsyncThunk(
   "news/update",
-  async ({ id, data }) => {
+  async ({ id, data, lang }) => {
     const res = await fetch(`${ENDPOINTS.news}/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${getToken()}`,
+        'Accept-Language': lang || getLanguage(),
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, lang: lang || getLanguage() }),
     });
     if (!res.ok) throw new Error("Failed to update news");
     const response = await res.json();
@@ -71,7 +80,7 @@ export const updateNews = createAsyncThunk(
 export const deleteNews = createAsyncThunk("news/delete", async (id) => {
   const res = await fetch(`${ENDPOINTS.news}/${id}`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
   if (!res.ok) throw new Error("Failed to delete news");
   return id;

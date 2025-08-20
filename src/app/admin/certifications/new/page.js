@@ -388,6 +388,7 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item...", t }) =>
 export default function AdminCertificationForm() {
   const { language, isRTL } = useLanguage();
   const t = translations[language];
+  const [formLang, setFormLang] = useState(language);
   const router = useRouter();
   const dispatch = useDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -427,13 +428,38 @@ export default function AdminCertificationForm() {
     onSubmit: async (values) => {
       setIsSubmitting(true);
       try {
+        console.log('[UI][Certifications] Submitting with lang:', formLang);
+        try { console.log('[UI][Certifications] Raw values:', JSON.stringify(values)); } catch (_) {}
         const imageUploads = await uploadMultipleFiles(
           values.image ? [values.image] : []
         );
         const documentUploads = await uploadMultipleFiles(values.documents);
 
+        // Map enums when saving to Arabic schema
+        let mappedCategory = values.category;
+        let mappedPriority = values.priority;
+        if (formLang === 'ar') {
+          const categoryMap = {
+            'Quality': 'الجودة',
+            'Environmental': 'البيئة',
+            'Organic': 'العضوي',
+            'Food Safety': 'سلامة الغذاء',
+            'Accreditation': 'الاعتماد',
+            'National': 'الوطني',
+          };
+          const priorityMap = {
+            'High': 'عالي',
+            'Medium': 'متوسط',
+            'Low': 'منخفض',
+          };
+          mappedCategory = categoryMap[values.category] || values.category;
+          mappedPriority = priorityMap[values.priority] || values.priority;
+        }
+
         const certificationData = {
           ...values,
+          category: mappedCategory,
+          priority: mappedPriority,
           image: imageUploads[0]
             ? {
                 url: imageUploads[0].url,
@@ -450,7 +476,9 @@ export default function AdminCertificationForm() {
           })),
         };
 
-        await dispatch(createCertification(certificationData)).unwrap();
+        try { console.log('[UI][Certifications] Final payload:', JSON.stringify(certificationData)); } catch (_) {}
+
+        await dispatch(createCertification({ data: certificationData, lang: formLang })).unwrap();
         setSubmitStatus("success");
         setTimeout(() => {
           router.push("/admin/certifications");
@@ -484,6 +512,17 @@ export default function AdminCertificationForm() {
           <p className="text-xl text-gray-400">
             {t.admin.form.briefOverview}
           </p>
+          <div className="mt-4 flex items-center space-x-2">
+            <label className="text-sm text-gray-300">Language</label>
+            <select
+              value={formLang}
+              onChange={(e) => setFormLang(e.target.value)}
+              className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none"
+            >
+              <option value="en">English</option>
+              <option value="ar">العربية</option>
+            </select>
+          </div>
         </motion.div>
         <AnimatePresence>
           {submitStatus === "success" && (
@@ -675,6 +714,17 @@ export default function AdminCertificationForm() {
               <button
                 type="submit"
                 disabled={isSubmitting}
+                onClick={() => {
+                  try {
+                    console.log('[UI][Certifications] Save clicked');
+                    console.log('[UI][Certifications] Formik isValid:', formik.isValid);
+                    console.log('[UI][Certifications] Current values:', JSON.stringify(formik.values));
+                    console.log('[UI][Certifications] Current errors:', formik.errors);
+                  } catch (_) {}
+                  // Mark all top-level fields as touched to surface validation messages
+                  const touched = Object.keys(formik.values).reduce((acc, key) => { acc[key] = true; return acc; }, {});
+                  formik.setTouched(touched, true);
+                }}
                 className="flex items-center space-x-2 px-8 py-3 bg-[#65a30d] hover:bg-[#528000] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-white font-medium transition-colors"
               >
                 {isSubmitting ? (

@@ -487,6 +487,7 @@ const DynamicObjectList = ({ label, name, formik, fields, placeholder }) => {
 export default function AdminPartnershipForm() {
   const { language, isRTL } = useLanguage();
   const t = translations[language];
+  const [formLang, setFormLang] = useState(language);
   const router = useRouter();
   const dispatch = useDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -569,6 +570,8 @@ export default function AdminPartnershipForm() {
       setSubmitStatus(null);
 
       try {
+        console.log('[UI][Partnerships] Submitting with lang:', formLang);
+        try { console.log('[UI][Partnerships] Raw values:', JSON.stringify(values)); } catch (_) {}
         // Handle single image upload for the poster
         let posterImageData = null;
         if (values.image && values.image.length > 0) {
@@ -590,24 +593,34 @@ export default function AdminPartnershipForm() {
           galleryImageUploads = await uploadMultipleFiles(values.galleryImages);
         }
 
-        const partnershipData = {
+        let partnershipData = {
           ...values,
           image: posterImageData,
           attachments: galleryImageUploads
-            .filter((file) => file && file.url) // Filter out any failed uploads
+            .filter((file) => file && file.url)
             .map((file, index) => ({
-              type: "image", // All gallery images are treated as 'image'
+              type: formLang === 'ar' ? 'صورة' : 'image',
               url: file.url,
               title: file.name || `Gallery Image ${index + 1}`,
               description: `Gallery image ${index + 1}`,
             })),
         };
 
-        // Remove the temporary fields from the data sent to backend
-        delete partnershipData.image; // Remove the file array
-        delete partnershipData.galleryImages; // Remove the file array
+        // Map enums for Arabic schema
+        if (formLang === 'ar') {
+          const statusMap = { active: 'نشط', inactive: 'غير نشط', completed: 'مكتمل', cancelled: 'ملغي' };
+          const priorityMap = { low: 'منخفض', medium: 'متوسط', high: 'عالي' };
+          const linkTypeMap = { 'website': 'موقع', 'press': 'صحافة', 'research': 'بحث', 'case-study': 'دراسة حالة' };
+          partnershipData.status = statusMap[values.status] || values.status;
+          partnershipData.priority = priorityMap[values.priority] || values.priority;
+          partnershipData.partnerLinks = (values.partnerLinks || []).map((l) => ({ ...l, type: linkTypeMap[l.type] || l.type }));
+        }
 
-        await dispatch(createPartnership(partnershipData)).unwrap();
+        // Remove temp gallery field
+        delete partnershipData.galleryImages;
+
+        try { console.log('[UI][Partnerships] Final payload:', JSON.stringify(partnershipData)); } catch (_) {}
+        await dispatch(createPartnership({ data: partnershipData, lang: formLang })).unwrap();
         setSubmitStatus("success");
 
         // Navigate to partnerships list after successful creation
@@ -643,6 +656,17 @@ export default function AdminPartnershipForm() {
           <p className="text-xl text-gray-400">
             {t.admin.form.briefOverview}
           </p>
+          <div className="mt-4 flex items-center space-x-2">
+            <label className="text-sm text-gray-300">Language</label>
+            <select
+              value={formLang}
+              onChange={(e) => setFormLang(e.target.value)}
+              className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none"
+            >
+              <option value="en">English</option>
+              <option value="ar">العربية</option>
+            </select>
+          </div>
         </motion.div>
         <AnimatePresence>
           {submitStatus === "success" && (

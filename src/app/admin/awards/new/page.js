@@ -514,6 +514,7 @@ const DynamicList = ({ label, name, formik, placeholder = "Add item...", t }) =>
 export default function AdminAwardForm() {
   const { language, isRTL } = useLanguage();
   const t = translations[language];
+  const [formLang, setFormLang] = useState(language);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
   const dispatch = useDispatch();
@@ -619,7 +620,7 @@ export default function AdminAwardForm() {
 
         console.log('Submitting award data:', awardData);
 
-        await dispatch(createAward(awardData)).unwrap();
+        await dispatch(createAward({ data: awardData, lang: formLang })).unwrap();
         setSubmitStatus('success');
         setTimeout(() => {
           router.push('/admin/awards');
@@ -676,6 +677,17 @@ export default function AdminAwardForm() {
               <p className="text-xl text-gray-400">
                 {t.admin.form.briefOverview}
               </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <label className="text-sm text-gray-300">Language</label>
+              <select
+                value={formLang}
+                onChange={(e) => setFormLang(e.target.value)}
+                className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none"
+              >
+                <option value="en">English</option>
+                <option value="ar">العربية</option>
+              </select>
             </div>
           </div>
         </motion.div>

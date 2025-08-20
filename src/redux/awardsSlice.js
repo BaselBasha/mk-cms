@@ -2,9 +2,16 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { ENDPOINTS } from '../shared/endpoints';
 import { getToken } from "../shared/auth";
 
+const getLanguage = () => {
+  if (typeof window !== 'undefined') {
+    try { return localStorage.getItem('language') || 'en'; } catch (_) { return 'en'; }
+  }
+  return 'en';
+};
+
 export const fetchAwards = createAsyncThunk("awards/fetchAll", async () => {
   const res = await fetch(`${ENDPOINTS.awards}/admin`, {
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
   if (!res.ok) throw new Error("Failed to fetch awards");
   const data = await res.json();
@@ -12,7 +19,7 @@ export const fetchAwards = createAsyncThunk("awards/fetchAll", async () => {
 });
 
 export const fetchPublicAwards = createAsyncThunk("awards/fetchPublic", async () => {
-  const res = await fetch(`${ENDPOINTS.awards}/public`);
+  const res = await fetch(`${ENDPOINTS.awards}/public`, { headers: { 'Accept-Language': getLanguage() } });
   if (!res.ok) throw new Error("Failed to fetch public awards");
   const data = await res.json();
   return data.awards || data;
@@ -20,7 +27,7 @@ export const fetchPublicAwards = createAsyncThunk("awards/fetchPublic", async ()
 
 export const fetchAwardById = createAsyncThunk("awards/fetchById", async (id) => {
   const res = await fetch(`${ENDPOINTS.awards}/admin/${id}`, {
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
   if (!res.ok) throw new Error("Failed to fetch award");
   const data = await res.json();
@@ -28,7 +35,7 @@ export const fetchAwardById = createAsyncThunk("awards/fetchById", async (id) =>
 });
 
 export const fetchPublicAwardById = createAsyncThunk("awards/fetchPublicById", async (id) => {
-  const res = await fetch(`${ENDPOINTS.awards}/public/${id}`);
+  const res = await fetch(`${ENDPOINTS.awards}/public/${id}`, { headers: { 'Accept-Language': getLanguage() } });
   if (!res.ok) throw new Error("Failed to fetch public award");
   const data = await res.json();
   return data.award || data;
@@ -36,14 +43,15 @@ export const fetchPublicAwardById = createAsyncThunk("awards/fetchPublicById", a
 
 export const createAward = createAsyncThunk(
   "awards/create",
-  async (data) => {
+  async ({ data, lang }) => {
     const res = await fetch(ENDPOINTS.awards, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${getToken()}`,
+        'Accept-Language': lang || getLanguage(),
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, lang: lang || getLanguage() }),
     });
     if (!res.ok) throw new Error("Failed to create award");
     const response = await res.json();
@@ -53,14 +61,15 @@ export const createAward = createAsyncThunk(
 
 export const updateAward = createAsyncThunk(
   "awards/update",
-  async ({ id, data }) => {
+  async ({ id, data, lang }) => {
     const res = await fetch(`${ENDPOINTS.awards}/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${getToken()}`,
+        'Accept-Language': lang || getLanguage(),
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, lang: lang || getLanguage() }),
     });
     if (!res.ok) throw new Error("Failed to update award");
     const response = await res.json();
@@ -71,7 +80,7 @@ export const updateAward = createAsyncThunk(
 export const deleteAward = createAsyncThunk("awards/delete", async (id) => {
   const res = await fetch(`${ENDPOINTS.awards}/${id}`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
   if (!res.ok) throw new Error("Failed to delete award");
   return id;

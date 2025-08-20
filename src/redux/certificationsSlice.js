@@ -2,9 +2,16 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { ENDPOINTS } from '../shared/endpoints';
 import { getToken } from "../shared/auth";
 
+const getLanguage = () => {
+  if (typeof window !== 'undefined') {
+    try { return localStorage.getItem('language') || 'en'; } catch (_) { return 'en'; }
+  }
+  return 'en';
+};
+
 export const fetchCertifications = createAsyncThunk("certifications/fetchAll", async () => {
   const res = await fetch(`${ENDPOINTS.certifications}/admin`, {
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
   if (!res.ok) throw new Error("Failed to fetch certifications");
   const data = await res.json();
@@ -12,7 +19,7 @@ export const fetchCertifications = createAsyncThunk("certifications/fetchAll", a
 });
 
 export const fetchPublicCertifications = createAsyncThunk("certifications/fetchPublic", async () => {
-  const res = await fetch(`${ENDPOINTS.certifications}/public`);
+  const res = await fetch(`${ENDPOINTS.certifications}/public`, { headers: { 'Accept-Language': getLanguage() } });
   if (!res.ok) throw new Error("Failed to fetch public certifications");
   const data = await res.json();
   return data.certifications || data;
@@ -20,7 +27,7 @@ export const fetchPublicCertifications = createAsyncThunk("certifications/fetchP
 
 export const fetchCertificationById = createAsyncThunk("certifications/fetchById", async (id) => {
   const res = await fetch(`${ENDPOINTS.certifications}/admin/${id}`, {
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
   if (!res.ok) throw new Error("Failed to fetch certification");
   const data = await res.json();
@@ -28,7 +35,7 @@ export const fetchCertificationById = createAsyncThunk("certifications/fetchById
 });
 
 export const fetchPublicCertificationById = createAsyncThunk("certifications/fetchPublicById", async (id) => {
-  const res = await fetch(`${ENDPOINTS.certifications}/public/${id}`);
+  const res = await fetch(`${ENDPOINTS.certifications}/public/${id}`, { headers: { 'Accept-Language': getLanguage() } });
   if (!res.ok) throw new Error("Failed to fetch public certification");
   const data = await res.json();
   return data.certification || data;
@@ -36,14 +43,15 @@ export const fetchPublicCertificationById = createAsyncThunk("certifications/fet
 
 export const createCertification = createAsyncThunk(
   "certifications/create",
-  async (data) => {
+  async ({ data, lang }) => {
     const res = await fetch(ENDPOINTS.certifications, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${getToken()}`,
+        'Accept-Language': lang || getLanguage(),
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, lang: lang || getLanguage() }),
     });
     if (!res.ok) throw new Error("Failed to create certification");
     const response = await res.json();
@@ -53,14 +61,15 @@ export const createCertification = createAsyncThunk(
 
 export const updateCertification = createAsyncThunk(
   "certifications/update",
-  async ({ id, data }) => {
+  async ({ id, data, lang }) => {
     const res = await fetch(`${ENDPOINTS.certifications}/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${getToken()}`,
+        'Accept-Language': lang || getLanguage(),
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, lang: lang || getLanguage() }),
     });
     if (!res.ok) throw new Error("Failed to update certification");
     const response = await res.json();
@@ -71,7 +80,7 @@ export const updateCertification = createAsyncThunk(
 export const deleteCertification = createAsyncThunk("certifications/delete", async (id) => {
   const res = await fetch(`${ENDPOINTS.certifications}/${id}`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
   if (!res.ok) throw new Error("Failed to delete certification");
   return id;

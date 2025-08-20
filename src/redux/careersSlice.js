@@ -15,13 +15,21 @@ const getAuthToken = () => {
     }
 };
 
+const getLanguage = () => {
+    if (typeof window !== 'undefined') {
+        try { return localStorage.getItem('language') || 'en'; } catch (_) { return 'en'; }
+    }
+    return 'en';
+};
+
 // Async thunks for API calls
 export const fetchCareers = createAsyncThunk('careers/fetchAll', async () => {
     const token = getAuthToken();
     const res = await fetch(`${ENDPOINTS.careers}/admin/`, {
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Accept-Language': getLanguage(),
         },
     });
     if (!res.ok) throw new Error('Failed to fetch careers');
@@ -34,7 +42,8 @@ export const fetchCareerById = createAsyncThunk('careers/fetchById', async (id) 
     const res = await fetch(`${ENDPOINTS.careers}/admin/${id}`, {
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Accept-Language': getLanguage(),
         },
     });
     if (!res.ok) throw new Error('Failed to fetch career');
@@ -43,34 +52,36 @@ export const fetchCareerById = createAsyncThunk('careers/fetchById', async (id) 
 });
 
 export const fetchPublicCareers = createAsyncThunk('careers/fetchPublic', async () => {
-    const res = await fetch(`${ENDPOINTS.careers}/public`);
+    const res = await fetch(`${ENDPOINTS.careers}/public`, { headers: { 'Accept-Language': getLanguage() } });
     if (!res.ok) throw new Error('Failed to fetch public careers');
     return await res.json();
 });
 
-export const createCareer = createAsyncThunk('careers/create', async (data) => {
+export const createCareer = createAsyncThunk('careers/create', async ({ data, lang }) => {
     const token = getAuthToken();
     const res = await fetch(ENDPOINTS.careers, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Accept-Language': lang || getLanguage(),
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, lang: lang || getLanguage() }),
     });
     if (!res.ok) throw new Error('Failed to create career');
     return await res.json();
 });
 
-export const updateCareer = createAsyncThunk('careers/update', async ({ id, data }) => {
+export const updateCareer = createAsyncThunk('careers/update', async ({ id, data, lang }) => {
     const token = getAuthToken();
     const res = await fetch(`${ENDPOINTS.careers}/${id}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Accept-Language': lang || getLanguage(),
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, lang: lang || getLanguage() }),
     });
     if (!res.ok) throw new Error('Failed to update career');
     const response = await res.json();
@@ -81,7 +92,7 @@ export const deleteCareer = createAsyncThunk('careers/delete', async (id) => {
     const token = getAuthToken();
     const res = await fetch(`${ENDPOINTS.careers}/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept-Language': getLanguage() }
     });
     if (!res.ok) throw new Error('Failed to delete career');
     return id;

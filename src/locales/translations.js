@@ -269,6 +269,8 @@ export const translations = {
       awards: "Awards",
       careers: "Careers",
       press: "Press",
+      companies: "Companies",
+      addNewCompany: "Add New Company",
       management: "Management",
     },
     
@@ -978,8 +980,8 @@ export const translations = {
       
       // Job Types
       jobTypes: {
-        fullTime: "Full Time",
-        partTime: "Part Time",
+        fullTime: "Full-time",
+        partTime: "Part-time",
         contract: "Contract",
         internship: "Internship",
         remote: "Remote",
@@ -2193,6 +2195,8 @@ export const translations = {
       awards: "الجوائز",
       careers: "الوظائف",
       press: "المراجع الصحفية",
+      companies: "شركاتنا",
+      addNewCompany: "إضافة شركة جديدة",
       management: "الإدارة",
     },
     
@@ -2993,7 +2997,7 @@ export const translations = {
         operations: "العمليات",
         finance: "المالية",
         hr: "الموارد البشرية",
-        it: "تكنولوجيا المعلومات",
+        it: "تقنية المعلومات",
         researchDevelopment: "البحث والتطوير",
         qualityAssurance: "ضمان الجودة",
         supplyChain: "سلسلة التوريد",
@@ -3010,9 +3014,9 @@ export const translations = {
       
       // Experience Levels
       experienceLevels: {
-        entryLevel: "مبتدئ",
-        junior: "مبتدئ",
-        midLevel: "متوسط المستوى",
+        entryLevel: "جديد",
+        junior: "مبتدئ متقدم",
+        midLevel: "متوسط",
         senior: "خبير",
         executive: "تنفيذي",
       },
@@ -3475,7 +3479,7 @@ export const translations = {
       
       // Experience Level Options
       experienceLevelOptions: {
-        entryLevel: "مبتدئ",
+        entryLevel: "جديد",
         junior: "مبتدئ متقدم",
         midLevel: "متوسط",
         senior: "خبير",

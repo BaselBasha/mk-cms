@@ -2,9 +2,21 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { ENDPOINTS } from '../shared/endpoints';
 import { getToken } from "../shared/auth";
 
+// Helper to read current UI language (defaults to 'en')
+const getLanguage = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      return localStorage.getItem('language') || 'en';
+    } catch (e) {
+      return 'en';
+    }
+  }
+  return 'en';
+};
+
 export const fetchPartnerships = createAsyncThunk("partnerships/fetchAll", async () => {
   const res = await fetch(`${ENDPOINTS.partnerships}/admin`, {
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
   if (!res.ok) throw new Error("Failed to fetch partnerships");
   const data = await res.json();
@@ -12,7 +24,9 @@ export const fetchPartnerships = createAsyncThunk("partnerships/fetchAll", async
 });
 
 export const fetchPublicPartnerships = createAsyncThunk("partnerships/fetchPublic", async () => {
-  const res = await fetch(`${ENDPOINTS.partnerships}/public`);
+  const res = await fetch(`${ENDPOINTS.partnerships}/public`, {
+    headers: { 'Accept-Language': getLanguage() },
+  });
   if (!res.ok) throw new Error("Failed to fetch public partnerships");
   const data = await res.json();
   return data.partnerships || data;
@@ -20,7 +34,7 @@ export const fetchPublicPartnerships = createAsyncThunk("partnerships/fetchPubli
 
 export const fetchPartnershipById = createAsyncThunk("partnerships/fetchById", async (id) => {
   const res = await fetch(`${ENDPOINTS.partnerships}/admin/${id}`, {
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
   if (!res.ok) throw new Error("Failed to fetch partnership");
   const data = await res.json();
@@ -28,7 +42,9 @@ export const fetchPartnershipById = createAsyncThunk("partnerships/fetchById", a
 });
 
 export const fetchPublicPartnershipById = createAsyncThunk("partnerships/fetchPublicById", async (id) => {
-  const res = await fetch(`${ENDPOINTS.partnerships}/public/${id}`);
+  const res = await fetch(`${ENDPOINTS.partnerships}/public/${id}`, {
+    headers: { 'Accept-Language': getLanguage() },
+  });
   if (!res.ok) throw new Error("Failed to fetch public partnership");
   const data = await res.json();
   return data.partnership || data;
@@ -36,16 +52,28 @@ export const fetchPublicPartnershipById = createAsyncThunk("partnerships/fetchPu
 
 export const createPartnership = createAsyncThunk(
   "partnerships/create",
-  async (data) => {
+  async ({ data, lang }) => {
+    const currentLang = lang || getLanguage();
+    try {
+      console.log('[Redux][partnerships] Creating partnership. Lang:', currentLang);
+      console.log('[Redux][partnerships] Payload:', JSON.stringify(data));
+    } catch (_) {
+      console.log('[Redux][partnerships] Payload not serializable');
+    }
     const res = await fetch(ENDPOINTS.partnerships, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${getToken()}`,
+        'Accept-Language': currentLang,
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, lang: currentLang }),
     });
-    if (!res.ok) throw new Error("Failed to create partnership");
+    if (!res.ok) {
+      const text = await res.text();
+      console.error('[Redux][partnerships] Create failed -> Status:', res.status, 'Body:', text);
+      throw new Error("Failed to create partnership");
+    }
     const response = await res.json();
     return response.partnership || response;
   }
@@ -59,8 +87,9 @@ export const updatePartnership = createAsyncThunk(
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${getToken()}`,
+        'Accept-Language': getLanguage(),
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, lang: getLanguage() }),
     });
     if (!res.ok) throw new Error("Failed to update partnership");
     const response = await res.json();
@@ -71,7 +100,7 @@ export const updatePartnership = createAsyncThunk(
 export const deletePartnership = createAsyncThunk("partnerships/delete", async (id) => {
   const res = await fetch(`${ENDPOINTS.partnerships}/${id}`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
   if (!res.ok) throw new Error("Failed to delete partnership");
   return id;
