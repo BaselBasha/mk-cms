@@ -565,11 +565,8 @@ export default function EditPressPage({ params }) {
                   <div>Language: {language}</div>
                   <div>Admin Token: {typeof window !== 'undefined' && localStorage.getItem('admin') ? 'Found' : 'Missing'}</div>
                   <div>Admin Data: {typeof window !== 'undefined' && localStorage.getItem('admin') ? 'Available' : 'Not Available'}</div>
-<<<<<<< HEAD
                   <div>Backend URL: {process.env.NODE_ENV === 'development' ? 'https://mk-cms-back.vercel.app' : 'https://mk-cms-back.vercel.app'}</div>
-=======
                   <div>Backend URL: {process.env.NODE_ENV === 'development' ? 'https://mk-cms-back.vercel.app' : 'Production'}</div>
->>>>>>> new-features
                   
                   {/* Category Debug Info */}
                   <div className="mt-3 pt-3 border-t border-white/10">
