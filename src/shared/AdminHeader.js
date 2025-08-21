@@ -109,6 +109,8 @@ const AdminHeader = ({ currentPage = "Dashboard" }) => {
                   currentPage === item.name
                     ? "text-[#65a30d] font-medium"
                     : "text-gray-300 hover:text-white hover:text-[#65a30d]/80"
+                } ${
+                  item.href === "/admin/companies" ? "mr-[25px]" : ""
                 }`}
               >
                 {item.name}

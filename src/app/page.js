@@ -319,7 +319,7 @@ const Header = () => {
                     scrollToSection(link.toLowerCase());
                   }
                 }}
-                className="text-gray-300 hover:text-[#65a30d] transition-colors duration-300 font-medium tracking-wider cursor-pointer text-sm"
+                className="text-gray-300 hover:text-[#65a30d] mr-[25px] transition-colors duration-300 font-medium tracking-wider cursor-pointer text-sm"
               >
                 {link}
               </button>
