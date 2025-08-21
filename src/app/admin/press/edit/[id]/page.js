@@ -558,49 +558,6 @@ export default function EditPressPage({ params }) {
                     ))}
                   </div>
                 )}
-                
-                {/* Authentication Debug Info */}
-                <div className="mt-4 p-3 bg-black/20 rounded-lg">
-                  <h4 className="font-semibold text-white mb-2">🔐 Authentication Status</h4>
-                  <div>Language: {language}</div>
-                  <div>Admin Token: {typeof window !== 'undefined' && localStorage.getItem('admin') ? 'Found' : 'Missing'}</div>
-                  <div>Admin Data: {typeof window !== 'undefined' && localStorage.getItem('admin') ? 'Available' : 'Not Available'}</div>
-                  <div>Backend URL: {process.env.NODE_ENV === 'development' ? 'https://mk-cms-back.vercel.app' : 'https://mk-cms-back.vercel.app'}</div>
-                  <div>Backend URL: {process.env.NODE_ENV === 'development' ? 'https://mk-cms-back.vercel.app' : 'Production'}</div>
-                  
-                  {/* Category Debug Info */}
-                  <div className="mt-3 pt-3 border-t border-white/10">
-                    <h5 className="font-semibold text-white mb-2">📝 Form Field Debug</h5>
-                    <div>Current Category: {formik.values.category || 'undefined'}</div>
-                    <div>Category Type: {typeof formik.values.category}</div>
-                    <div>Category Length: {formik.values.category ? formik.values.category.length : 'N/A'}</div>
-                    <div>Category Valid: {formik.errors.category ? 'No' : 'Yes'}</div>
-                    <div>Expected Categories for {language}: {language === 'ar' ? 'أخبار, مقابلة, ميزة, مراجعة, إعلان' : 'news, interview, feature, review, announcement'}</div>
-                    {formik.errors.category && <div className="text-red-400">Category Error: {formik.errors.category}</div>}
-                  </div>
-                  
-                  {/* Connection Test Button */}
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        console.log('Testing backend connection...');
-                        const response = await fetch('https://mk-cms-back.vercel.app/api/health');
-                        if (response.ok) {
-                          alert('✅ Backend is reachable and running!');
-                        } else {
-                          alert(`❌ Backend responded with status: ${response.status}`);
-                        }
-                      } catch (error) {
-                        console.error('Connection test failed:', error);
-                        alert('❌ Backend is not reachable. Please ensure the backend server is running on Vercel.');
-                      }
-                    }}
-                    className="mt-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded"
-                  >
-                    Test Backend Connection
-                  </button>
-                </div>
               </div>
             </Form>
           )}
