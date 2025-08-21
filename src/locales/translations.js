@@ -279,7 +279,6 @@ export const translations = {
       title: "MK Group CMS",
       settings: "Settings",
       logout: "Logout",
-      language: "Language",
     },
     
     // Login Page
@@ -2206,7 +2205,6 @@ export const translations = {
       title: "نظام إدارة محتوى مجموعة إم كي",
       settings: "الإعدادات",
       logout: "تسجيل الخروج",
-      language: "اللغة",
     },
     
     // Login Page

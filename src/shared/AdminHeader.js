@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Award, User, LogOut, ChevronDown, Settings, Menu, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/locales/translations";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -62,6 +63,16 @@ const AdminHeader = ({ currentPage = "Dashboard" }) => {
     setIsDropdownOpen(false);
   };
 
+  const handleMobileNavigation = (e, href) => {
+    e.preventDefault();
+    // Close menu immediately for smooth navigation
+    closeMobileMenu();
+    // Use router for programmatic navigation
+    setTimeout(() => {
+      router.push(href);
+    }, 50);
+  };
+
   return (
     <motion.header
       initial={{ y: -100 }}
@@ -91,17 +102,17 @@ const AdminHeader = ({ currentPage = "Dashboard" }) => {
           {/* Desktop Navigation - Hidden on mobile */}
           <nav className="hidden lg:flex items-center space-x-4 xl:space-x-6">
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.href}
                 href={item.href}
-                className={`transition-colors duration-200 whitespace-nowrap ${
+                className={`transition-colors duration-200 whitespace-nowrap touch-manipulation ${
                   currentPage === item.name
                     ? "text-[#65a30d] font-medium"
                     : "text-gray-300 hover:text-white hover:text-[#65a30d]/80"
                 }`}
               >
                 {item.name}
-              </a>
+              </Link>
             ))}
           </nav>
 
@@ -178,7 +189,8 @@ const AdminHeader = ({ currentPage = "Dashboard" }) => {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors duration-200"
+              className="lg:hidden p-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors duration-200 touch-manipulation"
+              aria-label="Toggle mobile menu"
             >
               {isMobileMenuOpen ? (
                 <X className="h-6 w-6" />
@@ -197,25 +209,25 @@ const AdminHeader = ({ currentPage = "Dashboard" }) => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             className="lg:hidden bg-[#0f1419]/95 backdrop-blur-md border-t border-white/10"
           >
             <div className="container mx-auto px-4 py-4">
               {/* Mobile Navigation Items */}
               <nav className="space-y-2 mb-6">
                 {navItems.map((item) => (
-                  <a
+                  <Link
                     key={item.href}
                     href={item.href}
-                    onClick={closeMobileMenu}
-                    className={`block px-4 py-3 rounded-lg transition-colors duration-200 ${
+                    onClick={(e) => handleMobileNavigation(e, item.href)}
+                    className={`block px-4 py-3 rounded-lg transition-colors duration-200 touch-manipulation ${
                       currentPage === item.name
                         ? "bg-[#65a30d]/20 text-[#65a30d] font-medium border border-[#65a30d]/30"
                         : "text-gray-300 hover:bg-white/5 hover:text-white"
                     }`}
                   >
                     {item.name}
-                  </a>
+                  </Link>
                 ))}
               </nav>
 
@@ -225,7 +237,7 @@ const AdminHeader = ({ currentPage = "Dashboard" }) => {
                   {t.admin.header.language}
                 </div>
                 <div className="px-4">
-                  <LanguageSwitcher />
+                  <LanguageSwitcher variant="mobile" />
                 </div>
               </div>
 
