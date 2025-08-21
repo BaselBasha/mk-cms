@@ -482,7 +482,7 @@ const WhoAreWeSection = () => {
         <div className="grid md:grid-cols-2 gap-16 items-center">
           <motion.div variants={itemVariants} className="relative">
             <img
-              src="https://mkgroup-eg.com/wp-content/uploads/2022/11/DJI_0339-2048x1365.jpg"
+              src="https://www.ekapija.com/thumbs/victoria_group_poslovna_zgrada_080716_tw1024.jpg"
               alt="Jojoba Field"
               className="rounded-lg w-full h-auto object-cover"
             />
@@ -949,34 +949,34 @@ const ProductsSection = () => {
     {
       name: t.products.items.seeds.name,
       desc: t.products.items.seeds.desc,
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/04/unnamed-file.png",
+      img: "https://thumbs.dreamstime.com/b/planting-new-grass-seed-to-bare-spot-yard-29495687.jpg",
     },
 
     {
       name: t.products.items.jojobaWax.name,
       desc: t.products.items.jojobaWax.desc,
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/04/pure-75ml-and-mix50ml.jpg",
+      img: "https://s.alicdn.com/@sc04/kf/H5116f3775a1e45b28211b6da12fb8bab0.jpg",
     },
 
     {
       name: t.products.items.seeding.name,
       desc: t.products.items.seeding.desc,
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/04/9802741e-1650-4027-aa12-6468aa8083f6.jpg",
+      img: "https://anchoragegardensupply.com/ius/product/5988-415444-9458.jpg",
     },
     {
       name: t.products.items.organicOil.name,
       desc: t.products.items.organicOil.desc,
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/06/WhatsApp-Image-2024-06-01-at-19.33.16_9b87c9bbmm.jpg",
+      img: "https://assets.clevelandclinic.org/transform/63ea0011-b018-4e01-92be-3e6e5b0f4cfc/pouring-olive-oil-into-small-bowl-1812012898",
     },
     {
       name: t.products.items.organicOil.name,
       desc: t.products.items.organicOil.desc,
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/04/pure-75ml-and-mix50ml.jpg",
+      img: "https://www.greenpeople.co.uk/cdn/shop/files/Anti-ageing-facial-oil-hero.jpg?v=1712317760&width=1023",
     },
     {
       name: t.products.items.pestControl.name,
       desc: t.products.items.pestControl.desc,
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/Termite-Pest-Control-Frisco-TX.jpg",
+      img: "https://agricultureguruji.com/wp-content/uploads/2018/01/Pest-and-Disease-control-in-Greenhouse-2.jpg",
     },
   ];
   const duplicated = [...products, ...products, ...products];
@@ -1178,27 +1178,27 @@ const SpecializationSection = () => {
     {
       title: t.specializations.items.dripIrrigation.title,
       desc: t.specializations.items.dripIrrigation.desc,
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/shutterstock_767486674-1.jpg",
+      img: "https://m.media-amazon.com/images/I/81jcMpPJVDL.jpg",
     },
     {
       title: t.specializations.items.soilHealth.title,
       desc: t.specializations.items.soilHealth.desc,
-      img: "https://mkgroup-eg.com/wp-content/uploads/2022/11/DJI_0187-Medium.png",
+      img: "https://growers.ag/wp-content/uploads/2021/03/SoilNutrients-1024x680.png",
     },
     {
       title: t.specializations.items.advancedHarvesting.title,
       desc: t.specializations.items.advancedHarvesting.desc,
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/Premium-Agribusiness-Consulting-Service.jpeg",
+      img: "https://png.pngtree.com/background/20250128/original/pngtree-modern-turmeric-field-with-advanced-machinery-picture-image_15983214.jpg",
     },
     {
       title: t.specializations.items.geneticSelection.title,
       desc: t.specializations.items.geneticSelection.desc,
-      img: "https://mkgroup-eg.com/wp-content/uploads/2022/11/0.png",
+      img: "https://www.elicit-plant.com/app/uploads/2024/01/Comparaison-pousse-de-soja-subissant-stress-hydrique-ou-non-768x446.jpg",
     },
     {
       title: t.specializations.items.geneticSelection.title,
       desc: t.specializations.items.geneticSelection.desc,
-      img: "https://mkgroup-eg.com/wp-content/uploads/2024/05/money-2724241_1920.webp",
+      img: "https://www.whistlertechnologies.ca/wp-content/uploads/2024/10/DSC05243-scaled-e1729527785429-1024x998.jpg",
     },
   ];
   const duplicated = [
