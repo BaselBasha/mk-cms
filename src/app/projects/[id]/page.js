@@ -213,7 +213,7 @@ export default function ProjectDetailPage({ params }) {
     const fetchProject = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:5000/api/projects/public/${params.id}`);
+        const response = await fetch(`https://mk-cms-back.vercel.app/api/projects/public/${params.id}`);
         if (!response.ok) {
           throw new Error('Project not found');
         }

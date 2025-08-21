@@ -564,7 +564,7 @@ export default function EditPressPage({ params }) {
                   <div>Language: {language}</div>
                   <div>Admin Token: {typeof window !== 'undefined' && localStorage.getItem('admin') ? 'Found' : 'Missing'}</div>
                   <div>Admin Data: {typeof window !== 'undefined' && localStorage.getItem('admin') ? 'Available' : 'Not Available'}</div>
-                  <div>Backend URL: {process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'Production'}</div>
+                  <div>Backend URL: {process.env.NODE_ENV === 'development' ? 'https://mk-cms-back.vercel.app' : 'https://mk-cms-back.vercel.app'}</div>
                   
                   {/* Category Debug Info */}
                   <div className="mt-3 pt-3 border-t border-white/10">
@@ -583,7 +583,7 @@ export default function EditPressPage({ params }) {
                     onClick={async () => {
                       try {
                         console.log('Testing backend connection...');
-                        const response = await fetch('http://localhost:5000/api/health');
+                        const response = await fetch('https://mk-cms-back.vercel.app/api/health');
                         if (response.ok) {
                           alert('✅ Backend is reachable and running!');
                         } else {

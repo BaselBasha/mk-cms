@@ -3,7 +3,7 @@ import { ENDPOINTS } from './endpoints';
 // File sharing API service
 class FileSharingApiService {
   constructor() {
-    this.baseURL = 'http://localhost:5000/api';
+    this.baseURL = 'https://mk-cms-back.vercel.app/api';
   }
 
   // Get auth token
