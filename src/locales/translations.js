@@ -16,6 +16,7 @@ export const translations = {
     projects: "Projects",
     certifications: "Certifications",
     awards: "Awards",
+    companies: "Companies",
     partnerships: "Partnerships",
     press: "Press",
     career: "Career",
@@ -194,6 +195,12 @@ export const translations = {
         completed: "Completed",
         inactive: "Inactive",
       },
+    },
+    
+    // Companies Section
+    companies: {
+      title: "Our Companies",
+      viewAll: "View All Companies",
     },
     
     // Press Section
@@ -1934,6 +1941,7 @@ export const translations = {
       projects: "المشاريع",
       certifications: "الشهادات",
       awards: "الجوائز",
+      companies: "شركاتنا",
       partnerships: "الشراكات",
       press: "المراجع الصحفية",
       career: "الوظائف",
@@ -2120,6 +2128,12 @@ export const translations = {
         completed: "مكتمل",
         inactive: "غير نشط",
       },
+    },
+    
+    // Companies Section
+    companies: {
+      title: "شركاتنا",
+      viewAll: "عرض جميع الشركات",
     },
     
     // Press Section

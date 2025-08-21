@@ -3,7 +3,7 @@ import { ENDPOINTS } from './endpoints';
 // Language-aware API service
 class LanguageApiService {
   constructor() {
-    this.baseURL = 'http://localhost:5000/api';
+    this.baseURL = 'https://mk-cms-back.vercel.app/api';
   }
 
   // Get current language from localStorage

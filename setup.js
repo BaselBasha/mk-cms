@@ -29,7 +29,7 @@ ADMIN_PASSWORD=admin123
 
 # Server Configuration
 PORT=3000
-NEXT_PUBLIC_API_URL=http://localhost:3000/api
+NEXT_PUBLIC_API_URL=https://mk-cms-back.vercel.app/api
 
 # File Upload Limits
 MAX_FILE_SIZE=100MB

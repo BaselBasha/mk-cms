@@ -6,6 +6,7 @@ import { Edit, Trash2, Eye, Plus, Search, AlertCircle, Globe, Calendar, Layers }
 import { useCallback, useState as useReactState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import AdminHeader from "@/shared/AdminHeader";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/locales/translations";
 
@@ -55,8 +56,10 @@ export default function AdminCompaniesPage() {
       className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900"
       dir={isRTL ? 'rtl' : 'ltr'}
     >
+      <AdminHeader currentPage="Companies" />
+      
       {/* Header */}
-      <div className="bg-black/30 border-b border-white/10">
+      <div className="bg-black/30 border-b border-white/10 mt-20">
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div>

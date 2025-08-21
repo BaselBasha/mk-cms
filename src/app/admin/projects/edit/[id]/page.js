@@ -8,6 +8,7 @@ import * as Yup from "yup";
 import { motion } from "framer-motion";
 import { ArrowLeft, Upload, X, Plus, Save, AlertCircle } from "lucide-react";
 import { uploadMultipleFiles } from "@/shared/uploadMultipleFiles";
+import AdminHeader from "@/shared/AdminHeader";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/locales/translations";
 
@@ -285,8 +286,10 @@ export default function EditProjectPage({ params }) {
             className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900"
             dir={isRTL ? 'rtl' : 'ltr'}
         >
+            <AdminHeader currentPage="Projects" />
+            
             {/* Header */}
-            <div className="bg-black/30 border-b border-white/10">
+            <div className="bg-black/30 border-b border-white/10 mt-20">
                 <div className="container mx-auto px-6 py-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">

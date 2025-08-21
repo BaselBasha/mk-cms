@@ -1,6 +1,6 @@
 // Centralized API endpoints for backend communication
 
-export const API_BASE_URL = "http://localhost:5000"; // Change to your backend base URL
+export const API_BASE_URL = "https://mk-cms-back.vercel.app"; // Change to your backend base URL
 
 export const ENDPOINTS = {
   awards: `${API_BASE_URL}/api/awards`,
