@@ -96,7 +96,7 @@ export default function MKGroupWebsite() {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     }, 6000);
     return () => clearInterval(interval);
-  }, []);
+  }, [heroSlides.length]);
 
   const heroSlides = [
     {
@@ -673,7 +673,7 @@ export default function MKGroupWebsite() {
                   ))}
                 </div>
                 <p className="text-white text-lg mb-6">
-                  "{testimonial.content}"
+                  &ldquo;{testimonial.content}&rdquo;
                 </p>
                 <div>
                   <p className="font-bold text-white">{testimonial.name}</p>
@@ -698,7 +698,7 @@ export default function MKGroupWebsite() {
               </h2>
               <p className="text-xl text-gray-600 mb-12">
                 Have a project in mind or want to learn more about our
-                investment opportunities? We'd love to hear from you.
+                investment opportunities? We&apos;d love to hear from you.
               </p>
               <div className="space-y-8">
                 <div className="flex items-start space-x-4">

@@ -291,12 +291,12 @@ export default function ProjectDetailPage({ params }) {
     keyMetrics: project.keyMetrics?.map((metric, index) => ({
       label: metric,
       value: "Achieved",
-      icon: [<Globe className="h-6 w-6" />, <Target className="h-6 w-6" />, <Users className="h-6 w-6" />, <Zap className="h-6 w-6" />][index % 4]
+      icon: [<Globe key={`globe-${index}`} className="h-6 w-6" />, <Target key={`target-${index}`} className="h-6 w-6" />, <Users key={`users-${index}`} className="h-6 w-6" />, <Zap key={`zap-${index}`} className="h-6 w-6" />][index % 4]
     })) || [
         {
           label: "Project Success",
           value: "100%",
-          icon: <CheckCircle className="h-6 w-6" />,
+          icon: <CheckCircle key="check-circle" className="h-6 w-6" />,
         }
       ],
   };
