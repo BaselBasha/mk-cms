@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { fetchAwardById, updateAward } from "@/redux/awardsSlice";
@@ -439,8 +439,7 @@ export default function EditAwardPage({ params }) {
   const [submitStatus, setSubmitStatus] = useState(null);
 
   // Unwrap params using React.use() to fix the console error
-  const unwrappedParams = use(params);
-  const awardId = unwrappedParams.id;
+  const awardId = params.id;
 
   useEffect(() => {
     if (awardId) {
@@ -553,7 +552,7 @@ export default function EditAwardPage({ params }) {
         removeImage: false, // Always start with removeImage as false
       });
     }
-  }, [award, formik]);
+  }, [award]); // Removed formik dependency to prevent infinite loop
 
   const categoryOptions = [
     t.admin.awardEditForm.categoryOptions.excellence,

@@ -430,9 +430,10 @@ export default function EditPressPage({ params }) {
                 ...values,
                 tags: values.tags ? values.tags.map(tag => tag.trim()).filter(tag => tag.length > 0) : [],
                 youtubeLinks: values.youtubeLinks ? values.youtubeLinks.map(link => link.trim()).filter(link => link.length > 0) : [],
-                documents: values.documents ? values.documents.filter(doc => doc && doc.url) : [],
+                documents: values.documents ? values.documents.filter(doc => doc && doc.url).map(doc => doc.url) : [],
                 relatedArticles: values.relatedArticles ? values.relatedArticles.map(article => article.trim()).filter(article => article.length > 0) : [],
-                image: values.image ? values.image.filter(img => img && img.url) : [],
+                // Extract only the URLs from image objects to match backend schema
+                image: values.image ? values.image.filter(img => img && img.url).map(img => img.url) : [],
               };
               
               // Ensure category has a valid value
@@ -564,7 +565,11 @@ export default function EditPressPage({ params }) {
                   <div>Language: {language}</div>
                   <div>Admin Token: {typeof window !== 'undefined' && localStorage.getItem('admin') ? 'Found' : 'Missing'}</div>
                   <div>Admin Data: {typeof window !== 'undefined' && localStorage.getItem('admin') ? 'Available' : 'Not Available'}</div>
+<<<<<<< HEAD
                   <div>Backend URL: {process.env.NODE_ENV === 'development' ? 'https://mk-cms-back.vercel.app' : 'https://mk-cms-back.vercel.app'}</div>
+=======
+                  <div>Backend URL: {process.env.NODE_ENV === 'development' ? 'https://mk-cms-back.vercel.app' : 'Production'}</div>
+>>>>>>> new-features
                   
                   {/* Category Debug Info */}
                   <div className="mt-3 pt-3 border-t border-white/10">
@@ -591,7 +596,7 @@ export default function EditPressPage({ params }) {
                         }
                       } catch (error) {
                         console.error('Connection test failed:', error);
-                        alert('❌ Backend is not reachable. Please ensure the backend server is running on port 5000.');
+                        alert('❌ Backend is not reachable. Please ensure the backend server is running on Vercel.');
                       }
                     }}
                     className="mt-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded"

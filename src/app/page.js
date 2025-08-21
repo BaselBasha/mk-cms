@@ -15,6 +15,7 @@ import {
   Shield,
   Star,
   ArrowLeft,
+  Building,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchPublicProjects } from "@/redux/projectsSlice";
@@ -22,6 +23,7 @@ import { fetchPublicPress } from "@/redux/pressSlice";
 import { fetchPublicCertifications } from "@/redux/certificationsSlice";
 import { fetchPublicAwards } from "@/redux/awardsSlice";
 import { fetchPublicPartnerships } from "@/redux/partnershipsSlice";
+import { fetchPublicCompanies } from "@/redux/companiesSlice";
 import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/locales/translations";
@@ -148,6 +150,9 @@ export default function App() {
   );
   const { publicItems: partnerships, loading: partnershipsLoading } =
     useSelector((state) => state.partnerships);
+  const { publicItems: companies, loading: companiesLoading } = useSelector(
+    (state) => state.companies
+  );
 
   useEffect(() => {
     // Ensure the background is properly set on page load/refresh
@@ -169,6 +174,7 @@ export default function App() {
     dispatch(fetchPublicCertifications());
     dispatch(fetchPublicAwards());
     dispatch(fetchPublicPartnerships());
+    dispatch(fetchPublicCompanies());
   }, [dispatch]);
 
   // Check if any section has data
@@ -177,6 +183,7 @@ export default function App() {
   const hasCertifications = certifications && certifications.length > 0;
   const hasAwards = awards && awards.length > 0;
   const hasPartnerships = partnerships && partnerships.length > 0;
+  const hasCompanies = companies && companies.length > 0;
 
   return (
     <div 
@@ -196,8 +203,10 @@ export default function App() {
         {hasAwards && <AwardsSliderSection />}
         <WhyUsSection />
         <SpecializationSection />
+        {hasCompanies && <CompaniesSection />}
         {hasPartnerships && <PartnershipsSection />}
         {hasPress && <PressSection />}
+
       </main>
       <Footer />
     </div>
@@ -259,6 +268,7 @@ const Header = () => {
     t.nav.projects,
     t.nav.certifications,
     t.nav.awards,
+    t.nav.companies,
     t.nav.partnerships,
     t.nav.press,
     t.nav.career,
@@ -274,6 +284,7 @@ const Header = () => {
       [t.nav.projects.toLowerCase()]: "projects",
       [t.nav.certifications.toLowerCase()]: "certifications",
       [t.nav.awards.toLowerCase()]: "awards-slider",
+      [t.nav.companies.toLowerCase()]: "companies",
       [t.nav.partnerships.toLowerCase()]: "partnerships",
       [t.nav.press.toLowerCase()]: "press",
       [t.nav.contact.toLowerCase()]: "contact",
@@ -294,19 +305,22 @@ const Header = () => {
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled
-            ? "bg-black/50 backdrop-blur-lg border-b border-white/10"
-            : "bg-transparent"
+            ? "bg-black/60 backdrop-blur-xl border-b border-white/20 shadow-lg"
+            : "bg-black/20 backdrop-blur-sm"
         }`}
       >
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <motion.div whileHover={{ scale: 1.05 }}>
+        <div className="container mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+          {/* Logo - More compact */}
+          <motion.div whileHover={{ scale: 1.05 }} className="flex-shrink-0">
             <img
               src="/MK-GROUP.png"
               alt="MK Jojoba Logo"
-              className="h-12 w-auto"
+              className="h-10 w-auto"
             />
           </motion.div>
-          <nav className="hidden lg:flex items-center space-x-6">
+          
+          {/* Desktop Navigation - More compact and elegant */}
+          <nav className="hidden lg:flex items-center space-x-1">
             {navLinks.map((link) => (
               <button
                 key={link}
@@ -319,44 +333,53 @@ const Header = () => {
                     scrollToSection(link.toLowerCase());
                   }
                 }}
-                className="text-gray-300 hover:text-[#65a30d] mr-[25px] transition-colors duration-300 font-medium tracking-wider cursor-pointer text-sm"
+                className="px-3 py-2 text-gray-300 hover:text-[#65a30d] transition-all duration-200 font-medium text-sm rounded-md hover:bg-white/5 relative group"
               >
                 {link}
+                <span className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-[#65a30d] group-hover:w-full group-hover:left-0 transition-all duration-300 rounded-full"></span>
               </button>
             ))}
           </nav>
-          <div className="hidden lg:flex items-center space-x-4">
+          
+          {/* Right Side Controls - More compact */}
+          <div className="hidden lg:flex items-center space-x-3">
             <LanguageSwitcher />
             <button
               onClick={() => window.open("https://wa.me/201067726594", "_blank")}
-              className="bg-[#65a30d] text-white py-2 px-6 rounded-full hover:bg-[#84cc16] transition-all duration-300 transform hover:scale-105 shadow-lg shadow-[#65a30d]/20"
+              className="bg-[#65a30d] text-white py-2 px-4 rounded-lg hover:bg-[#84cc16] transition-all duration-300 transform hover:scale-105 shadow-lg shadow-[#65a30d]/20 text-sm font-medium"
             >
               {t.nav.getInTouch}
             </button>
           </div>
-          <div className="md:hidden flex items-center space-x-3">
+          
+          {/* Mobile Menu Button - More compact */}
+          <div className="lg:hidden flex items-center space-x-2">
             <LanguageSwitcher />
             <button
               onClick={() => setIsMenuOpen(true)}
-              className="text-gray-300"
+              className="text-gray-300 p-1 hover:bg-white/10 rounded-md transition-colors"
             >
-              <Menu size={28} />
+              <Menu size={24} />
             </button>
           </div>
         </div>
       </header>
-      {/* Mobile Menu */}
+      
+      {/* Mobile Menu - Improved styling */}
       <div
-        className={`fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] transform ${
+        className={`fixed inset-0 bg-black/95 backdrop-blur-xl z-[100] transform ${
           isMenuOpen ? "translate-x-0" : "translate-x-full"
-        } transition-transform duration-300 ease-in-out md:hidden`}
+        } transition-transform duration-300 ease-in-out lg:hidden`}
       >
-        <div className="flex justify-end p-6">
-          <button onClick={() => setIsMenuOpen(false)}>
-            <X size={32} className="text-gray-300" />
+        <div className="flex justify-end p-4">
+          <button 
+            onClick={() => setIsMenuOpen(false)}
+            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+          >
+            <X size={28} className="text-gray-300" />
           </button>
         </div>
-        <nav className="flex flex-col items-center justify-center h-full space-y-6 overflow-y-auto">
+        <nav className="flex flex-col items-center justify-center h-full space-y-4 overflow-y-auto px-6">
           {navLinks.map((link) => (
             <button
               key={link}
@@ -370,7 +393,7 @@ const Header = () => {
                   scrollToSection(link.toLowerCase());
                 }
               }}
-              className="text-gray-200 text-2xl font-light hover:text-[#65a30d] transition-colors duration-300 cursor-pointer"
+              className="text-gray-200 text-xl font-medium hover:text-[#65a30d] transition-colors duration-300 cursor-pointer py-3 px-6 rounded-lg hover:bg-white/5 w-full text-center"
             >
               {link}
             </button>
@@ -846,6 +869,7 @@ const GlassCard = ({
   index,
   isProject = false,
   isPartnership = false,
+  isCompany = false,
 }) => {
   const { language } = useLanguage();
   const t = translations[language];
@@ -866,6 +890,8 @@ const GlassCard = ({
           window.location.href = `/projects/${item.id}`;
         } else if (isPartnership && item.id) {
           window.location.href = `/partnerships/${item.id}`;
+        } else if (isCompany && item.website) {
+          window.open(item.website, '_blank');
         }
       }}
     >
@@ -1205,6 +1231,99 @@ const SpecializationSection = () => {
           {t.specializations.showAll}
         </button>
       </div>
+      <style jsx>{`
+        .mask-gradient {
+          -webkit-mask-image: linear-gradient(
+            to right,
+            transparent,
+            black 20%,
+            black 80%,
+            transparent
+          );
+          mask-image: linear-gradient(
+            to right,
+            transparent,
+            black 20%,
+            black 80%,
+            transparent
+          );
+        }
+      `}</style>
+    </AnimatedSection>
+  );
+};
+
+const CompaniesSection = () => {
+  const { publicItems: companies, loading } = useSelector(
+    (state) => state.companies
+  );
+  const { language } = useLanguage();
+  const t = translations[language];
+
+  // Transform companies for display with proper image handling
+  const displayCompanies = (companies || []).map((company) => {
+    // Handle company image - check multiple possible fields
+    let imageUrl = "https://mkgroup-eg.com/wp-content/uploads/2024/05/NVU.png"; // fallback
+
+    if (company.logo && company.logo.url) {
+      // If company has a logo field
+      imageUrl = company.logo.url;
+    } else if (company.image && company.image.url) {
+      // If company has an image field
+      imageUrl = company.image.url;
+    } else if (typeof company.image === "string") {
+      // If image is a direct string URL
+      imageUrl = company.image;
+    } else if (company.logo && typeof company.logo === "string") {
+      // If logo is a direct string URL
+      imageUrl = company.logo;
+    }
+
+    return {
+      name: company.name,
+      desc: company.summary || company.description,
+      img: imageUrl,
+      id: company._id || company.id,
+      website: company.website,
+    };
+  });
+
+  const duplicated = [
+    ...displayCompanies,
+    ...displayCompanies,
+    ...displayCompanies,
+  ];
+
+  return (
+    <AnimatedSection
+      id="companies"
+      className="py-20 md:py-28 overflow-hidden bg-transparent"
+    >
+      <SectionTitle>{t.companies.title}</SectionTitle>
+
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#65a30d]"></div>
+        </div>
+      ) : (
+        <>
+          <div className="relative w-full overflow-hidden mask-gradient">
+            <motion.div
+              className="flex"
+              animate={{ x: ["0%", `-${100 / 3}%`] }}
+              transition={{ ease: "linear", duration: 40, repeat: Infinity }}
+              drag="x"
+              dragConstraints={sliderDragConstraints}
+              whileTap={{ cursor: "grabbing" }}
+            >
+              {duplicated.map((c, i) => (
+                <GlassCard key={i} item={c} index={i} isCompany={true} />
+              ))}
+            </motion.div>
+          </div>
+        </>
+      )}
+
       <style jsx>{`
         .mask-gradient {
           -webkit-mask-image: linear-gradient(
@@ -1590,6 +1709,22 @@ const Footer = () => {
                 className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
               >
                 Awards
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => {
+                  const element = document.getElementById("companies");
+                  if (element) {
+                    element.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }
+                }}
+                className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
+              >
+                Companies
               </button>
             </li>
             <li>

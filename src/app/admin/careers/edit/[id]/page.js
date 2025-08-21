@@ -7,6 +7,7 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { motion } from "framer-motion";
 import { ArrowLeft, Save, AlertCircle } from "lucide-react";
+import AdminHeader from "@/shared/AdminHeader";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/locales/translations";
 
@@ -123,6 +124,9 @@ export default function EditCareerPage({ params }) {
         
         if (id) {
           const result = await dispatch(fetchCareerById(id)).unwrap();
+          console.log('Fetched career:', result);
+          console.log('Career language:', result.lang);
+          console.log('Current UI language:', language);
           setCareer(result);
         }
       } catch (error) {
@@ -133,7 +137,7 @@ export default function EditCareerPage({ params }) {
     };
 
     getCareerId();
-  }, [dispatch, params]);
+  }, [dispatch, params, language]);
 
   const validationSchema = Yup.object({
     title: Yup.string().required("Title is required"),
@@ -197,13 +201,108 @@ export default function EditCareerPage({ params }) {
     isActive: career?.isActive !== undefined ? career.isActive : true,
   };
 
+  // Helper function to map English values to Arabic values for the form
+  const mapEnglishToArabic = (value, field) => {
+    if (language === 'ar') {
+      const mappings = {
+        department: {
+          'Engineering': 'الهندسة',
+          'Sales': 'المبيعات',
+          'Marketing': 'التسويق',
+          'Operations': 'العمليات',
+          'Finance': 'المالية',
+          'HR': 'الموارد البشرية',
+          'IT': 'تقنية المعلومات',
+          'Research & Development': 'البحث والتطوير',
+          'Quality Assurance': 'ضمان الجودة',
+          'Supply Chain': 'سلسلة التوريد'
+        },
+        type: {
+          'Full-time': 'دوام كامل',
+          'Part-time': 'دوام جزئي',
+          'Contract': 'عقد',
+          'Internship': 'تدريب',
+          'Remote': 'عن بُعد'
+        },
+        experience: {
+          'Entry Level': 'جديد',
+          'Junior': 'مبتدئ متقدم',
+          'Mid Level': 'متوسط',
+          'Senior': 'خبير',
+          'Executive': 'تنفيذي'
+        }
+      };
+      return mappings[field]?.[value] || value;
+    }
+    return value;
+  };
+
+  // Helper function to map Arabic values to English values for the form
+  const mapArabicToEnglish = (value, field) => {
+    if (language === 'en') {
+      const mappings = {
+        department: {
+          'الهندسة': 'Engineering',
+          'المبيعات': 'Sales',
+          'التسويق': 'Marketing',
+          'العمليات': 'Operations',
+          'المالية': 'Finance',
+          'الموارد البشرية': 'HR',
+          'تقنية المعلومات': 'IT',
+          'البحث والتطوير': 'Research & Development',
+          'ضمان الجودة': 'Quality Assurance',
+          'سلسلة التوريد': 'Supply Chain'
+        },
+        type: {
+          'دوام كامل': 'Full-time',
+          'دوام جزئي': 'Part-time',
+          'عقد': 'Contract',
+          'تدريب': 'Internship',
+          'عن بُعد': 'Remote'
+        },
+        experience: {
+          'جديد': 'Entry Level',
+          'مبتدئ متقدم': 'Junior',
+          'متوسط': 'Mid Level',
+          'خبير': 'Senior',
+          'تنفيذي': 'Executive'
+        }
+      };
+      return mappings[field]?.[value] || value;
+    }
+    return value;
+  };
+
+  // Map the initial values based on the current language
+  const mappedInitialValues = {
+    ...initialValues,
+    // If the career is in Arabic and we're editing in Arabic, keep Arabic values
+    // If the career is in English and we're editing in English, keep English values
+    // Otherwise, map between languages
+    department: career?.lang === language ? initialValues.department : 
+                (language === 'ar' ? mapEnglishToArabic(initialValues.department, 'department') : 
+                 mapArabicToEnglish(initialValues.department, 'department')),
+    type: career?.lang === language ? initialValues.type : 
+          (language === 'ar' ? mapEnglishToArabic(initialValues.type, 'type') : 
+           mapArabicToEnglish(initialValues.type, 'type')),
+    experience: career?.lang === language ? initialValues.experience : 
+               (language === 'ar' ? mapEnglishToArabic(initialValues.experience, 'experience') : 
+                mapArabicToEnglish(initialValues.experience, 'experience')),
+  };
+
+  console.log('Career data:', career);
+  console.log('Initial values:', initialValues);
+  console.log('Mapped initial values:', mappedInitialValues);
+
   return (
     <div 
       className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900"
       dir={isRTL ? 'rtl' : 'ltr'}
     >
+      <AdminHeader currentPage="Careers" />
+      
       {/* Header */}
-      <div className="bg-black/30 border-b border-white/10">
+      <div className="bg-black/30 border-b border-white/10 mt-20">
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -226,17 +325,29 @@ export default function EditCareerPage({ params }) {
       {/* Form */}
       <div className="container mx-auto px-6 py-8">
         <Formik
-          initialValues={initialValues}
+          initialValues={mappedInitialValues}
           validationSchema={validationSchema}
           onSubmit={async (values) => {
             setIsSubmitting(true);
             try {
               console.log('Form values:', values);
+              
+              // Map the form values to the correct language for the API
+              const mappedValues = {
+                ...values,
+                department: mapEnglishToArabic(values.department, 'department'),
+                type: mapEnglishToArabic(values.type, 'type'),
+                experience: mapEnglishToArabic(values.experience, 'experience'),
+                lang: language // Ensure the language is set correctly
+              };
+              
+              console.log('Mapped values for API:', mappedValues);
+              
               // Get the career ID from the resolved params
               const resolvedParams = params?.then ? await params : params;
               const careerId = resolvedParams?.id;
               
-              await dispatch(updateCareer({ id: careerId, data: values })).unwrap();
+              await dispatch(updateCareer({ id: careerId, data: mappedValues, lang: language })).unwrap();
               setSubmitStatus("success");
               setTimeout(() => {
                 router.push("/admin/careers");
@@ -270,18 +381,31 @@ export default function EditCareerPage({ params }) {
                     name="department"
                     required
                     t={t}
-                    options={[
-                      { value: "Engineering", label: t.admin.careerEditForm.departmentOptions.engineering },
-                      { value: "Sales", label: t.admin.careerEditForm.departmentOptions.sales },
-                      { value: "Marketing", label: t.admin.careerEditForm.departmentOptions.marketing },
-                      { value: "Operations", label: t.admin.careerEditForm.departmentOptions.operations },
-                      { value: "Finance", label: t.admin.careerEditForm.departmentOptions.finance },
-                      { value: "HR", label: t.admin.careerEditForm.departmentOptions.hr },
-                      { value: "IT", label: t.admin.careerEditForm.departmentOptions.it },
-                      { value: "Research & Development", label: t.admin.careerEditForm.departmentOptions.researchDevelopment },
-                      { value: "Quality Assurance", label: t.admin.careerEditForm.departmentOptions.qualityAssurance },
-                      { value: "Supply Chain", label: t.admin.careerEditForm.departmentOptions.supplyChain },
-                    ]}
+                    options={
+                      language === 'ar' ? [
+                        { value: "الهندسة", label: t.admin.careerEditForm.departmentOptions.engineering },
+                        { value: "المبيعات", label: t.admin.careerEditForm.departmentOptions.sales },
+                        { value: "التسويق", label: t.admin.careerEditForm.departmentOptions.marketing },
+                        { value: "العمليات", label: t.admin.careerEditForm.departmentOptions.operations },
+                        { value: "المالية", label: t.admin.careerEditForm.departmentOptions.finance },
+                        { value: "الموارد البشرية", label: t.admin.careerEditForm.departmentOptions.hr },
+                        { value: "تقنية المعلومات", label: t.admin.careerEditForm.departmentOptions.it },
+                        { value: "البحث والتطوير", label: t.admin.careerEditForm.departmentOptions.researchDevelopment },
+                        { value: "ضمان الجودة", label: t.admin.careerEditForm.departmentOptions.qualityAssurance },
+                        { value: "سلسلة التوريد", label: t.admin.careerEditForm.departmentOptions.supplyChain },
+                      ] : [
+                        { value: "Engineering", label: t.admin.careerEditForm.departmentOptions.engineering },
+                        { value: "Sales", label: t.admin.careerEditForm.departmentOptions.sales },
+                        { value: "Marketing", label: t.admin.careerEditForm.departmentOptions.marketing },
+                        { value: "Operations", label: t.admin.careerEditForm.departmentOptions.operations },
+                        { value: "Finance", label: t.admin.careerEditForm.departmentOptions.finance },
+                        { value: "HR", label: t.admin.careerEditForm.departmentOptions.hr },
+                        { value: "IT", label: t.admin.careerEditForm.departmentOptions.it },
+                        { value: "Research & Development", label: t.admin.careerEditForm.departmentOptions.researchDevelopment },
+                        { value: "Quality Assurance", label: t.admin.careerEditForm.departmentOptions.qualityAssurance },
+                        { value: "Supply Chain", label: t.admin.careerEditForm.departmentOptions.supplyChain },
+                      ]
+                    }
                   />
                   <FormInput
                     label={t.admin.careerEditForm.jobSummary}
@@ -300,26 +424,42 @@ export default function EditCareerPage({ params }) {
                     name="type"
                     required
                     t={t}
-                    options={[
-                      { value: "Full-time", label: t.admin.careerEditForm.jobTypeOptions.fullTime },
-                      { value: "Part-time", label: t.admin.careerEditForm.jobTypeOptions.partTime },
-                      { value: "Contract", label: t.admin.careerEditForm.jobTypeOptions.contract },
-                      { value: "Internship", label: t.admin.careerEditForm.jobTypeOptions.internship },
-                      { value: "Remote", label: t.admin.careerEditForm.jobTypeOptions.remote },
-                    ]}
+                    options={
+                      language === 'ar' ? [
+                        { value: "دوام كامل", label: t.admin.careerEditForm.jobTypeOptions.fullTime },
+                        { value: "دوام جزئي", label: t.admin.careerEditForm.jobTypeOptions.partTime },
+                        { value: "عقد", label: t.admin.careerEditForm.jobTypeOptions.contract },
+                        { value: "تدريب", label: t.admin.careerEditForm.jobTypeOptions.internship },
+                        { value: "عن بُعد", label: t.admin.careerEditForm.jobTypeOptions.remote },
+                      ] : [
+                        { value: "Full-time", label: t.admin.careerEditForm.jobTypeOptions.fullTime },
+                        { value: "Part-time", label: t.admin.careerEditForm.jobTypeOptions.partTime },
+                        { value: "Contract", label: t.admin.careerEditForm.jobTypeOptions.contract },
+                        { value: "Internship", label: t.admin.careerEditForm.jobTypeOptions.internship },
+                        { value: "Remote", label: t.admin.careerEditForm.jobTypeOptions.remote },
+                      ]
+                    }
                   />
                   <FormSelect
                     label={t.admin.careerEditForm.experienceLevel}
                     name="experience"
                     required
                     t={t}
-                    options={[
-                      { value: "Entry Level", label: t.admin.careerEditForm.experienceLevelOptions.entryLevel },
-                      { value: "Junior", label: t.admin.careerEditForm.experienceLevelOptions.junior },
-                      { value: "Mid Level", label: t.admin.careerEditForm.experienceLevelOptions.midLevel },
-                      { value: "Senior", label: t.admin.careerEditForm.experienceLevelOptions.senior },
-                      { value: "Executive", label: t.admin.careerEditForm.experienceLevelOptions.executive },
-                    ]}
+                    options={
+                      language === 'ar' ? [
+                        { value: "جديد", label: t.admin.careerEditForm.experienceLevelOptions.entryLevel },
+                        { value: "مبتدئ متقدم", label: t.admin.careerEditForm.experienceLevelOptions.junior },
+                        { value: "متوسط", label: t.admin.careerEditForm.experienceLevelOptions.midLevel },
+                        { value: "خبير", label: t.admin.careerEditForm.experienceLevelOptions.senior },
+                        { value: "تنفيذي", label: t.admin.careerEditForm.experienceLevelOptions.executive },
+                      ] : [
+                        { value: "Entry Level", label: t.admin.careerEditForm.experienceLevelOptions.entryLevel },
+                        { value: "Junior", label: t.admin.careerEditForm.experienceLevelOptions.junior },
+                        { value: "Mid Level", label: t.admin.careerEditForm.experienceLevelOptions.midLevel },
+                        { value: "Senior", label: t.admin.careerEditForm.experienceLevelOptions.senior },
+                        { value: "Executive", label: t.admin.careerEditForm.experienceLevelOptions.executive },
+                      ]
+                    }
                   />
                   <FormInput
                     label={t.admin.careerEditForm.salary}
