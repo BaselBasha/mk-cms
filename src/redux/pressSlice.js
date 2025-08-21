@@ -70,18 +70,67 @@ export const createPress = createAsyncThunk("press/create", async ({ data, lang 
 export const updatePress = createAsyncThunk(
   "press/update",
   async ({ id, data, lang }) => {
-    const res = await fetch(`${ENDPOINTS.press}/${id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${getToken()}`,
-        'Accept-Language': lang || getLanguage(),
-      },
-      body: JSON.stringify({ ...data, lang: lang || getLanguage() }),
+    console.log('=== REDUX UPDATE PRESS ===');
+    console.log('Update request:', { id, data, lang });
+    console.log('Endpoint:', `${ENDPOINTS.press}/${id}`);
+    
+    // Check if user is authenticated
+    const token = getToken();
+    if (!token) {
+      console.error('No authentication token found');
+      throw new Error('You must be logged in to update press articles. Please log in first.');
+    }
+    
+    console.log('Token found:', token ? 'Yes' : 'No');
+    console.log('Headers:', {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      'Accept-Language': lang || getLanguage(),
     });
-    if (!res.ok) throw new Error("Failed to update press");
-    const response = await res.json();
-    return response.press || response;
+    
+    // First, test if backend is reachable
+    try {
+      const healthCheck = await fetch(`${ENDPOINTS.press.replace('/api/press', '')}/api/health`);
+      console.log('Backend health check status:', healthCheck.status);
+    } catch (error) {
+      console.error('Backend not reachable:', error);
+      throw new Error('Backend server is not running. Please start the backend server first.');
+    }
+    
+    try {
+      const res = await fetch(`${ENDPOINTS.press}/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          'Accept-Language': lang || getLanguage(),
+        },
+        body: JSON.stringify({ ...data, lang: lang || getLanguage() }),
+      });
+      
+      console.log('Response status:', res.status);
+      console.log('Response headers:', Object.fromEntries(res.headers.entries()));
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Backend error response:', errorText);
+        try {
+          const errorJson = JSON.parse(errorText);
+          console.error('Parsed error:', errorJson);
+          throw new Error(errorJson.error || `HTTP ${res.status}: ${errorText}`);
+        } catch (parseError) {
+          console.error('Parse error:', parseError);
+          throw new Error(`HTTP ${res.status}: ${errorText}`);
+        }
+      }
+      
+      const response = await res.json();
+      console.log('Success response:', response);
+      return response.press || response;
+    } catch (error) {
+      console.error('Update press error:', error);
+      throw error;
+    }
   }
 );
 
@@ -90,7 +139,14 @@ export const deletePress = createAsyncThunk("press/delete", async (id) => {
     method: "DELETE",
     headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
-  if (!res.ok) throw new Error("Failed to delete press");
+  if (!res.ok) {
+    const text = await res.text();
+    console.error('[Redux][press] Delete failed -> Status:', res.status, 'Body:', text);
+    if (res.status === 403) {
+      throw new Error("You do not have permission to delete this item");
+    }
+    throw new Error("Failed to delete press");
+  }
   return id;
 });
 

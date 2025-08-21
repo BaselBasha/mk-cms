@@ -532,7 +532,11 @@ export default function EditCertificationPage({ params }) {
                             const resolvedParams = params?.then ? await params : params;
                             const certificationId = resolvedParams?.id;
 
-                            await dispatch(updateCertification({ id: certificationId, data: certificationData })).unwrap();
+                            await dispatch(updateCertification({ 
+                              id: certificationId, 
+                              data: certificationData, 
+                              lang: language 
+                            })).unwrap();
                             setSubmitStatus("success");
                             setTimeout(() => {
                                 router.push("/admin/certifications");

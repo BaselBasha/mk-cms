@@ -342,7 +342,11 @@ export default function EditProjectPage({ params }) {
                             const resolvedParams = params?.then ? await params : params;
                             const projectId = resolvedParams?.id;
 
-                            await dispatch(updateProject({ id: projectId, data: projectData })).unwrap();
+                            await dispatch(updateProject({ 
+                              id: projectId, 
+                              data: projectData, 
+                              lang: language 
+                            })).unwrap();
                             setSubmitStatus("success");
                             setTimeout(() => {
                                 router.push("/admin/projects");

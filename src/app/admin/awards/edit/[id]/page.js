@@ -514,7 +514,11 @@ export default function EditAwardPage({ params }) {
 
         console.log('Final award data:', awardData);
 
-        await dispatch(updateAward({ id: awardId, data: awardData })).unwrap();
+        await dispatch(updateAward({ 
+          id: awardId, 
+          data: awardData, 
+          lang: language 
+        })).unwrap();
         setSubmitStatus('success');
         
         // Redirect after successful update

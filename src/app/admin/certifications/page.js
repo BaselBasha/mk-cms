@@ -220,6 +220,7 @@ export default function CertificationsAdminPage() {
   const [sortOrder, setSortOrder] = useState("desc");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [certificationToDelete, setCertificationToDelete] = useState(null);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     dispatch(fetchCertifications());
@@ -274,6 +275,9 @@ export default function CertificationsAdminPage() {
         setCertificationToDelete(null);
       } catch (error) {
         console.error("Failed to delete certification:", error);
+        const msg = (error && error.message) || (language === 'ar' ? 'لا تملك صلاحية الحذف' : 'You do not have permission to delete this item');
+        setToast({ type: 'error', message: msg });
+        setTimeout(() => setToast(null), 3000);
       }
     }
   };
@@ -308,6 +312,11 @@ export default function CertificationsAdminPage() {
     >
       <ParticleBackground />
       <AdminHeader currentPage={t.admin.certifications.pageTitle} />
+      {toast && (
+        <div className={`fixed top-6 right-6 z-50 px-4 py-3 rounded-lg border ${toast.type === 'error' ? 'bg-red-500/20 border-red-500/30 text-red-200' : 'bg-green-500/20 border-green-500/30 text-green-200'}`}>
+          {toast.message}
+        </div>
+      )}
       
       <div className="container mx-auto px-6 py-8 mt-20">
         {/* Header */}

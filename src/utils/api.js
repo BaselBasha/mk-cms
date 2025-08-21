@@ -44,14 +44,7 @@ const apiRequest = async (endpoint, options = {}) => {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
     
     if (!response.ok) {
-      if (response.status === 401) {
-        // Token expired or invalid, redirect to login
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('admin');
-          window.location.href = '/admin/login';
-        }
-        throw new Error('Authentication failed');
-      }
+      // Do not auto-logout on 401; let the UI handle it gracefully
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     

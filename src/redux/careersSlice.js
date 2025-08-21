@@ -94,7 +94,14 @@ export const deleteCareer = createAsyncThunk('careers/delete', async (id) => {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}`, 'Accept-Language': getLanguage() }
     });
-    if (!res.ok) throw new Error('Failed to delete career');
+    if (!res.ok) {
+        const text = await res.text();
+        console.error('[Redux][careers] Delete failed -> Status:', res.status, 'Body:', text);
+        if (res.status === 403) {
+            throw new Error('You do not have permission to delete this item');
+        }
+        throw new Error('Failed to delete career');
+    }
     return id;
 });
 

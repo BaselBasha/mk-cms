@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Award, User, LogOut, ChevronDown, Settings } from "lucide-react";
+import { Award, User, LogOut, ChevronDown, Settings, Menu, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/locales/translations";
@@ -14,6 +14,7 @@ const AdminHeader = ({ currentPage = "Dashboard" }) => {
   
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [adminData, setAdminData] = useState(null);
   const router = useRouter();
 
@@ -56,6 +57,11 @@ const AdminHeader = ({ currentPage = "Dashboard" }) => {
     { name: t.admin.nav.companies, href: "/admin/companies" },
   ];
 
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+    setIsDropdownOpen(false);
+  };
+
   return (
     <motion.header
       initial={{ y: -100 }}
@@ -67,21 +73,28 @@ const AdminHeader = ({ currentPage = "Dashboard" }) => {
           : "bg-gradient-to-r from-[#0f1419]/90 via-[#1a2d27]/90 to-[#0f1419]/90 backdrop-blur-sm"
       }`}
     >
-      <div className="container mx-auto px-6 py-4">
+      <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Award className="h-8 w-8 text-[#65a30d]" />
-            <div>
-              <h1 className="text-2xl font-bold text-white">{t.admin.header.title}</h1>
-              <p className="text-sm text-gray-400">{currentPage} {t.admin.nav.management}</p>
+          {/* Logo and Title - Responsive */}
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <Award className="h-6 w-6 sm:h-8 sm:w-8 text-[#65a30d]" />
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-2xl font-bold text-white truncate">
+                {t.admin.header.title}
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-400 truncate">
+                {currentPage} {t.admin.nav.management}
+              </p>
             </div>
           </div>
-          <nav className="flex items-center space-x-6">
+
+          {/* Desktop Navigation - Hidden on mobile */}
+          <nav className="hidden lg:flex items-center space-x-4 xl:space-x-6">
             {navItems.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                className={`transition-colors duration-200 ${
+                className={`transition-colors duration-200 whitespace-nowrap ${
                   currentPage === item.name
                     ? "text-[#65a30d] font-medium"
                     : "text-gray-300 hover:text-white hover:text-[#65a30d]/80"
@@ -90,18 +103,23 @@ const AdminHeader = ({ currentPage = "Dashboard" }) => {
                 {item.name}
               </a>
             ))}
+          </nav>
+
+          {/* Right Side Controls */}
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            {/* Language Switcher - Hidden on very small screens */}
+            <div className="hidden sm:block">
+              <LanguageSwitcher />
+            </div>
             
-            {/* Language Switcher */}
-            <LanguageSwitcher />
-            
-            {/* Admin Dropdown */}
-            <div className="relative">
+            {/* Admin Dropdown - Desktop */}
+            <div className="hidden sm:block relative">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="flex items-center space-x-2 px-3 py-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 hover:border-[#65a30d]/30 transition-all duration-200"
               >
                 <User className="h-4 w-4 text-gray-300" />
-                <span className="text-gray-300 text-sm">
+                <span className="text-gray-300 text-sm hidden md:block">
                   {adminData?.username || "Admin"}
                 </span>
                 <ChevronDown 
@@ -156,15 +174,109 @@ const AdminHeader = ({ currentPage = "Dashboard" }) => {
                 )}
               </AnimatePresence>
             </div>
-          </nav>
+
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden p-2 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors duration-200"
+            >
+              {isMobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Mobile Navigation Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="lg:hidden bg-[#0f1419]/95 backdrop-blur-md border-t border-white/10"
+          >
+            <div className="container mx-auto px-4 py-4">
+              {/* Mobile Navigation Items */}
+              <nav className="space-y-2 mb-6">
+                {navItems.map((item) => (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    onClick={closeMobileMenu}
+                    className={`block px-4 py-3 rounded-lg transition-colors duration-200 ${
+                      currentPage === item.name
+                        ? "bg-[#65a30d]/20 text-[#65a30d] font-medium border border-[#65a30d]/30"
+                        : "text-gray-300 hover:bg-white/5 hover:text-white"
+                    }`}
+                  >
+                    {item.name}
+                  </a>
+                ))}
+              </nav>
+
+              {/* Mobile Language Switcher */}
+              <div className="mb-6">
+                <div className="px-4 py-2 text-gray-400 text-sm font-medium mb-2">
+                  {t.admin.header.language}
+                </div>
+                <div className="px-4">
+                  <LanguageSwitcher />
+                </div>
+              </div>
+
+              {/* Mobile Admin Info and Actions */}
+              <div className="border-t border-white/10 pt-4">
+                <div className="px-4 py-3 mb-3 bg-white/5 rounded-lg">
+                  <p className="text-white font-medium text-sm">
+                    {adminData?.username || "Admin"}
+                  </p>
+                  <p className="text-gray-400 text-xs">
+                    {adminData?.email || "admin@mkgroup.com"}
+                  </p>
+                </div>
+                
+                <div className="space-y-1">
+                  <button
+                    onClick={() => {
+                      closeMobileMenu();
+                      // Add settings functionality here
+                    }}
+                    className="w-full flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-white/5 hover:text-[#65a30d] transition-colors duration-200 rounded-lg"
+                  >
+                    <Settings className="h-4 w-4" />
+                    <span className="text-sm">{t.admin.header.settings}</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      closeMobileMenu();
+                      handleLogout();
+                    }}
+                    className="w-full flex items-center space-x-3 px-4 py-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors duration-200 rounded-lg"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span className="text-sm">{t.admin.header.logout}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
-      {/* Backdrop to close dropdown when clicking outside */}
-      {isDropdownOpen && (
+      {/* Backdrop to close dropdowns when clicking outside */}
+      {(isDropdownOpen || isMobileMenuOpen) && (
         <div
           className="fixed inset-0 z-40"
-          onClick={() => setIsDropdownOpen(false)}
+          onClick={() => {
+            setIsDropdownOpen(false);
+            setIsMobileMenuOpen(false);
+          }}
         />
       )}
     </motion.header>

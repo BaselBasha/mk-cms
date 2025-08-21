@@ -331,7 +331,7 @@ const JobCard = ({ job, index, onApplyClick }) => {
             </h4>
             <div className="space-y-2">
               {job.requirements.slice(0, 3).map((req, i) => (
-                <div key={i} className="flex items-center space-x-2 text-sm text-gray-400">
+                <div key={`req-${i}-${req.substring(0, 10)}`} className="flex items-center space-x-2 text-sm text-gray-400">
                   <Check className="w-3 h-3 text-[#65a30d] flex-shrink-0" />
                   <span>{req}</span>
                 </div>
@@ -350,7 +350,7 @@ const JobCard = ({ job, index, onApplyClick }) => {
             </h4>
             <div className="space-y-2">
               {job.benefits.slice(0, 3).map((benefit, i) => (
-                <div key={i} className="flex items-center space-x-2 text-sm text-gray-400">
+                <div key={`benefit-${i}-${benefit.substring(0, 10)}`} className="flex items-center space-x-2 text-sm text-gray-400">
                   <Star className="w-3 h-3 text-[#65a30d] flex-shrink-0" />
                   <span>{benefit}</span>
                 </div>
@@ -509,7 +509,7 @@ const StatsSection = ({
             },
           ].map((stat, index) => (
             <motion.div
-              key={index}
+              key={`stat-${stat.title}-${index}`}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: index * 0.2 }}
@@ -652,14 +652,14 @@ export default function CareersPage() {
                 transition={{ duration: 0.5 }}
                 className="grid grid-cols-1 lg:grid-cols-2 gap-8"
               >
-                                 {filteredCareers.map((job, index) => (
-                   <JobCard
-                     key={job.id}
-                     job={job}
-                     index={index}
-                     onApplyClick={handleApplyClick}
-                   />
-                 ))}
+                {filteredCareers.map((job, index) => (
+                  <JobCard
+                    key={job._id || job.id}
+                    job={job}
+                    index={index}
+                    onApplyClick={handleApplyClick}
+                  />
+                ))}
               </motion.div>
             </AnimatePresence>
 

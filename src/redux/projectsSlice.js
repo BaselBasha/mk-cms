@@ -99,7 +99,14 @@ export const deleteProject = createAsyncThunk("projects/delete", async (id) => {
     method: "DELETE",
     headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
-  if (!res.ok) throw new Error("Failed to delete project");
+  if (!res.ok) {
+    const text = await res.text();
+    console.error('[Redux][projects] Delete failed -> Status:', res.status, 'Body:', text);
+    if (res.status === 403) {
+      throw new Error("You do not have permission to delete this item");
+    }
+    throw new Error("Failed to delete project");
+  }
   return id;
 });
 

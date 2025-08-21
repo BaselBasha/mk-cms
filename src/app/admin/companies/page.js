@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCompanies, deleteCompany } from "@/redux/companiesSlice";
 import { Edit, Trash2, Eye, Plus, Search, AlertCircle, Globe, Calendar, Layers } from "lucide-react";
+import { useCallback, useState as useReactState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -21,6 +22,7 @@ export default function AdminCompaniesPage() {
     dispatch(fetchCompanies());
   }, [dispatch]);
 
+  const [toast, setToast] = useReactState(null);
   const handleDelete = async (companyId) => {
     try {
       await dispatch(deleteCompany(companyId)).unwrap();
@@ -28,6 +30,9 @@ export default function AdminCompaniesPage() {
       setSelectedCompany(null);
     } catch (error) {
       console.error("Delete failed:", error);
+      const msg = (error && error.message) || (language === 'ar' ? 'لا تملك صلاحية الحذف' : 'You do not have permission to delete');
+      setToast({ type: 'error', message: msg });
+      setTimeout(() => setToast(null), 3000);
     }
   };
 
@@ -170,6 +175,13 @@ export default function AdminCompaniesPage() {
           </div>
         )}
       </div>
+
+      {/* Toast */}
+      {toast && (
+        <div className={`fixed top-6 right-6 z-50 px-4 py-3 rounded-lg border ${toast.type === 'error' ? 'bg-red-500/20 border-red-500/30 text-red-200' : 'bg-green-500/20 border-green-500/30 text-green-200'}`}>
+          {toast.message}
+        </div>
+      )}
 
       {/* Delete Modal */}
       {showDeleteModal && selectedCompany && (

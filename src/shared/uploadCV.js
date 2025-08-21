@@ -1,6 +1,6 @@
 import { ENDPOINTS } from './endpoints';
 
-export async function uploadCV(cvFile, jobId, applicantName) {
+export async function uploadCV(cvFile, jobId, applicantName, language = 'en') {
   if (!cvFile || !jobId || !applicantName) {
     throw new Error('CV file, job ID, and applicant name are required');
   }
@@ -62,6 +62,7 @@ export async function uploadCV(cvFile, jobId, applicantName) {
     console.log('Frontend - Upload result:', uploadResult);
     console.log('Frontend - CV file:', cvFile);
     console.log('Frontend - Candidate data being sent:', candidateData);
+    console.log('Frontend - Language:', language);
     
     // Validate that we have all required fields
     if (!candidateData.cvFile.mimeType) {
@@ -77,6 +78,7 @@ export async function uploadCV(cvFile, jobId, applicantName) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept-Language': language,
       },
       body: JSON.stringify(candidateData),
     });

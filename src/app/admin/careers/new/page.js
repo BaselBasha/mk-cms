@@ -617,7 +617,44 @@ export default function AdminCareerForm() {
         };
 
         try { console.log('[UI][Careers] Final payload:', JSON.stringify(formData)); } catch (_) {}
-        await dispatch(createCareer({ data: formData, lang: formLang })).unwrap();
+        // Build enum mapping between EN and AR labels to satisfy both schemas
+        const depKeys = Object.keys(translations.en.admin.careerForm.departments || {});
+        const typeKeys = Object.keys(translations.en.admin.careerForm.jobTypes || {});
+        const expKeys = Object.keys(translations.en.admin.careerForm.experienceLevels || {});
+        const curKeys = Object.keys(translations.en.admin.careerForm.currencies || {});
+
+        const buildPairs = (path) => {
+          return Object.keys(translations.en.admin.careerForm[path] || {}).map((key) => ([
+            translations.en.admin.careerForm[path][key],
+            translations.ar.admin.careerForm[path][key]
+          ]));
+        };
+        const depPairs = buildPairs('departments');
+        const typePairs = buildPairs('jobTypes');
+        const expPairs = buildPairs('experienceLevels');
+        const curPairs = buildPairs('currencies');
+
+        const mapToLang = (val, pairs, target) => {
+          if (!val) return val;
+          for (const [enLabel, arLabel] of pairs) {
+            if (target === 'en' && (val === arLabel)) return enLabel;
+            if (target === 'ar' && (val === enLabel)) return arLabel;
+          }
+          return val;
+        };
+
+        // Map enums to target schema when saving single language
+        const mappedSingle = {
+          ...formData,
+          department: mapToLang(formData.department, depPairs, formLang),
+          type: mapToLang(formData.type, typePairs, formLang),
+          experience: mapToLang(formData.experience, expPairs, formLang),
+          salary: {
+            ...formData.salary,
+            currency: mapToLang(formData.salary.currency, curPairs, formLang),
+          },
+        };
+        await dispatch(createCareer({ data: mappedSingle, lang: formLang })).unwrap();
         formik.resetForm();
       } catch (error) {
         console.error('Submission failed:', error);
@@ -880,6 +917,7 @@ export default function AdminCareerForm() {
                 formik={formik}
                 t={t}
               />
+              <div className="text-xs text-gray-400">{language === 'ar' ? 'نصيحة: عند حفظ كلا النسختين (عربي/إنجليزي) استخدم نفس رابط الصورة المُحمّلة لإعادة استخدامها دون الرفع مرة أخرى.' : 'Tip: When saving both EN/AR versions, reuse the same uploaded image URL to avoid uploading twice.'}</div>
             </div>
           </div>
 

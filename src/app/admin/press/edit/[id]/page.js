@@ -51,31 +51,43 @@ const FormTextarea = ({ label, name, required = false, ...props }) => (
   </div>
 );
 
-const FormSelect = ({ label, name, options, required = false, t, ...props }) => (
-  <div className="space-y-2">
-    <label className="block text-sm font-medium text-white">
-      {label} {required && <span className="text-red-400">*</span>}
-    </label>
-    <Field
-      as="select"
-      name={name}
-      className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#65a30d]"
-      {...props}
-    >
-      <option value="">{t.admin.form.select} {label}</option>
-      {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </Field>
-    <Field name={name}>
-      {({ field, meta }) => meta.touched && meta.error && (
-        <div className="text-red-400 text-sm">{meta.error}</div>
-      )}
-    </Field>
-  </div>
-);
+const FormSelect = ({ label, name, options, required = false, t, ...props }) => {
+  console.log(`FormSelect ${name}:`, { label, name, options, required, props });
+  
+  return (
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-white">
+        {label} {required && <span className="text-red-400">*</span>}
+      </label>
+      <Field
+        as="select"
+        name={name}
+        className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#65a30d]"
+        {...props}
+      >
+        <option value="">{t.admin.form.select} {label}</option>
+        {options.map((option) => {
+          console.log(`FormSelect ${name} option:`, option);
+          return (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          );
+        })}
+      </Field>
+      <Field name={name}>
+        {({ field, meta }) => {
+          console.log(`FormSelect ${name} field:`, field);
+          console.log(`FormSelect ${name} meta:`, meta);
+          console.log(`FormSelect ${name} current value:`, field.value);
+          return meta.touched && meta.error ? (
+            <div className="text-red-400 text-sm">{meta.error}</div>
+          ) : null;
+        }}
+      </Field>
+    </div>
+  );
+};
 
 const DynamicList = ({ label, name, formik, placeholder = "Add item...", t }) => {
   const addItem = () => {
@@ -222,6 +234,41 @@ export default function EditPressPage({ params }) {
   const resolvedParams = use(params);
   const pressId = resolvedParams.id;
 
+  // Function to map Arabic category values to English
+  const mapCategoryToEnglish = (arabicCategory) => {
+    const categoryMap = {
+      'أخبار': 'news',
+      'مقابلة': 'interview',
+      'مقال': 'feature',
+      'مراجعة': 'review',
+      'إعلان': 'announcement'
+    };
+    return categoryMap[arabicCategory] || 'news';
+  };
+
+  // Function to map English category values to Arabic
+  const mapCategoryToArabic = (englishCategory) => {
+    const categoryMap = {
+      'news': 'أخبار',
+      'interview': 'مقابلة',
+      'feature': 'ميزة',
+      'review': 'مراجعة',
+      'announcement': 'إعلان'
+    };
+    return categoryMap[englishCategory] || 'أخبار';
+  };
+
+  // Function to get the appropriate category value based on language
+  const getCategoryForLanguage = (category, targetLanguage) => {
+    if (targetLanguage === 'ar') {
+      // If target language is Arabic, convert English to Arabic
+      return mapCategoryToArabic(category);
+    } else {
+      // If target language is English, convert Arabic to English
+      return mapCategoryToEnglish(category);
+    }
+  };
+
   useEffect(() => {
     async function fetchData() {
       try {
@@ -250,7 +297,18 @@ export default function EditPressPage({ params }) {
     })),
     isActive: Yup.boolean(),
     tags: Yup.array().of(Yup.string()),
-    category: Yup.string().oneOf(["news", "interview", "feature", "review", "announcement"]),
+    category: Yup.string()
+      .oneOf(
+        language === 'ar' 
+          ? ['أخبار', 'مقابلة', 'ميزة', 'مراجعة', 'إعلان']
+          : ['news', 'interview', 'feature', 'review', 'announcement'],
+        "Category must be one of the allowed values"
+      )
+      .required("Category is required")
+      .test('category-not-empty', 'Category cannot be empty', function(value) {
+        console.log('Category validation test:', { value, type: typeof value, length: value ? value.length : 'undefined', language });
+        return value && value.trim() !== '';
+      }),
     youtubeLinks: Yup.array().of(Yup.string().url("Must be a valid URL")),
     documents: Yup.array().of(Yup.object().shape({
       url: Yup.string().required(),
@@ -308,13 +366,20 @@ export default function EditPressPage({ params }) {
     ) : [],
     isActive: press.isActive ?? true,
     tags: Array.isArray(press.tags) && press.tags.length > 0 ? press.tags : [],
-    category: press.category || "",
+    category: press.category ? getCategoryForLanguage(press.category, language) : (language === 'ar' ? 'أخبار' : 'news'), // Map based on language
     youtubeLinks: Array.isArray(press.youtubeLinks) && press.youtubeLinks.length > 0 ? press.youtubeLinks : [],
     documents: Array.isArray(press.documents) && press.documents.length > 0 ? press.documents.map(doc => 
       typeof doc === 'string' ? { url: doc, name: 'Document', type: 'application/pdf', size: 0 } : doc
     ) : [],
     relatedArticles: Array.isArray(press.relatedArticles) && press.relatedArticles.length > 0 ? press.relatedArticles : [],
   };
+  
+  console.log('=== INITIAL VALUES DEBUG ===');
+  console.log('Press object:', press);
+  console.log('Press category:', press.category);
+  console.log('Mapped category:', press.category ? getCategoryForLanguage(press.category, language) : 'news');
+  console.log('Initial category value:', initialValues.category);
+  console.log('Category should always be English value');
 
   return (
     <div 
@@ -355,16 +420,62 @@ export default function EditPressPage({ params }) {
             setIsSubmitting(true);
             setSubmitStatus(null);
             try {
+              console.log('=== FORM SUBMISSION DEBUG ===');
+              console.log('Raw form values:', values);
+              console.log('Category value:', values.category);
+              console.log('Category type:', typeof values.category);
+              console.log('Category length:', values.category ? values.category.length : 'undefined');
+              
               const dataToSend = {
                 ...values,
                 tags: values.tags ? values.tags.map(tag => tag.trim()).filter(tag => tag.length > 0) : [],
                 youtubeLinks: values.youtubeLinks ? values.youtubeLinks.map(link => link.trim()).filter(link => link.length > 0) : [],
-                documents: values.documents ? values.documents.map(doc => doc.url).filter(doc => doc.length > 0) : [],
+                documents: values.documents ? values.documents.filter(doc => doc && doc.url) : [],
                 relatedArticles: values.relatedArticles ? values.relatedArticles.map(article => article.trim()).filter(article => article.length > 0) : [],
-                image: values.image ? values.image.map(img => img.url).filter(img => img.length > 0) : [],
+                image: values.image ? values.image.filter(img => img && img.url) : [],
               };
               
-                             await dispatch(updatePress({ id: press._id || pressId, data: dataToSend })).unwrap();
+              // Ensure category has a valid value
+              if (!dataToSend.category || dataToSend.category.trim() === '') {
+                console.log('Category is empty, defaulting to appropriate value for language:', language);
+                dataToSend.category = language === 'ar' ? 'أخبار' : 'news';
+              }
+              
+              // Ensure category is the correct value for the target language
+              if (language === 'ar') {
+                // For Arabic, ensure we have Arabic category values
+                const validArabicCategories = ['أخبار', 'مقابلة', 'ميزة', 'مراجعة', 'إعلان'];
+                if (!validArabicCategories.includes(dataToSend.category)) {
+                  console.log('Category is not a valid Arabic value, mapping it');
+                  console.log('Original category:', dataToSend.category);
+                  dataToSend.category = mapCategoryToArabic(dataToSend.category);
+                  console.log('Mapped to Arabic category:', dataToSend.category);
+                }
+              } else {
+                // For English, ensure we have English category values
+                const validEnglishCategories = ['news', 'interview', 'feature', 'review', 'announcement'];
+                if (!validEnglishCategories.includes(dataToSend.category)) {
+                  console.log('Category is not a valid English value, mapping it');
+                  console.log('Original category:', dataToSend.category);
+                  dataToSend.category = mapCategoryToEnglish(dataToSend.category);
+                  console.log('Mapped to English category:', dataToSend.category);
+                }
+              }
+              
+              console.log('Final category value for language', language, ':', dataToSend.category);
+              
+              console.log('Processed data to send:', dataToSend);
+              console.log('Category in processed data:', dataToSend.category);
+              
+              console.log('Submitting press update with language:', language);
+              console.log('Press ID:', press._id || pressId);
+              console.log('Data being sent:', dataToSend);
+              
+              await dispatch(updatePress({ 
+                id: press._id || pressId, 
+                data: dataToSend, 
+                lang: language 
+              })).unwrap();
               setSubmitStatus("success");
               setTimeout(() => {
                 router.push("/admin/press");
@@ -387,13 +498,21 @@ export default function EditPressPage({ params }) {
                   <FormInput label={t.admin.pressEditForm.publication} name="publication" required placeholder={t.admin.pressEditForm.publicationPlaceholder} />
                   <FormInput label={t.admin.pressEditForm.publishDate} name="publishDate" type="date" required />
                   <FormInput label={t.admin.pressEditForm.url} name="url" placeholder={t.admin.pressEditForm.urlPlaceholder} />
-                  <FormSelect label={t.admin.pressEditForm.category} name="category" required t={t} options={[
-                    { value: "news", label: t.admin.pressEditForm.categoryOptions.news },
-                    { value: "interview", label: t.admin.pressEditForm.categoryOptions.interview },
-                    { value: "feature", label: t.admin.pressEditForm.categoryOptions.feature },
-                    { value: "review", label: t.admin.pressEditForm.categoryOptions.review },
-                    { value: "announcement", label: t.admin.pressEditForm.categoryOptions.announcement },
-                  ]} />
+                  <FormSelect label={t.admin.pressEditForm.category} name="category" required t={t} options={
+                     language === 'ar' ? [
+                       { value: "أخبار", label: t.admin.pressEditForm.categoryOptions.news },
+                       { value: "مقابلة", label: t.admin.pressEditForm.categoryOptions.interview },
+                       { value: "ميزة", label: t.admin.pressEditForm.categoryOptions.feature },
+                       { value: "مراجعة", label: t.admin.pressEditForm.categoryOptions.review },
+                       { value: "إعلان", label: t.admin.pressEditForm.categoryOptions.announcement },
+                     ] : [
+                       { value: "news", label: t.admin.pressEditForm.categoryOptions.news },
+                       { value: "interview", label: t.admin.pressEditForm.categoryOptions.interview },
+                       { value: "feature", label: t.admin.pressEditForm.categoryOptions.feature },
+                       { value: "review", label: t.admin.pressEditForm.categoryOptions.review },
+                       { value: "announcement", label: t.admin.pressEditForm.categoryOptions.announcement },
+                     ]
+                   } />
                   <div className="flex items-center space-x-2 mt-4">
                     <label className="text-white text-sm">{t.admin.pressEditForm.active}</label>
                     <Field type="checkbox" name="isActive" className="h-5 w-5 text-[#65a30d]" />
@@ -438,6 +557,48 @@ export default function EditPressPage({ params }) {
                     ))}
                   </div>
                 )}
+                
+                {/* Authentication Debug Info */}
+                <div className="mt-4 p-3 bg-black/20 rounded-lg">
+                  <h4 className="font-semibold text-white mb-2">🔐 Authentication Status</h4>
+                  <div>Language: {language}</div>
+                  <div>Admin Token: {typeof window !== 'undefined' && localStorage.getItem('admin') ? 'Found' : 'Missing'}</div>
+                  <div>Admin Data: {typeof window !== 'undefined' && localStorage.getItem('admin') ? 'Available' : 'Not Available'}</div>
+                  <div>Backend URL: {process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'Production'}</div>
+                  
+                  {/* Category Debug Info */}
+                  <div className="mt-3 pt-3 border-t border-white/10">
+                    <h5 className="font-semibold text-white mb-2">📝 Form Field Debug</h5>
+                    <div>Current Category: {formik.values.category || 'undefined'}</div>
+                    <div>Category Type: {typeof formik.values.category}</div>
+                    <div>Category Length: {formik.values.category ? formik.values.category.length : 'N/A'}</div>
+                    <div>Category Valid: {formik.errors.category ? 'No' : 'Yes'}</div>
+                    <div>Expected Categories for {language}: {language === 'ar' ? 'أخبار, مقابلة, ميزة, مراجعة, إعلان' : 'news, interview, feature, review, announcement'}</div>
+                    {formik.errors.category && <div className="text-red-400">Category Error: {formik.errors.category}</div>}
+                  </div>
+                  
+                  {/* Connection Test Button */}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        console.log('Testing backend connection...');
+                        const response = await fetch('http://localhost:5000/api/health');
+                        if (response.ok) {
+                          alert('✅ Backend is reachable and running!');
+                        } else {
+                          alert(`❌ Backend responded with status: ${response.status}`);
+                        }
+                      } catch (error) {
+                        console.error('Connection test failed:', error);
+                        alert('❌ Backend is not reachable. Please ensure the backend server is running on port 5000.');
+                      }
+                    }}
+                    className="mt-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded"
+                  >
+                    Test Backend Connection
+                  </button>
+                </div>
               </div>
             </Form>
           )}

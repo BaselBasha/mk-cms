@@ -95,9 +95,21 @@ const ApplicationModal = ({ isOpen, onClose, job }) => {
     setSubmitStatus(null);
 
     try {
+      console.log('=== APPLICATION MODAL SUBMISSION ===');
       console.log('Job object:', job);
-      console.log('Job ID:', job._id || job.id);
-      const result = await uploadCV(formData.cvFile, job._id || job.id, formData.applicantName.trim());
+      console.log('Job object keys:', Object.keys(job));
+      console.log('Job ID (job._id):', job._id);
+      console.log('Job ID (job.id):', job.id);
+      console.log('Job ID type (job._id):', typeof job._id);
+      console.log('Job ID type (job.id):', typeof job.id);
+      console.log('Current language:', language);
+      console.log('Language context value:', language);
+      
+      const finalJobId = job._id || job.id;
+      console.log('Final job ID being sent:', finalJobId);
+      console.log('Final job ID type:', typeof finalJobId);
+      
+      const result = await uploadCV(formData.cvFile, finalJobId, formData.applicantName.trim(), language);
       
       setSubmitStatus({
         type: 'success',

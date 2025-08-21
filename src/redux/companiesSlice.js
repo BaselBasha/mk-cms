@@ -92,7 +92,14 @@ export const deleteCompany = createAsyncThunk("companies/delete", async (id) => 
     method: "DELETE",
     headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
-  if (!res.ok) throw new Error("Failed to delete company");
+  if (!res.ok) {
+    const text = await res.text();
+    console.error('[Redux][companies] Delete failed -> Status:', res.status, 'Body:', text);
+    if (res.status === 403) {
+      throw new Error("You do not have permission to delete this item");
+    }
+    throw new Error("Failed to delete company");
+  }
   return id;
 });
 

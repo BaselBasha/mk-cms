@@ -82,7 +82,14 @@ export const deleteCertification = createAsyncThunk("certifications/delete", asy
     method: "DELETE",
     headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
-  if (!res.ok) throw new Error("Failed to delete certification");
+  if (!res.ok) {
+    const text = await res.text();
+    console.error('[Redux][certifications] Delete failed -> Status:', res.status, 'Body:', text);
+    if (res.status === 403) {
+      throw new Error("You do not have permission to delete this item");
+    }
+    throw new Error("Failed to delete certification");
+  }
   return id;
 });
 

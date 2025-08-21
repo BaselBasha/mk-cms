@@ -128,9 +128,12 @@ export default function AdminLoginPage() {
 
   useEffect(() => {
     if (status === "success" && user) {
-      // Save user/admin to localStorage
-      localStorage.setItem("admin", JSON.stringify(user));
-      // Redirect to /admin
+      // Save only what we need; avoid nesting token deeply
+      const payload = {
+        token: user.token,
+        admin: user.admin,
+      };
+      localStorage.setItem("admin", JSON.stringify(payload));
       router.push("/admin");
     }
   }, [status, user, router]);

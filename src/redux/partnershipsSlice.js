@@ -102,7 +102,14 @@ export const deletePartnership = createAsyncThunk("partnerships/delete", async (
     method: "DELETE",
     headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
   });
-  if (!res.ok) throw new Error("Failed to delete partnership");
+  if (!res.ok) {
+    const text = await res.text();
+    console.error('[Redux][partnerships] Delete failed -> Status:', res.status, 'Body:', text);
+    if (res.status === 403) {
+      throw new Error("You do not have permission to delete this item");
+    }
+    throw new Error("Failed to delete partnership");
+  }
   return id;
 });
 
