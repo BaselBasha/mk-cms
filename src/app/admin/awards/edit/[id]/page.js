@@ -553,7 +553,7 @@ export default function EditAwardPage({ params }) {
         removeImage: false, // Always start with removeImage as false
       });
     }
-  }, [award]);
+  }, [award, formik]);
 
   const categoryOptions = [
     t.admin.awardEditForm.categoryOptions.excellence,
@@ -668,7 +668,6 @@ export default function EditAwardPage({ params }) {
                 formik={formik}
                 required
                 icon={<Building className="w-4 h-4" />}
-                required
               />
 
               <FormInput
@@ -678,7 +677,6 @@ export default function EditAwardPage({ params }) {
                 formik={formik}
                 required
                 icon={<Calendar className="w-4 h-4" />}
-                required
               />
 
               <FormSelect

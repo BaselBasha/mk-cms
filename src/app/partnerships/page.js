@@ -365,7 +365,7 @@ export default function PartnershipsPage() {
             >
               <Handshake className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-2xl font-semibold text-white mb-2">No Partnerships Yet</h3>
-              <p className="text-gray-400">We're working on building strategic partnerships. Check back soon!</p>
+              <p className="text-gray-400">We&apos;re working on building strategic partnerships. Check back soon!</p>
             </motion.div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

@@ -65,7 +65,7 @@ export default function AdminCompaniesPage() {
             </div>
             <Link
               href="/admin/companies/new"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center space-x-2 transition-colors"
+              className={`bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg inline-flex items-center ${isRTL ? 'space-x-reverse' : ''} space-x-2 transition-colors`}
             >
               <Plus className="h-5 w-5" />
               <span>{t.admin?.nav?.addNewCompany || 'Add New Company'}</span>
@@ -121,7 +121,7 @@ export default function AdminCompaniesPage() {
 
                 <div className="space-y-2 text-sm text-gray-300">
                   {company.website && (
-                    <div className="flex items-center space-x-2">
+                    <div className={`flex items-center ${isRTL ? 'space-x-reverse' : ''} space-x-2`}>
                       <Globe className="h-4 w-4" />
                       <a href={company.website} target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">
                         {company.website}
@@ -129,7 +129,7 @@ export default function AdminCompaniesPage() {
                     </div>
                   )}
                   {company.established && (
-                    <div className="flex items-center space-x-2">
+                    <div className={`flex items-center ${isRTL ? 'space-x-reverse' : ''} space-x-2`}>
                       <Calendar className="h-4 w-4" />
                       <span>{company.established}</span>
                     </div>
@@ -138,17 +138,17 @@ export default function AdminCompaniesPage() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex items-center space-x-2 pt-4">
+                <div className={`flex items-center ${isRTL ? 'space-x-reverse' : ''} space-x-2 pt-4`}>
                   <Link
                     href={`/admin/companies/edit/${company._id}`}
-                    className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded-lg text-sm flex items-center justify-center space-x-1 transition-colors"
+                    className={`flex-1 bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded-lg text-sm flex items-center justify-center ${isRTL ? 'space-x-reverse' : ''} space-x-1 transition-colors`}
                   >
                     <Edit className="h-4 w-4" />
                     <span>{language === 'ar' ? 'تعديل' : 'Edit'}</span>
                   </Link>
                   <button
                     onClick={() => { setSelectedCompany(company); setShowDeleteModal(true); }}
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm flex items-center justify-center space-x-1 transition-colors"
+                    className={`flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm flex items-center justify-center ${isRTL ? 'space-x-reverse' : ''} space-x-1 transition-colors`}
                   >
                     <Trash2 className="h-4 w-4" />
                     <span>{language === 'ar' ? 'حذف' : 'Delete'}</span>
@@ -189,9 +189,9 @@ export default function AdminCompaniesPage() {
           <div className="bg-gray-900 border border-white/10 rounded-xl p-6 max-w-md w-full mx-4">
             <h3 className="text-xl font-semibold text-white mb-4">{language === 'ar' ? 'حذف الشركة' : 'Delete Company'}</h3>
             <p className="text-gray-400 mb-6">
-              {language === 'ar' ? 'هل أنت متأكد أنك تريد حذف' : 'Are you sure you want to delete'} "{selectedCompany.name}"? {language === 'ar' ? 'لا يمكن التراجع عن هذا الإجراء.' : 'This action cannot be undone.'}
+              {language === 'ar' ? 'هل أنت متأكد أنك تريد حذف' : 'Are you sure you want to delete'} &ldquo;{selectedCompany.name}&rdquo;? {language === 'ar' ? 'لا يمكن التراجع عن هذا الإجراء.' : 'This action cannot be undone.'}
             </p>
-            <div className="flex space-x-3">
+            <div className={`flex ${isRTL ? 'space-x-reverse' : ''} space-x-3`}>
               <button
                 onClick={() => setShowDeleteModal(false)}
                 className="flex-1 px-4 py-2 border border-white/10 text-white rounded-lg hover:bg-white/10 transition-colors"

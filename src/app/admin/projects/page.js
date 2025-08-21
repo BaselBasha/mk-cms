@@ -266,7 +266,7 @@ export default function AdminProjectsPage() {
           <div className="bg-gray-900 border border-white/10 rounded-xl p-6 max-w-md w-full mx-4">
             <h3 className="text-xl font-semibold text-white mb-4">{t.admin.projects.deleteProject}</h3>
             <p className="text-gray-400 mb-6">
-              {t.admin.projects.deleteConfirmation} "{selectedProject.title}"? {t.admin.projects.deleteWarning}
+              {t.admin.projects.deleteConfirmation} &ldquo;{selectedProject.title}&rdquo;? {t.admin.projects.deleteWarning}
             </p>
             <div className="flex space-x-3">
               <button

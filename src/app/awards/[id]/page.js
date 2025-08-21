@@ -89,7 +89,7 @@ export default function AwardDetailPage() {
             Award Not Found
           </h2>
           <p className="text-gray-400 mb-6">
-            The award you're looking for doesn't exist or has been removed.
+            The award you&apos;re looking for doesn&apos;t exist or has been removed.
           </p>
           <Link
             href="/awards"

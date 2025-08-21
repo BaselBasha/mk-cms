@@ -1404,11 +1404,11 @@ const PressSection = () => {
                     {/* Quote */}
                     <div className="flex-1 mb-4">
                       <p className="text-base italic text-gray-300 text-center leading-relaxed line-clamp-4">
-                        "
+                        &ldquo;
                         {item.quote && item.quote.length > 200
                           ? item.quote.substring(0, 200) + "..."
                           : item.quote}
-                        "
+                        &rdquo;
                       </p>
                     </div>
 
