@@ -25,109 +25,11 @@ import {
   selectPublicCareers,
   selectCareersLoading,
   selectCareersError,
-} from "../../redux/careersSlice";
-import ApplicationModal from "./ApplicationModal";
+} from "@/redux/careersSlice";
+import ApplicationModal from "../../careers/ApplicationModal";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/locales/translations";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
-
-// --- Particle Background Component ---
-const ParticleBackground = () => {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    let animationFrameId;
-
-    canvas.width = window.innerWidth;
-    canvas.height = document.documentElement.scrollHeight;
-
-    let particlesArray = [];
-    const numberOfParticles = 100;
-
-    class Particle {
-      constructor(x, y, directionX, directionY, size, color) {
-        this.x = x;
-        this.y = y;
-        this.directionX = directionX;
-        this.directionY = directionY;
-        this.size = size;
-        this.color = color;
-      }
-      draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
-        ctx.fillStyle = this.color;
-        ctx.fill();
-      }
-      update() {
-        if (this.x > canvas.width || this.x < 0) {
-          this.directionX = -this.directionX;
-        }
-        if (this.y > canvas.height || this.y < 0) {
-          this.directionY = -this.directionY;
-        }
-        this.x += this.directionX;
-        this.y += this.directionY;
-        this.draw();
-      }
-    }
-
-    function init() {
-      particlesArray = [];
-      for (let i = 0; i < numberOfParticles; i++) {
-        let size = Math.random() * 2 + 1;
-        let x = Math.random() * canvas.width;
-        let y = Math.random() * canvas.height;
-        let directionX = Math.random() * 0.3 - 0.15;
-        let directionY = Math.random() * 0.3 - 0.15;
-        let color = "rgba(200, 164, 100, 0.3)";
-        particlesArray.push(
-          new Particle(x, y, directionX, directionY, size, color)
-        );
-      }
-    }
-
-    function animate() {
-      animationFrameId = requestAnimationFrame(animate);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let i = 0; i < particlesArray.length; i++) {
-        particlesArray[i].update();
-      }
-    }
-
-    const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = document.documentElement.scrollHeight;
-      init();
-    };
-
-    init();
-    animate();
-
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        zIndex: -1,
-        background: "linear-gradient(135deg, #1a2d27 0%, #33413d 100%)",
-      }}
-    />
-  );
-};
 
 // --- Header Component ---
 const Header = () => {
@@ -225,6 +127,104 @@ const HeroSection = () => {
         </motion.div>
       </motion.div>
     </section>
+  );
+};
+
+// --- Particle Background Component ---
+const ParticleBackground = () => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let animationFrameId;
+
+    canvas.width = window.innerWidth;
+    canvas.height = document.documentElement.scrollHeight;
+
+    let particlesArray = [];
+    const numberOfParticles = 100;
+
+    class Particle {
+      constructor(x, y, directionX, directionY, size, color) {
+        this.x = x;
+        this.y = y;
+        this.directionX = directionX;
+        this.directionY = directionY;
+        this.size = size;
+        this.color = color;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      }
+      update() {
+        if (this.x > canvas.width || this.x < 0) {
+          this.directionX = -this.directionX;
+        }
+        if (this.y > canvas.height || this.y < 0) {
+          this.directionY = -this.directionY;
+        }
+        this.x += this.directionX;
+        this.y += this.directionY;
+        this.draw();
+      }
+    }
+
+    function init() {
+      particlesArray = [];
+      for (let i = 0; i < numberOfParticles; i++) {
+        let size = Math.random() * 2 + 1;
+        let x = Math.random() * canvas.width;
+        let y = Math.random() * canvas.height;
+        let directionX = Math.random() * 0.3 - 0.15;
+        let directionY = Math.random() * 0.3 - 0.15;
+        let color = "rgba(200, 164, 100, 0.3)";
+        particlesArray.push(
+          new Particle(x, y, directionX, directionY, size, color)
+        );
+      }
+    }
+
+    function animate() {
+      animationFrameId = requestAnimationFrame(animate);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < particlesArray.length; i++) {
+        particlesArray[i].update();
+      }
+    }
+
+    const handleResize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = document.documentElement.scrollHeight;
+      init();
+    };
+
+    init();
+    animate();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        zIndex: -1,
+        background: "linear-gradient(135deg, #1a2d27 0%, #33413d 100%)",
+      }}
+    />
   );
 };
 
