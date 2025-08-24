@@ -159,6 +159,9 @@ const AdminHeader = ({ currentPage = "Dashboard" }) => {
                         <p className="text-gray-400 text-xs">
                           {adminData?.email || "admin@mkgroup.com"}
                         </p>
+                        <p className="text-gray-400 text-xs">
+                          Role: {adminData?.role || "admin"}
+                        </p>
                       </div>
                       
                       <button
@@ -251,6 +254,9 @@ const AdminHeader = ({ currentPage = "Dashboard" }) => {
                   </p>
                   <p className="text-gray-400 text-xs">
                     {adminData?.email || "admin@mkgroup.com"}
+                  </p>
+                  <p className="text-gray-400 text-xs">
+                    Role: {adminData?.role || "admin"}
                   </p>
                 </div>
                 

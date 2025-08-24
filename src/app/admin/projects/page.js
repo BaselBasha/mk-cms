@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import AdminHeader from "@/shared/AdminHeader";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/locales/translations";
+import { isSuperAdmin } from "@/shared/auth";
 
 export default function AdminProjectsPage() {
   const { language, isRTL } = useLanguage();
@@ -230,16 +231,18 @@ export default function AdminProjectsPage() {
                     <span>{t.admin.projects.edit}</span>
                   </Link>
                   
-                  <button
-                    onClick={() => {
-                      setSelectedProject(project);
-                      setShowDeleteModal(true);
-                    }}
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm flex items-center justify-center space-x-1 transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span>{t.admin.projects.delete}</span>
-                  </button>
+                  {isSuperAdmin() && (
+                    <button
+                      onClick={() => {
+                        setSelectedProject(project);
+                        setShowDeleteModal(true);
+                      }}
+                      className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm flex items-center justify-center space-x-1 transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span>{t.admin.projects.delete}</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.div>

@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import AdminHeader from "@/shared/AdminHeader";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/locales/translations";
+import { isSuperAdmin } from "@/shared/auth";
 
 export default function AdminAwardsPage() {
   const { language, isRTL } = useLanguage();
@@ -220,16 +221,18 @@ export default function AdminAwardsPage() {
                     <span>{t.admin.awards.edit}</span>
                   </Link>
                   
-                  <button
-                    onClick={() => {
-                      setSelectedAward(award);
-                      setShowDeleteModal(true);
-                    }}
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm flex items-center justify-center space-x-1 transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span>{t.admin.awards.delete}</span>
-                  </button>
+                  {isSuperAdmin() && (
+                    <button
+                      onClick={() => {
+                        setSelectedAward(award);
+                        setShowDeleteModal(true);
+                      }}
+                      className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm flex items-center justify-center space-x-1 transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span>{t.admin.awards.delete}</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.div>

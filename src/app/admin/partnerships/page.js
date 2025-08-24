@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import AdminHeader from "@/shared/AdminHeader";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/locales/translations";
+import { isSuperAdmin } from "@/shared/auth";
 import {
   Plus,
   Edit,
@@ -146,13 +147,15 @@ const PartnershipCard = ({ partnership, onEdit, onDelete, onView, t }) => {
           >
             <Edit className="h-4 w-4" />
           </button>
-          <button
-            onClick={() => onDelete(partnership)}
-            className="p-2 text-red-400 hover:text-red-300 transition-colors"
-            title="Delete"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
+          {isSuperAdmin() && (
+            <button
+              onClick={() => onDelete(partnership)}
+              className="p-2 text-red-400 hover:text-red-300 transition-colors"
+              title="Delete"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
     </motion.div>

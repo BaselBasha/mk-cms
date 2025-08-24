@@ -22,6 +22,7 @@ import Link from "next/link";
 import AdminHeader from "@/shared/AdminHeader";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/locales/translations";
+import { isSuperAdmin } from "@/shared/auth";
 
 export default function AdminPressPage() {
   const { language, isRTL } = useLanguage();
@@ -213,13 +214,15 @@ export default function AdminPressPage() {
                         <Edit className="h-4 w-4" />
                         <span className="text-sm">{t.admin.press.edit}</span>
                       </Link>
-                      <button
-                        onClick={() => setDeleteId(article._id)}
-                        className="flex items-center space-x-1 px-3 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="text-sm">{t.admin.press.delete}</span>
-                      </button>
+                      {isSuperAdmin() && (
+                        <button
+                          onClick={() => setDeleteId(article._id)}
+                          className="flex items-center space-x-1 px-3 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="text-sm">{t.admin.press.delete}</span>
+                        </button>
+                      )}
                     </div>
                     <Link
                       href={`/press/${article._id}`}

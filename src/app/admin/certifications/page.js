@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import AdminHeader from "@/shared/AdminHeader";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/locales/translations";
+import { isSuperAdmin } from "@/shared/auth";
 import { 
   Plus, 
   Search, 
@@ -193,13 +194,15 @@ const CertificationCard = ({ certification, onEdit, onView, onDelete, t }) => (
           <Edit className="h-3 w-3" />
           <span>{t.admin.certifications.edit}</span>
         </button>
-        <button
-          onClick={() => onDelete(certification)}
-          className="flex items-center space-x-1 px-3 py-1 bg-red-600/20 text-red-300 rounded-lg hover:bg-red-600/30 transition-colors"
-        >
-          <Trash2 className="h-3 w-3" />
-          <span>{t.admin.certifications.delete}</span>
-        </button>
+        {isSuperAdmin() && (
+          <button
+            onClick={() => onDelete(certification)}
+            className="flex items-center space-x-1 px-3 py-1 bg-red-600/20 text-red-300 rounded-lg hover:bg-red-600/30 transition-colors"
+          >
+            <Trash2 className="h-3 w-3" />
+            <span>{t.admin.certifications.delete}</span>
+          </button>
+        )}
       </div>
     </div>
   </motion.div>
