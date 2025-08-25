@@ -18,6 +18,7 @@ import {
   Zap,
   Globe,
 } from "lucide-react";
+import { useLanguage } from "../../../contexts/LanguageContext";
 
 // --- Particle Background Component ---
 const ParticleBackground = () => {
@@ -163,7 +164,7 @@ const MediaModal = ({ isOpen, onClose, media, type }) => {
 };
 
 // --- Header Component ---
-const Header = () => {
+const Header = ({ currentLang }) => {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -204,6 +205,7 @@ const Header = () => {
 export default function ProjectDetailPage({ params }) {
   // Unwrap params using React.use() to fix the Next.js warning
   const unwrappedParams = React.use(params);
+  const { language } = useLanguage();
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [mediaType, setMediaType] = useState("image");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -211,82 +213,18 @@ export default function ProjectDetailPage({ params }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Detect current language from URL or localStorage
-  const getCurrentLanguage = () => {
-    // Check if we're on an Arabic route
-    if (typeof window !== 'undefined') {
-      const pathname = window.location.pathname;
-      if (pathname.startsWith('/ar/')) {
-        return 'ar';
-      }
-      // Check localStorage for language preference
-      const savedLanguage = localStorage.getItem('language');
-      if (savedLanguage === 'ar') {
-        return 'ar';
-      }
-    }
-    return 'en'; // default to English
-  };
-
-  // Debug logging
-  useEffect(() => {
-    // Component mounted - no debugging needed
-  }, [unwrappedParams]);
-
   useEffect(() => {
     const fetchProject = async () => {
       try {
         setLoading(true);
-        const currentLang = getCurrentLanguage();
-        
-        // Try different API endpoint patterns for Arabic projects
-        let apiUrl;
-        let fallbackUrls = [];
-        
-        if (currentLang === 'ar') {
-          // Try different possible endpoints for Arabic projects
-          const baseUrl = 'https://mk-cms-back.vercel.app/api';
-          const projectId = unwrappedParams.id;
-          
-          // Primary attempt - try the same structure as English but with different model
-          apiUrl = `${baseUrl}/projects-ars/public/${projectId}`;
-          
-          // Fallback URLs to try if the primary fails
-          fallbackUrls = [
-            `${baseUrl}/projects-ars/${projectId}`,
-            `${baseUrl}/projects/public/${projectId}?lang=ar`,
-            `${baseUrl}/projects/${projectId}?lang=ar`,
-            `${baseUrl}/projects/public/${projectId}`,
-          ];
-        } else {
-          apiUrl = `https://mk-cms-back.vercel.app/api/projects/public/${unwrappedParams.id}`;
-        }
-        
-        // Try the primary URL first
-        let response = await fetch(apiUrl);
-        
-        // If primary fails and we have fallbacks, try them
-        if (!response.ok && fallbackUrls.length > 0) {
-          for (let i = 0; i < fallbackUrls.length; i++) {
-            const fallbackUrl = fallbackUrls[i];
-            
-            try {
-              response = await fetch(fallbackUrl);
-              
-              if (response.ok) {
-                break;
-              }
-            } catch (fallbackErr) {
-              // Continue to next fallback
-            }
+        const response = await fetch(`https://mk-cms-back.vercel.app/api/projects/public/${unwrappedParams.id}`, {
+          headers: {
+            'Accept-Language': language || 'en'
           }
-        }
-        
+        });
         if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Project not found (${response.status}): ${errorText}`);
+          throw new Error('Project not found');
         }
-        
         const data = await response.json();
         setProject(data.project);
       } catch (err) {
@@ -298,11 +236,8 @@ export default function ProjectDetailPage({ params }) {
 
     if (unwrappedParams.id) {
       fetchProject();
-    } else {
-      setError('No project ID provided');
-      setLoading(false);
     }
-  }, [unwrappedParams.id]);
+  }, [unwrappedParams.id, language]);
 
   if (loading) {
     return (
@@ -383,7 +318,7 @@ export default function ProjectDetailPage({ params }) {
   return (
     <div className="bg-transparent text-gray-200 font-sans overflow-x-hidden relative min-h-screen">
       <ParticleBackground />
-      <Header />
+      <Header currentLang={unwrappedParams.lang} />
 
       {/* Hero Section */}
       <section className="relative h-screen flex items-center overflow-hidden">

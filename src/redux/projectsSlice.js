@@ -10,8 +10,12 @@ const getLanguage = () => {
 };
 
 export const fetchProjects = createAsyncThunk("projects/fetchAll", async () => {
+  const language = getLanguage();
   const res = await fetch(`${ENDPOINTS.projects}/admin`, {
-    headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
+    headers: { 
+      Authorization: `Bearer ${getToken()}`, 
+      'Accept-Language': language 
+    },
   });
   if (!res.ok) throw new Error("Failed to fetch projects");
   const data = await res.json();
@@ -22,7 +26,12 @@ export const fetchPublicProjects = createAsyncThunk(
   "projects/fetchPublic",
   async () => {
     console.log("Fetching public projects...");
-    const res = await fetch(`${ENDPOINTS.projects}/public`, { headers: { 'Accept-Language': getLanguage() } });
+    const language = getLanguage();
+    const res = await fetch(`${ENDPOINTS.projects}/public`, { 
+      headers: { 
+        'Accept-Language': language 
+      } 
+    });
     if (!res.ok) throw new Error("Failed to fetch public projects");
     const data = await res.json();
     console.log("Public projects API response:", data);
@@ -33,8 +42,12 @@ export const fetchPublicProjects = createAsyncThunk(
 export const fetchProjectById = createAsyncThunk(
   "projects/fetchById",
   async (id) => {
+    const language = getLanguage();
     const res = await fetch(`${ENDPOINTS.projects}/admin/${id}`, {
-      headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
+      headers: { 
+        Authorization: `Bearer ${getToken()}`, 
+        'Accept-Language': language 
+      },
     });
     if (!res.ok) throw new Error("Failed to fetch project");
     const data = await res.json();
@@ -45,7 +58,12 @@ export const fetchProjectById = createAsyncThunk(
 export const fetchPublicProjectById = createAsyncThunk(
   "projects/fetchPublicById",
   async (id) => {
-    const res = await fetch(`${ENDPOINTS.projects}/public/${id}`, { headers: { 'Accept-Language': getLanguage() } });
+    const language = getLanguage();
+    const res = await fetch(`${ENDPOINTS.projects}/public/${id}`, { 
+      headers: { 
+        'Accept-Language': language 
+      } 
+    });
     if (!res.ok) throw new Error("Failed to fetch public project");
     const data = await res.json();
     return data.project || data;
@@ -79,14 +97,15 @@ export const createProject = createAsyncThunk(
 export const updateProject = createAsyncThunk(
   "projects/update",
   async ({ id, data, lang }) => {
+    const currentLang = lang || getLanguage();
     const res = await fetch(`${ENDPOINTS.projects}/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${getToken()}`,
-        'Accept-Language': lang || getLanguage(),
+        'Accept-Language': currentLang,
       },
-      body: JSON.stringify({ ...data, lang: lang || getLanguage() }),
+      body: JSON.stringify({ ...data, lang: currentLang }),
     });
     if (!res.ok) throw new Error("Failed to update project");
     const response = await res.json();
@@ -95,9 +114,13 @@ export const updateProject = createAsyncThunk(
 );
 
 export const deleteProject = createAsyncThunk("projects/delete", async (id) => {
+  const language = getLanguage();
   const res = await fetch(`${ENDPOINTS.projects}/${id}`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
+    headers: { 
+      Authorization: `Bearer ${getToken()}`, 
+      'Accept-Language': language 
+    },
   });
   if (!res.ok) {
     const text = await res.text();

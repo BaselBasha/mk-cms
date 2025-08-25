@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchPublicProjects } from "@/redux/projectsSlice";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import {
   ArrowLeft,
   MapPin,
@@ -179,6 +180,9 @@ const Header = () => {
 
 // --- Project Card Component ---
 const ProjectCard = ({ project }) => {
+  const params = useParams();
+  const currentLang = params.lang || 'en';
+
   const getStatusColor = (status) => {
     switch (status) {
       case "completed":
@@ -290,7 +294,7 @@ const ProjectCard = ({ project }) => {
         )}
 
         <Link
-          href={`/projects/${project._id || project.id}`}
+          href={`/${currentLang}/projects/${project._id || project.id}`}
           className="inline-flex items-center space-x-2 text-[#65a30d] hover:text-[#84cc16] transition-colors font-medium"
         >
           <span>View Details</span>
