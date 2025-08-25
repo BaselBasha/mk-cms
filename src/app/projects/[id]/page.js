@@ -249,7 +249,7 @@ export default function ProjectDetailPage({ params }) {
           const projectId = unwrappedParams.id;
           
           // Primary attempt - try the same structure as English but with different model
-          apiUrl = `${baseUrl}/projects-ars/public/${projectId}`;
+          apiUrl = `${baseUrl}/projects/public/${projectId}`;
           
           // Fallback URLs to try if the primary fails
           fallbackUrls = [
@@ -263,7 +263,14 @@ export default function ProjectDetailPage({ params }) {
         }
         
         // Try the primary URL first
-        let response = await fetch(apiUrl);
+        let HeaderLang = localStorage.getItem('language');
+        console.log(HeaderLang);
+
+        let response = await fetch(apiUrl, {
+          headers: {
+            'Accept-Language': HeaderLang
+          }
+        });
         
         // If primary fails and we have fallbacks, try them
         if (!response.ok && fallbackUrls.length > 0) {
