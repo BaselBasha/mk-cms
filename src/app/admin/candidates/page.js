@@ -146,7 +146,7 @@ const AdminCandidatesPage = () => {
      // Load careers data
    useEffect(() => {
      dispatch(fetchPublicCareers());
-   }, [dispatch]);
+   }, [dispatch, language]); // Add language dependency
 
   // Fetch candidates for a specific job
   const fetchCandidates = async (jobId) => {

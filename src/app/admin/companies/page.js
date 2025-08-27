@@ -10,6 +10,7 @@ import AdminHeader from "@/shared/AdminHeader";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/locales/translations";
 import { isSuperAdmin } from "@/shared/auth";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function AdminCompaniesPage() {
   const { language, isRTL } = useLanguage();
@@ -22,7 +23,7 @@ export default function AdminCompaniesPage() {
 
   useEffect(() => {
     dispatch(fetchCompanies());
-  }, [dispatch]);
+  }, [dispatch, language]); // Add language dependency
 
   const [toast, setToast] = useReactState(null);
   const handleDelete = async (companyId) => {
@@ -57,7 +58,12 @@ export default function AdminCompaniesPage() {
       className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900"
       dir={isRTL ? 'rtl' : 'ltr'}
     >
-      <AdminHeader currentPage="Companies" />
+      <AdminHeader currentPage={t.admin.companies.pageTitle} />
+      
+      {/* Language Switcher */}
+      <div className="absolute top-6 right-6 z-10">
+        <LanguageSwitcher />
+      </div>
       
       {/* Header */}
       <div className="bg-black/30 border-b border-white/10 mt-20">

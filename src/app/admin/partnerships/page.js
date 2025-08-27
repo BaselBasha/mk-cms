@@ -22,6 +22,8 @@ import {
   Calendar,
   MapPin,
 } from "lucide-react";
+import Link from "next/link";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 // Partnership Card Component
 const PartnershipCard = ({ partnership, onEdit, onDelete, onView, t }) => {
@@ -180,7 +182,7 @@ export default function PartnershipsAdminPage() {
 
   useEffect(() => {
     dispatch(fetchPartnerships());
-  }, [dispatch]);
+  }, [dispatch, language]); // Add language dependency
 
   // Filter and sort partnerships
   const filteredPartnerships = partnerships
@@ -248,7 +250,12 @@ export default function PartnershipsAdminPage() {
       dir={isRTL ? 'rtl' : 'ltr'}
     >
       <AdminHeader currentPage={t.admin.partnerships.pageTitle} />
-
+      
+      {/* Language Switcher */}
+      <div className="absolute top-6 right-6 z-10">
+        <LanguageSwitcher />
+      </div>
+      
       <div className="container mx-auto px-6 py-8 mt-20">
         {/* Header */}
         <motion.div

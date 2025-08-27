@@ -19,8 +19,11 @@ import {
   Calendar,
   CheckCircle,
   AlertCircle,
-  X
+  X,
+  Shield
 } from "lucide-react";
+import Link from "next/link";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 // Particle Background Component
 const ParticleBackground = () => {
@@ -227,7 +230,7 @@ export default function CertificationsAdminPage() {
 
   useEffect(() => {
     dispatch(fetchCertifications());
-  }, [dispatch]);
+  }, [dispatch, language]); // Add language dependency
 
   // Filter and sort certifications
   const filteredCertifications = certifications
@@ -315,6 +318,12 @@ export default function CertificationsAdminPage() {
     >
       <ParticleBackground />
       <AdminHeader currentPage={t.admin.certifications.pageTitle} />
+      
+      {/* Language Switcher */}
+      <div className="absolute top-6 right-6 z-10">
+        <LanguageSwitcher />
+      </div>
+      
       {toast && (
         <div className={`fixed top-6 right-6 z-50 px-4 py-3 rounded-lg border ${toast.type === 'error' ? 'bg-red-500/20 border-red-500/30 text-red-200' : 'bg-green-500/20 border-green-500/30 text-green-200'}`}>
           {toast.message}

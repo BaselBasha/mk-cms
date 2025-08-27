@@ -23,6 +23,7 @@ import AdminHeader from "@/shared/AdminHeader";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/locales/translations";
 import { isSuperAdmin } from "@/shared/auth";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function AdminPressPage() {
   const { language, isRTL } = useLanguage();
@@ -37,7 +38,7 @@ export default function AdminPressPage() {
 
   useEffect(() => {
     dispatch(fetchPress());
-  }, [dispatch]);
+  }, [dispatch, language]); // Add language dependency
 
   const handleDelete = async (id) => {
     setIsDeleting(true);
@@ -81,6 +82,12 @@ export default function AdminPressPage() {
       dir={isRTL ? 'rtl' : 'ltr'}
     >
       <AdminHeader currentPage={t.admin.press.pageTitle} />
+      
+      {/* Language Switcher */}
+      <div className="absolute top-6 right-6 z-10">
+        <LanguageSwitcher />
+      </div>
+      
       <div className="container mx-auto px-6 py-8 mt-20">
         {/* Header */}
         <motion.div

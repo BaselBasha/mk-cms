@@ -9,6 +9,7 @@ import AdminHeader from "@/shared/AdminHeader";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/locales/translations";
 import { isSuperAdmin } from "@/shared/auth";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function AdminProjectsPage() {
   const { language, isRTL } = useLanguage();
@@ -23,7 +24,7 @@ export default function AdminProjectsPage() {
 
   useEffect(() => {
     dispatch(fetchProjects());
-  }, [dispatch]);
+  }, [dispatch, language]); // Add language dependency
 
   const handleDelete = async (projectId) => {
     try {
@@ -78,6 +79,11 @@ export default function AdminProjectsPage() {
       dir={isRTL ? 'rtl' : 'ltr'}
     >
       <AdminHeader currentPage={t.admin.projects.pageTitle} />
+      
+      {/* Language Switcher */}
+      <div className="absolute top-6 right-6 z-10">
+        <LanguageSwitcher />
+      </div>
       
       {/* Header */}
       <div className="bg-black/30 border-b border-white/10 mt-20">

@@ -9,6 +9,7 @@ import AdminHeader from "@/shared/AdminHeader";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/locales/translations";
 import { isSuperAdmin } from "@/shared/auth";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function AdminAwardsPage() {
   const { language, isRTL } = useLanguage();
@@ -23,7 +24,7 @@ export default function AdminAwardsPage() {
 
   useEffect(() => {
     dispatch(fetchAwards());
-  }, [dispatch]);
+  }, [dispatch, language]); // Add language dependency
 
   const handleDelete = async (awardId) => {
     try {
@@ -68,6 +69,11 @@ export default function AdminAwardsPage() {
       dir={isRTL ? 'rtl' : 'ltr'}
     >
       <AdminHeader currentPage={t.admin.awards.pageTitle} />
+      
+      {/* Language Switcher */}
+      <div className="absolute top-6 right-6 z-10">
+        <LanguageSwitcher />
+      </div>
       
       <div className="container mx-auto px-6 py-8 mt-20">
         {/* Header */}
