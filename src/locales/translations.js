@@ -629,6 +629,39 @@ export const translations = {
       confirmDelete: "Delete",
     },
 
+    // Companies Management
+    companies: {
+      // Page Title and Header
+      pageTitle: "Companies Management",
+      subtitle: "Manage all companies",
+      addNewCompany: "Add New Company",
+      
+      // Loading States
+      loadingCompanies: "Loading companies...",
+      
+      // Search and Filters
+      searchPlaceholder: "Search companies...",
+      allCompanies: "All Companies",
+      resultsCount: "of companies",
+      
+      // Action Buttons
+      view: "View",
+      edit: "Edit",
+      delete: "Delete",
+      
+      // Empty State
+      noCompaniesFound: "No companies found",
+      noCompaniesSubtitle: "Try adjusting your search or filters",
+      addFirstCompany: "Add Your First Company",
+      
+      // Delete Modal
+      deleteCompany: "Delete Company",
+      deleteConfirmation: "Are you sure you want to delete",
+      deleteWarning: "This action cannot be undone.",
+      cancel: "Cancel",
+      confirmDelete: "Delete",
+    },
+
     // Form Components
     form: {
       // Basic Information
