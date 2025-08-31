@@ -3670,6 +3670,39 @@ export const translations = {
       loadingCareers: "جاري تحميل الوظائف...",
     },
 
+    // Companies Management
+    companies: {
+      // Page Title and Header
+      pageTitle: "إدارة الشركات",
+      subtitle: "إدارة جميع الشركات",
+      addNewCompany: "إضافة شركة جديدة",
+      
+      // Loading States
+      loadingCompanies: "جاري تحميل الشركات...",
+      
+      // Search and Filters
+      searchPlaceholder: "البحث في الشركات...",
+      allCompanies: "جميع الشركات",
+      resultsCount: "من الشركات",
+      
+      // Action Buttons
+      view: "عرض",
+      edit: "تعديل",
+      delete: "حذف",
+      
+      // Empty State
+      noCompaniesFound: "لم يتم العثور على شركات",
+      noCompaniesSubtitle: "حاول تعديل البحث أو المرشحات",
+      addFirstCompany: "أضف شركتك الأولى",
+      
+      // Delete Modal
+      deleteCompany: "حذف الشركة",
+      deleteConfirmation: "هل أنت متأكد من أنك تريد حذف",
+      deleteWarning: "لا يمكن التراجع عن هذا الإجراء.",
+      cancel: "إلغاء",
+      confirmDelete: "حذف",
+    },
+
     // Candidates Management
     candidates: {
       // Page Title and Header

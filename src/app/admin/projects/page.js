@@ -36,11 +36,53 @@ export default function AdminProjectsPage() {
     }
   };
 
+  // Helper function to convert English filter values to Arabic database values
+  const getArabicStatusValue = (englishStatus) => {
+    const statusMap = {
+      'planning': 'التخطيط',
+      'in-progress': 'قيد التنفيذ',
+      'completed': 'مكتمل',
+      'on-hold': 'معلق',
+      'cancelled': 'ملغي'
+    };
+    return statusMap[englishStatus] || englishStatus;
+  };
+
+  const getArabicPriorityValue = (englishPriority) => {
+    const priorityMap = {
+      'low': 'منخفضة',
+      'medium': 'متوسطة',
+      'high': 'عالي',
+      'urgent': 'عاجل'
+    };
+    return priorityMap[englishPriority] || englishPriority;
+  };
+
   const filteredProjects = projects?.filter(project => {
+    console.log('Project:', project.title);
+    console.log('Project status:', project.status);
+    console.log('Project priority:', project.priority);
+    console.log('Status filter:', statusFilter);
+    console.log('Priority filter:', priorityFilter);
+    
     const matchesSearch = project.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          project.summary?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = !statusFilter || project.status === statusFilter;
-    const matchesPriority = !priorityFilter || project.priority === priorityFilter;
+    
+    // Convert English filter values to Arabic for comparison
+    const arabicStatusFilter = statusFilter ? getArabicStatusValue(statusFilter) : '';
+    const arabicPriorityFilter = priorityFilter ? getArabicPriorityValue(priorityFilter) : '';
+    
+    console.log('Arabic status filter:', arabicStatusFilter);
+    console.log('Arabic priority filter:', arabicPriorityFilter);
+    
+    const matchesStatus = !statusFilter || project.status === arabicStatusFilter;
+    const matchesPriority = !priorityFilter || project.priority === arabicPriorityFilter;
+    
+    console.log('Matches status:', matchesStatus);
+    console.log('Matches priority:', matchesPriority);
+    console.log('Matches search:', matchesSearch);
+    console.log('---');
+    
     return matchesSearch && matchesStatus && matchesPriority;
   }) || [];
 
@@ -50,7 +92,13 @@ export default function AdminProjectsPage() {
       'in-progress': 'bg-yellow-500',
       'completed': 'bg-green-500',
       'on-hold': 'bg-orange-500',
-      'cancelled': 'bg-red-500'
+      'cancelled': 'bg-red-500',
+      // Arabic values
+      'التخطيط': 'bg-blue-500',
+      'قيد التنفيذ': 'bg-yellow-500',
+      'مكتمل': 'bg-green-500',
+      'معلق': 'bg-orange-500',
+      'ملغي': 'bg-red-500'
     };
     return colors[status] || 'bg-gray-500';
   };
@@ -60,10 +108,17 @@ export default function AdminProjectsPage() {
       'low': 'bg-gray-500',
       'medium': 'bg-yellow-500',
       'high': 'bg-orange-500',
-      'urgent': 'bg-red-500'
+      'urgent': 'bg-red-500',
+      // Arabic values
+      'منخفضة': 'bg-gray-500',
+      'متوسطة': 'bg-yellow-500',
+      'عالية': 'bg-orange-500',
+      'عاجلة': 'bg-red-500'
     };
     return colors[priority] || 'bg-gray-500';
   };
+
+  // Since database values are already in Arabic, we can display them directly
 
   if (loading) {
     return (
@@ -120,7 +175,7 @@ export default function AdminProjectsPage() {
               />
             </div>
 
-            {/* Status Filter */}
+            {/* Status Filter - Fixed: Use English values but display localized text */}
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -134,7 +189,7 @@ export default function AdminProjectsPage() {
               <option value="cancelled">{t.admin.projects.status.cancelled}</option>
             </select>
 
-            {/* Priority Filter */}
+            {/* Priority Filter - Fixed: Use English values but display localized text */}
             <select
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
@@ -177,14 +232,14 @@ export default function AdminProjectsPage() {
                   </div>
                 )}
                 
-                {/* Status Badge */}
+                {/* Status Badge - Database values are already in Arabic */}
                 <div className="absolute top-2 left-2">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium text-white ${getStatusColor(project.status)}`}>
                     {project.status}
                   </span>
                 </div>
 
-                {/* Priority Badge */}
+                {/* Priority Badge - Database values are already in Arabic */}
                 {project.priority && (
                   <div className="absolute top-2 right-2">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium text-white ${getPriorityColor(project.priority)}`}>
@@ -299,4 +354,4 @@ export default function AdminProjectsPage() {
       )}
     </div>
   );
-} 
+}
