@@ -19,15 +19,31 @@ import {
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchPublicProjects } from "@/redux/projectsSlice";
+import { fetchPublicCompanies } from "@/redux/companiesSlice";
+import { fetchPublicPartnerships } from "@/redux/partnershipsSlice";
 import { fetchPublicPress } from "@/redux/pressSlice";
 import { fetchPublicCertifications } from "@/redux/certificationsSlice";
 import { fetchPublicAwards } from "@/redux/awardsSlice";
-import { fetchPublicPartnerships } from "@/redux/partnershipsSlice";
-import { fetchPublicCompanies } from "@/redux/companiesSlice";
 import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/locales/translations";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import PaginatedProjectsSection from "@/components/PaginatedProjectsSection";
+import PaginatedCompaniesSection from "@/components/PaginatedCompaniesSection";
+import PaginatedPartnershipsSection from "@/components/PaginatedPartnershipsSection";
+import PaginatedPressSection from "@/components/PaginatedPressSection";
+
+// --- Section Title Component ---
+const SectionTitle = ({ children, className = "" }) => (
+  <motion.h2
+    className={`text-5xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-16 text-center ${className}`}
+    initial={{ opacity: 0, y: 30 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.8 }}
+  >
+    {children}
+  </motion.h2>
+);
 
 // --- Particle Background Component ---
 // Creates a dynamic, animated particle background for the entire page.
@@ -137,21 +153,14 @@ const ParticleBackground = () => {
 export default function App() {
   const dispatch = useDispatch();
   const { language, isRTL } = useLanguage();
-  const { publicItems: projects, loading: projectsLoading } = useSelector(
-    (state) => state.projects
-  );
-  const { publicItems: pressArticles, loading: pressLoading } = useSelector(
-    (state) => state.press
-  );
+  const { publicItems: projects } = useSelector((state) => state.projects);
+  const { publicItems: companies } = useSelector((state) => state.companies);
+  const { publicItems: partnerships } = useSelector((state) => state.partnerships);
+  const { publicItems: pressArticles } = useSelector((state) => state.press);
   const { publicItems: certifications, loading: certificationsLoading } =
     useSelector((state) => state.certifications);
   const { publicItems: awards, loading: awardsLoading } = useSelector(
     (state) => state.awards
-  );
-  const { publicItems: partnerships, loading: partnershipsLoading } =
-    useSelector((state) => state.partnerships);
-  const { publicItems: companies, loading: companiesLoading } = useSelector(
-    (state) => state.companies
   );
 
   useEffect(() => {
@@ -168,22 +177,22 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    // Fetch data for dynamic sections
+    // Fetch data for all sections
     dispatch(fetchPublicProjects());
+    dispatch(fetchPublicCompanies());
+    dispatch(fetchPublicPartnerships());
     dispatch(fetchPublicPress());
     dispatch(fetchPublicCertifications());
     dispatch(fetchPublicAwards());
-    dispatch(fetchPublicPartnerships());
-    dispatch(fetchPublicCompanies());
   }, [dispatch]);
 
   // Check if any section has data
   const hasProjects = projects && projects.length > 0;
+  const hasCompanies = companies && companies.length > 0;
+  const hasPartnerships = partnerships && partnerships.length > 0;
   const hasPress = pressArticles && pressArticles.length > 0;
   const hasCertifications = certifications && certifications.length > 0;
   const hasAwards = awards && awards.length > 0;
-  const hasPartnerships = partnerships && partnerships.length > 0;
-  const hasCompanies = companies && companies.length > 0;
 
   return (
     <div 
@@ -198,14 +207,14 @@ export default function App() {
         {hasCertifications && <CertificationsSection />}
 
         <ProductsSection />
-        {hasProjects && <ProjectsSection />}
+        {hasProjects && <PaginatedProjectsSection />}
         {hasCertifications && <CertificationsImageSlider />}
         {hasAwards && <AwardsSliderSection />}
         <WhyUsSection />
         <SpecializationSection />
-        {hasCompanies && <CompaniesSection />}
-        {hasPartnerships && <PartnershipsSection />}
-        {hasPress && <PressSection />}
+        {hasCompanies && <PaginatedCompaniesSection />}
+        {hasPartnerships && <PaginatedPartnershipsSection />}
+        {hasPress && <PaginatedPressSection />}
 
       </main>
       <Footer />
@@ -461,15 +470,6 @@ const HeroSection = () => {
   );
 };
 
-// --- Section Title Component ---
-const SectionTitle = ({ children }) => (
-  <motion.div variants={itemVariants}>
-    <h2 className="text-4xl md:text-5xl font-bold text-center text-gray-100 mb-4">
-      {children}
-    </h2>
-    <div className="w-24 h-1 bg-gradient-to-r from-[#65a30d] to-[#84cc16] mb-16 mx-auto rounded-full"></div>
-  </motion.div>
-);
 
 // --- Who Are We Section ---
 const WhoAreWeSection = () => {
@@ -533,6 +533,12 @@ const CertificationsSection = () => {
 
   return (
     <AnimatedSection id="certifications" className="py-20 md:py-28">
+      <SectionTitle>{t.certifications?.title || "Our Certifications"}</SectionTitle>
+      <div className="text-center mb-16">
+        <p className="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
+          {t.certifications?.description || "Our certifications demonstrate our commitment to quality and excellence."}
+        </p>
+      </div>
       <div className="relative w-full overflow-hidden mask-gradient">
         <motion.div
           className="flex"
@@ -600,7 +606,7 @@ const CertificationsImageSlider = () => {
 
   return (
     <AnimatedSection className="py-16 bg-transparent">
-      <SectionTitle>{t.certifications.title}</SectionTitle>
+      <SectionTitle>{t.certifications.imageGallery || "Our Certification Gallery"}</SectionTitle>
 
       {loading ? (
         <div className="flex justify-center py-12">
@@ -1027,93 +1033,6 @@ const ProductsSection = () => {
   );
 };
 
-// --- Projects Section ---
-const ProjectsSection = () => {
-  const { publicItems: projects, loading } = useSelector(
-    (state) => state.projects
-  );
-  const { language } = useLanguage();
-  const t = translations[language];
-
-  // Transform projects for display
-  const displayProjects = (projects || []).map((project) => ({
-    name: project.title,
-    area: project.area,
-    budget: project.budget,
-    img:
-      project.images && project.images.length > 0
-        ? typeof project.images[0] === "string"
-          ? project.images[0]
-          : project.images[0].url
-        : "https://mkgroup-eg.com/wp-content/uploads/2024/05/The-Jojoba-Company-farm.jpg",
-    id: project._id || project.id,
-  }));
-
-  const duplicated = [
-    ...displayProjects,
-    ...displayProjects,
-    ...displayProjects,
-  ];
-
-  return (
-    <AnimatedSection
-      id="projects"
-      className="py-20 md:py-28 overflow-hidden bg-transparent"
-    >
-      <SectionTitle>{t.projects.title}</SectionTitle>
-
-      {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#65a30d]"></div>
-        </div>
-      ) : (
-        <>
-          <div className="relative w-full overflow-hidden mask-gradient">
-            <motion.div
-              className="flex justify-center"
-              animate={{ x: ["0%", `-${100 / 3}%`] }}
-              transition={{ ease: "linear", duration: 40, repeat: Infinity }}
-              drag="x"
-              dragConstraints={sliderDragConstraints}
-              whileTap={{ cursor: "grabbing" }}
-            >
-              {duplicated.map((p, i) => (
-                <GlassCard key={i} item={p} index={i} isProject={true} />
-              ))}
-            </motion.div>
-          </div>
-          <div className="flex justify-center mt-6">
-            <Link
-              href="/projects"
-              className="bg-[#65a30d] text-white px-8 py-3 rounded-full font-semibold shadow hover:bg-[#84cc16] transition-all duration-300"
-            >
-              {t.projects.showAll}
-            </Link>
-          </div>
-        </>
-      )}
-
-      <style jsx>{`
-        .mask-gradient {
-          -webkit-mask-image: linear-gradient(
-            to right,
-            transparent,
-            black 20%,
-            black 80%,
-            transparent
-          );
-          mask-image: linear-gradient(
-            to right,
-            transparent,
-            black 20%,
-            black 80%,
-            transparent
-          );
-        }
-      `}</style>
-    </AnimatedSection>
-  );
-};
 
 // --- Why Us Section ---
 const WhyUsSection = () => {
@@ -1253,342 +1172,8 @@ const SpecializationSection = () => {
   );
 };
 
-const CompaniesSection = () => {
-  const { publicItems: companies, loading } = useSelector(
-    (state) => state.companies
-  );
-  const { language } = useLanguage();
-  const t = translations[language];
 
-  // Transform companies for display with proper image handling
-  const displayCompanies = (companies || []).map((company) => {
-    // Handle company image - check multiple possible fields
-    let imageUrl = "https://mkgroup-eg.com/wp-content/uploads/2024/05/NVU.png"; // fallback
 
-    if (company.logo && company.logo.url) {
-      // If company has a logo field
-      imageUrl = company.logo.url;
-    } else if (company.image && company.image.url) {
-      // If company has an image field
-      imageUrl = company.image.url;
-    } else if (typeof company.image === "string") {
-      // If image is a direct string URL
-      imageUrl = company.image;
-    } else if (company.logo && typeof company.logo === "string") {
-      // If logo is a direct string URL
-      imageUrl = company.logo;
-    }
-
-    return {
-      name: company.name,
-      desc: company.summary || company.description,
-      img: imageUrl,
-      id: company._id || company.id,
-      website: company.website,
-    };
-  });
-
-  const duplicated = [
-    ...displayCompanies,
-    ...displayCompanies,
-    ...displayCompanies,
-  ];
-
-  return (
-    <AnimatedSection
-      id="companies"
-      className="py-20 md:py-28 overflow-hidden bg-transparent"
-    >
-      <SectionTitle>{t.companies.title}</SectionTitle>
-
-      {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#65a30d]"></div>
-        </div>
-      ) : (
-        <>
-          <div className="relative w-full overflow-hidden mask-gradient">
-            <motion.div
-              className="flex"
-              animate={{ x: ["0%", `-${100 / 3}%`] }}
-              transition={{ ease: "linear", duration: 40, repeat: Infinity }}
-              drag="x"
-              dragConstraints={sliderDragConstraints}
-              whileTap={{ cursor: "grabbing" }}
-            >
-              {duplicated.map((c, i) => (
-                <GlassCard key={i} item={c} index={i} isCompany={true} />
-              ))}
-            </motion.div>
-          </div>
-        </>
-      )}
-
-      <style jsx>{`
-        .mask-gradient {
-          -webkit-mask-image: linear-gradient(
-            to right,
-            transparent,
-            black 20%,
-            black 80%,
-            transparent
-          );
-          mask-image: linear-gradient(
-            to right,
-            transparent,
-            black 20%,
-            black 80%,
-            transparent
-          );
-        }
-      `}</style>
-    </AnimatedSection>
-  );
-};
-
-const PartnershipsSection = () => {
-  const { publicItems: partnerships, loading } = useSelector(
-    (state) => state.partnerships
-  );
-  const { language } = useLanguage();
-  const t = translations[language];
-
-  // Transform partnerships for display with proper poster image handling
-  const displayPartnerships = (partnerships || []).map((partnership) => {
-    // Handle partnership poster image
-    let posterImageUrl =
-      "https://mkgroup-eg.com/wp-content/uploads/2022/11/NVU.png"; // fallback
-
-    if (partnership.image) {
-      if (typeof partnership.image === "string") {
-        // If image is a direct string URL
-        posterImageUrl = partnership.image;
-      } else if (partnership.image.url) {
-        // If image is an object with url property (backend structure)
-        posterImageUrl = partnership.image.url;
-      } else if (
-        Array.isArray(partnership.image) &&
-        partnership.image.length > 0
-      ) {
-        // If image is an array, take the first one
-        const firstImage = partnership.image[0];
-        if (typeof firstImage === "string") {
-          posterImageUrl = firstImage;
-        } else if (firstImage && firstImage.url) {
-          posterImageUrl = firstImage.url;
-        }
-      }
-    }
-
-    return {
-      name: partnership.title || partnership.name,
-      desc: partnership.summary || partnership.description,
-      img: posterImageUrl,
-      id: partnership._id || partnership.id,
-      status: partnership.status,
-      priority: partnership.priority,
-    };
-  });
-
-  const duplicated = [
-    ...displayPartnerships,
-    ...displayPartnerships,
-    ...displayPartnerships,
-  ];
-
-  return (
-    <AnimatedSection
-      id="partnerships"
-      className="py-20 md:py-28 overflow-hidden bg-transparent"
-    >
-      <SectionTitle>{t.partnerships.title}</SectionTitle>
-
-      {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#65a30d]"></div>
-        </div>
-      ) : (
-        <>
-          <div className="relative w-full overflow-hidden mask-gradient">
-            <motion.div
-              className="flex"
-              animate={{ x: ["0%", `-${100 / 3}%`] }}
-              transition={{ ease: "linear", duration: 40, repeat: Infinity }}
-              drag="x"
-              dragConstraints={sliderDragConstraints}
-              whileTap={{ cursor: "grabbing" }}
-            >
-              {duplicated.map((p, i) => (
-                <GlassCard key={i} item={p} index={i} isPartnership={true} />
-              ))}
-            </motion.div>
-          </div>
-          <div className="flex justify-center mt-6">
-            <Link
-              href="/partnerships"
-              className="bg-[#65a30d] text-white px-8 py-3 rounded-full font-semibold shadow hover:bg-[#84cc16] transition-all duration-300"
-            >
-              {t.partnerships.viewAll}
-            </Link>
-          </div>
-        </>
-      )}
-
-      <style jsx>{`
-        .mask-gradient {
-          -webkit-mask-image: linear-gradient(
-            to right,
-            transparent,
-            black 20%,
-            black 80%,
-            transparent
-          );
-          mask-image: linear-gradient(
-            to right,
-            transparent,
-            black 20%,
-            black 80%,
-            transparent
-          );
-        }
-      `}</style>
-    </AnimatedSection>
-  );
-};
-
-// --- Press Section ---
-const PressSection = () => {
-  const { publicItems: pressArticles, loading } = useSelector(
-    (state) => state.press
-  );
-  const { language } = useLanguage();
-  const t = translations[language];
-
-  // Transform press articles for display
-  const displayPress = (pressArticles || []).map((press) => ({
-    quote: press.summary,
-    source: press.publication,
-    img:
-      press.image && press.image.length > 0
-        ? press.image[0]
-        : "https://mkgroup-eg.com/wp-content/uploads/2024/04/WhatsApp-Image-2024-04-27-at-14.21.40_47a11d61.jpg",
-    id: press._id || press.id,
-  }));
-
-  const duplicated = [...displayPress, ...displayPress, ...displayPress];
-
-  return (
-    <AnimatedSection id="press" className="py-20 md:py-28 overflow-hidden">
-      <SectionTitle>{t.press.title}</SectionTitle>
-
-      {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#65a30d]"></div>
-        </div>
-      ) : (
-        <>
-          <div className="relative w-full overflow-hidden mask-gradient">
-            <motion.div
-              className="flex items-stretch"
-              animate={{ x: ["0%", `-${100 / 3}%`] }}
-              transition={{ ease: "linear", duration: 40, repeat: Infinity }}
-              drag="x"
-              dragConstraints={sliderDragConstraints}
-              whileTap={{ cursor: "grabbing" }}
-            >
-              {duplicated.map((item, index) => (
-                <motion.div
-                  key={index}
-                  className="flex-shrink-0 w-96 max-w-full bg-black/20 backdrop-blur-md border border-white/10 p-6 rounded-2xl flex flex-col mx-6 h-auto min-h-[400px] cursor-pointer hover:border-[#65a30d]/30 transition-all duration-300"
-                  onClick={() => {
-                    if (item.id) {
-                      window.location.href = `/press/${item.id}`;
-                    }
-                  }}
-                  whileHover={{ scale: 1.02, y: -5 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {/* Image Container */}
-                  <div className="relative h-48 mb-4 overflow-hidden rounded-xl">
-                    <img
-                      src={item.img}
-                      alt={item.source}
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                  </div>
-
-                  {/* Content Container */}
-                  <div className="flex-1 flex flex-col">
-                    {/* Quote */}
-                    <div className="flex-1 mb-4">
-                      <p className="text-base italic text-gray-300 text-center leading-relaxed line-clamp-4">
-                        &ldquo;
-                        {item.quote && item.quote.length > 200
-                          ? item.quote.substring(0, 200) + "..."
-                          : item.quote}
-                        &rdquo;
-                      </p>
-                    </div>
-
-                    {/* Source */}
-                    <div className="mt-auto">
-                      <p className="font-bold text-right text-[#65a30d] text-sm truncate">
-                        -{" "}
-                        {item.source && item.source.length > 30
-                          ? item.source.substring(0, 30) + "..."
-                          : item.source}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-          <div className="flex justify-center mt-6">
-            <Link
-              href="/press"
-              className="bg-[#65a30d] text-white px-8 py-3 rounded-full font-semibold shadow hover:bg-[#84cc16] transition-all duration-300"
-            >
-              {t.press.showAll}
-            </Link>
-          </div>
-        </>
-      )}
-
-      <style jsx>{`
-        .mask-gradient {
-          -webkit-mask-image: linear-gradient(
-            to right,
-            transparent,
-            black 20%,
-            black 80%,
-            transparent
-          );
-          mask-image: linear-gradient(
-            to right,
-            transparent,
-            black 20%,
-            black 80%,
-            transparent
-          );
-        }
-        .line-clamp-2 {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-        .line-clamp-4 {
-          display: -webkit-box;
-          -webkit-line-clamp: 4;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-      `}</style>
-    </AnimatedSection>
-  );
-};
 
 // --- Footer Component ---
 const Footer = () => {

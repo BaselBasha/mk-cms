@@ -30,6 +30,27 @@ export const fetchPublicPress = createAsyncThunk(
   }
 );
 
+export const fetchPublicPressPaginated = createAsyncThunk(
+  "press/fetchPublicPaginated",
+  async ({ page = 1, limit = 6, reset = false }) => {
+    console.log("Fetching paginated public press...", { page, limit, reset });
+    const res = await fetch(`${ENDPOINTS.press}/public?page=${page}&limit=${limit}`, { 
+      headers: { 'Accept-Language': getLanguage() } 
+    });
+    if (!res.ok) throw new Error("Failed to fetch public press");
+    const data = await res.json();
+    console.log("Paginated public press API response:", data);
+    return { 
+      press: data.press || data.data || data,
+      totalPages: data.totalPages || 1,
+      currentPage: data.currentPage || page,
+      total: data.total || (data.press || data.data || data).length,
+      hasMore: data.hasMore || (page < (data.totalPages || 1)),
+      reset
+    };
+  }
+);
+
 export const fetchPressById = createAsyncThunk(
   "press/fetchById",
   async (id) => {
@@ -155,11 +176,35 @@ const pressSlice = createSlice({
   initialState: {
     items: [],
     publicItems: [],
+    paginatedPublicItems: [],
     currentItem: null,
     loading: false,
+    paginationLoading: false,
     error: null,
+    pagination: {
+      currentPage: 1,
+      totalPages: 1,
+      total: 0,
+      hasMore: false,
+    },
   },
-  reducers: {},
+  reducers: {
+    clearError: (state) => {
+      state.error = null;
+    },
+    clearCurrentItem: (state) => {
+      state.currentItem = null;
+    },
+    resetPaginatedItems: (state) => {
+      state.paginatedPublicItems = [];
+      state.pagination = {
+        currentPage: 1,
+        totalPages: 1,
+        total: 0,
+        hasMore: false,
+      };
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchPress.pending, (state) => {
@@ -253,8 +298,38 @@ const pressSlice = createSlice({
       .addCase(deletePress.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+      })
+
+      // Paginated public actions
+      .addCase(fetchPublicPressPaginated.pending, (state) => {
+        state.paginationLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchPublicPressPaginated.fulfilled, (state, action) => {
+        console.log("Redux: Setting paginated press to:", action.payload);
+        state.paginationLoading = false;
+        
+        if (action.payload.reset) {
+          state.paginatedPublicItems = Array.isArray(action.payload.press) ? action.payload.press : [];
+        } else {
+          // Append new items for infinite scroll
+          const newItems = Array.isArray(action.payload.press) ? action.payload.press : [];
+          state.paginatedPublicItems = [...state.paginatedPublicItems, ...newItems];
+        }
+        
+        state.pagination = {
+          currentPage: action.payload.currentPage,
+          totalPages: action.payload.totalPages,
+          total: action.payload.total,
+          hasMore: action.payload.hasMore,
+        };
+      })
+      .addCase(fetchPublicPressPaginated.rejected, (state, action) => {
+        state.paginationLoading = false;
+        state.error = action.error.message;
       });
   },
 });
 
+export const { clearError, clearCurrentItem, resetPaginatedItems } = pressSlice.actions;
 export default pressSlice.reducer; 

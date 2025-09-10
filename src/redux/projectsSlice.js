@@ -39,6 +39,66 @@ export const fetchPublicProjects = createAsyncThunk(
   }
 );
 
+export const fetchPublicProjectsPaginated = createAsyncThunk(
+  "projects/fetchPublicPaginated",
+  async ({ page = 1, limit = 6, reset = false }, { getState }) => {
+    console.log("Fetching paginated public projects...", { page, limit, reset });
+    const language = getLanguage();
+    
+    // First try with pagination parameters
+    let res = await fetch(`${ENDPOINTS.projects}/public?page=${page}&limit=${limit}`, { 
+      headers: { 
+        'Accept-Language': language 
+      } 
+    });
+    
+    // If that fails, try without pagination parameters
+    if (!res.ok) {
+      res = await fetch(`${ENDPOINTS.projects}/public`, { 
+        headers: { 
+          'Accept-Language': language 
+        } 
+      });
+    }
+    
+    if (!res.ok) throw new Error("Failed to fetch public projects");
+    const data = await res.json();
+    console.log("Paginated public projects API response:", data);
+    
+    const allProjects = data.projects || data.data || data;
+    
+    // Check if backend provided pagination
+    if (data.totalPages && data.currentPage) {
+      // Backend supports pagination
+      return { 
+        projects: allProjects,
+        totalPages: data.totalPages,
+        currentPage: data.currentPage,
+        total: data.total || allProjects.length,
+        hasMore: data.hasMore || (page < data.totalPages),
+        reset
+      };
+    } else {
+      // Backend doesn't support pagination, implement client-side
+      const total = allProjects.length;
+      const totalPages = Math.ceil(total / limit);
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedProjects = allProjects.slice(startIndex, endIndex);
+      
+      return { 
+        projects: paginatedProjects,
+        totalPages,
+        currentPage: page,
+        total,
+        hasMore: page < totalPages,
+        reset,
+        allItems: allProjects // Store all items for client-side pagination
+      };
+    }
+  }
+);
+
 export const fetchProjectById = createAsyncThunk(
   "projects/fetchById",
   async (id) => {
@@ -138,9 +198,18 @@ const projectsSlice = createSlice({
   initialState: {
     items: [],
     publicItems: [],
+    paginatedPublicItems: [],
+    allPaginatedItems: [], // Store all items for client-side pagination
     currentItem: null,
     loading: false,
+    paginationLoading: false,
     error: null,
+    pagination: {
+      currentPage: 1,
+      totalPages: 1,
+      total: 0,
+      hasMore: false,
+    },
   },
   reducers: {
     clearError: (state) => {
@@ -148,6 +217,30 @@ const projectsSlice = createSlice({
     },
     clearCurrentItem: (state) => {
       state.currentItem = null;
+    },
+    resetPaginatedItems: (state) => {
+      state.paginatedPublicItems = [];
+      state.allPaginatedItems = [];
+      state.pagination = {
+        currentPage: 1,
+        totalPages: 1,
+        total: 0,
+        hasMore: false,
+      };
+    },
+    // Action for client-side pagination when we have all items
+    paginateClientSide: (state, action) => {
+      const { page, limit } = action.payload;
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      
+      state.paginatedPublicItems = state.allPaginatedItems.slice(startIndex, endIndex);
+      state.pagination = {
+        currentPage: page,
+        totalPages: Math.ceil(state.allPaginatedItems.length / limit),
+        total: state.allPaginatedItems.length,
+        hasMore: page < Math.ceil(state.allPaginatedItems.length / limit),
+      };
     },
   },
   extraReducers: (builder) => {
@@ -251,8 +344,38 @@ const projectsSlice = createSlice({
       .addCase(deleteProject.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+      })
+
+      // Paginated public actions
+      .addCase(fetchPublicProjectsPaginated.pending, (state) => {
+        state.paginationLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchPublicProjectsPaginated.fulfilled, (state, action) => {
+        console.log("Redux: Setting paginated publicItems to:", action.payload);
+        state.paginationLoading = false;
+        
+        // Always set the current page items
+        state.paginatedPublicItems = Array.isArray(action.payload.projects) ? action.payload.projects : [];
+        
+        // Store all items if provided (for client-side pagination)
+        if (action.payload.allItems) {
+          state.allPaginatedItems = action.payload.allItems;
+        }
+        
+        state.pagination = {
+          currentPage: action.payload.currentPage,
+          totalPages: action.payload.totalPages,
+          total: action.payload.total,
+          hasMore: action.payload.hasMore,
+        };
+      })
+      .addCase(fetchPublicProjectsPaginated.rejected, (state, action) => {
+        state.paginationLoading = false;
+        state.error = action.error.message;
       });
   },
 });
 
+export const { clearError, clearCurrentItem, resetPaginatedItems, paginateClientSide } = projectsSlice.actions;
 export default projectsSlice.reducer; 

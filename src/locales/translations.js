@@ -32,6 +32,7 @@ export const translations = {
     },
     
     projects:{
+      description: "Our projects are a testament to our commitment to sustainable agriculture and desert land reclamation.",
       "Basic Information": "Basic Information",
       "Project Title": "Project Title",
       "Enter project title": "Enter project title",
@@ -114,9 +115,39 @@ export const translations = {
       showAll: "Show All",
     },
     
+    // Products Section
+    products: {
+      title: "Our Products",
+      showAll: "View All Products",
+      items: {
+        seeds: {
+          name: "Premium Seeds",
+          desc: "High-quality seeds for sustainable agriculture"
+        },
+        jojobaWax: {
+          name: "Jojoba Wax",
+          desc: "Pure, natural jojoba wax for cosmetic applications"
+        },
+        seeding: {
+          name: "Seedlings",
+          desc: "Healthy seedlings for optimal crop growth"
+        },
+        organicOil: {
+          name: "Organic Oil",
+          desc: "Premium organic oils from sustainable sources"
+        },
+        pestControl: {
+          name: "Organic Pest Control",
+          desc: "Eco-friendly pest management solutions"
+        }
+      }
+    },
+
     // Certifications Section
     certifications: {
       title: "Our Certifications",
+      description: "Our certifications demonstrate our commitment to quality and excellence in sustainable agriculture.",
+      imageGallery: "Our Certification Gallery",
       viewAll: "View All Certifications",
       items: {
         iso9001: "ISO 9001",
@@ -208,7 +239,17 @@ export const translations = {
       title: "In The Press",
       showAll: "Show All",
     },
-    
+
+    // Latest News Section (for press articles)
+    latestNews: "Latest News",
+    pressDescription: "Stay updated with our latest news, press releases, and media coverage.",
+    viewAllPress: "View All Press",
+
+    // Our Partnerships Section
+    ourPartnerships: "Our Partnerships",
+    partnershipsDescription: "Discover our strategic partnerships and collaborations that drive innovation and growth.",
+    viewAllPartnerships: "View All Partnerships",
+
     // Footer
     footer: {
       tagline: "Pioneering the future of desert agriculture since 2002.",
@@ -2083,6 +2124,8 @@ export const translations = {
     // Certifications Section
     certifications: {
       title: "شهاداتنا",
+      description: "شهاداتنا تظهر التزامنا بالجودة والتميز في الزراعة المستدامة.",
+      imageGallery: "معرض شهاداتنا",
       viewAll: "عرض جميع الشهادات",
       items: {
         iso9001: "أيزو 9001",
@@ -2174,7 +2217,17 @@ export const translations = {
       title: "في الصحافة",
       showAll: "عرض الكل",
     },
-    
+
+    // Latest News Section (for press articles)
+    latestNews: "أحدث الأخبار",
+    pressDescription: "تابع آخر أخبارنا والبيانات الصحفية وتغطيتنا الإعلامية.",
+    viewAllPress: "عرض جميع الأخبار",
+
+    // Our Partnerships Section
+    ourPartnerships: "شراكاتنا",
+    partnershipsDescription: "اكتشف شراكاتنا الاستراتيجية والتعاونيات التي تدفع الابتكار والنمو.",
+    viewAllPartnerships: "عرض جميع الشراكات",
+
     // Footer
     footer: {
       tagline: "رائدة مستقبل الزراعة الصحراوية منذ عام 2002.",
@@ -2252,6 +2305,11 @@ export const translations = {
       title: "نظام إدارة محتوى مجموعة إم كي",
       settings: "الإعدادات",
       logout: "تسجيل الخروج",
+    },
+
+    projects: {
+      title: "مشاريعنا البارزة",
+      showAll: "عرض الكل",
     },
     
     // Login Page

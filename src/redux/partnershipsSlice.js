@@ -32,6 +32,27 @@ export const fetchPublicPartnerships = createAsyncThunk("partnerships/fetchPubli
   return data.partnerships || data;
 });
 
+export const fetchPublicPartnershipsPaginated = createAsyncThunk(
+  "partnerships/fetchPublicPaginated",
+  async ({ page = 1, limit = 6, reset = false }) => {
+    console.log("Fetching paginated public partnerships...", { page, limit, reset });
+    const res = await fetch(`${ENDPOINTS.partnerships}/public?page=${page}&limit=${limit}`, {
+      headers: { 'Accept-Language': getLanguage() },
+    });
+    if (!res.ok) throw new Error("Failed to fetch public partnerships");
+    const data = await res.json();
+    console.log("Paginated public partnerships API response:", data);
+    return { 
+      partnerships: data.partnerships || data.data || data,
+      totalPages: data.totalPages || 1,
+      currentPage: data.currentPage || page,
+      total: data.total || (data.partnerships || data.data || data).length,
+      hasMore: data.hasMore || (page < (data.totalPages || 1)),
+      reset
+    };
+  }
+);
+
 export const fetchPartnershipById = createAsyncThunk("partnerships/fetchById", async (id) => {
   const res = await fetch(`${ENDPOINTS.partnerships}/admin/${id}`, {
     headers: { Authorization: `Bearer ${getToken()}`, 'Accept-Language': getLanguage() },
@@ -118,9 +139,17 @@ const partnershipsSlice = createSlice({
   initialState: {
     items: [],
     publicItems: [],
+    paginatedPublicItems: [],
     currentItem: null,
     loading: false,
+    paginationLoading: false,
     error: null,
+    pagination: {
+      currentPage: 1,
+      totalPages: 1,
+      total: 0,
+      hasMore: false,
+    },
   },
   reducers: {
     clearError: (state) => {
@@ -128,6 +157,15 @@ const partnershipsSlice = createSlice({
     },
     clearCurrentItem: (state) => {
       state.currentItem = null;
+    },
+    resetPaginatedItems: (state) => {
+      state.paginatedPublicItems = [];
+      state.pagination = {
+        currentPage: 1,
+        totalPages: 1,
+        total: 0,
+        hasMore: false,
+      };
     },
   },
   extraReducers: (builder) => {
@@ -183,8 +221,38 @@ const partnershipsSlice = createSlice({
         state.loading = false;
         state.items = state.items.filter((item) => item._id !== action.payload && item.id !== action.payload);
       })
-      .addCase(deletePartnership.rejected, (state, action) => { state.loading = false; state.error = action.error.message; });
+      .addCase(deletePartnership.rejected, (state, action) => { state.loading = false; state.error = action.error.message; })
+
+      // Paginated public actions
+      .addCase(fetchPublicPartnershipsPaginated.pending, (state) => {
+        state.paginationLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchPublicPartnershipsPaginated.fulfilled, (state, action) => {
+        console.log("Redux: Setting paginated partnerships to:", action.payload);
+        state.paginationLoading = false;
+        
+        if (action.payload.reset) {
+          state.paginatedPublicItems = Array.isArray(action.payload.partnerships) ? action.payload.partnerships : [];
+        } else {
+          // Append new items for infinite scroll
+          const newItems = Array.isArray(action.payload.partnerships) ? action.payload.partnerships : [];
+          state.paginatedPublicItems = [...state.paginatedPublicItems, ...newItems];
+        }
+        
+        state.pagination = {
+          currentPage: action.payload.currentPage,
+          totalPages: action.payload.totalPages,
+          total: action.payload.total,
+          hasMore: action.payload.hasMore,
+        };
+      })
+      .addCase(fetchPublicPartnershipsPaginated.rejected, (state, action) => {
+        state.paginationLoading = false;
+        state.error = action.error.message;
+      });
   },
 });
 
+export const { clearError, clearCurrentItem, resetPaginatedItems } = partnershipsSlice.actions;
 export default partnershipsSlice.reducer; 
