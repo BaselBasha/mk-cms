@@ -71,21 +71,22 @@ const GlassCard = ({ item, index }) => {
 };
 
 // --- Animated Section Component ---
-const AnimatedSection = ({ children, className = "" }) => {
+const AnimatedSection = ({ children, className = "", id }) => {
   const sectionVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 60 
+    hidden: {
+      opacity: 0,
+      y: 60,
     },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.8, ease: 'easeOut', staggerChildren: 0.2 },
+      transition: { duration: 0.8, ease: "easeOut", staggerChildren: 0.2 },
     },
   };
 
   return (
     <motion.section
+      id={id}
       variants={sectionVariants}
       initial="hidden"
       whileInView="visible"
@@ -102,7 +103,7 @@ const PaginatedPartnershipsSection = () => {
   const dispatch = useDispatch();
   const { language } = useLanguage();
   const t = translations[language];
-  const isRTL = language === 'ar';
+  const isRTL = language === "ar";
 
   const [startIndex, setStartIndex] = useState(0);
   const [allPartnerships, setAllPartnerships] = useState([]);
@@ -112,12 +113,12 @@ const PaginatedPartnershipsSection = () => {
   const cardWidth = 320; // w-80 (320px)
   const gap = 24; // space-x-6 (24px)
   const stepSize = cardWidth + gap; // Distance to move per step
-  
-  const { 
-    publicItems: partnerships, 
-    loading: paginationLoading, 
-    error 
-  } = useSelector(state => state.partnerships);
+
+  const {
+    publicItems: partnerships,
+    loading: paginationLoading,
+    error,
+  } = useSelector((state) => state.partnerships);
 
   // Fetch all data on mount
   useEffect(() => {
@@ -141,8 +142,8 @@ const PaginatedPartnershipsSection = () => {
     };
 
     handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Transform partnerships for display
@@ -172,21 +173,22 @@ const PaginatedPartnershipsSection = () => {
   });
 
   // Calculate how many cards can fit in the container
-  const cardsPerView = containerWidth > 0 ? Math.max(1, Math.floor(containerWidth / stepSize)) : 1;
+  const cardsPerView =
+    containerWidth > 0 ? Math.max(1, Math.floor(containerWidth / stepSize)) : 1;
   const totalContentWidth = displayPartnerships.length * stepSize - gap;
   const maxShift = Math.max(0, totalContentWidth - containerWidth);
   const maxStartIndex = Math.max(0, displayPartnerships.length - cardsPerView);
-  
+
   // Ensure startIndex doesn't exceed maxStartIndex
   const validatedStartIndex = Math.min(startIndex, maxStartIndex);
 
   // Navigation handlers
   const handlePrevious = () => {
-    setStartIndex(prev => Math.max(prev - 1, 0));
+    setStartIndex((prev) => Math.max(prev - 1, 0));
   };
 
   const handleNext = () => {
-    setStartIndex(prev => Math.min(prev + 1, maxStartIndex));
+    setStartIndex((prev) => Math.min(prev + 1, maxStartIndex));
   };
 
   // Calculate current translation using validated index
@@ -197,15 +199,17 @@ const PaginatedPartnershipsSection = () => {
   const isNextDisabled = validatedStartIndex >= maxStartIndex;
 
   // Always render, show loading or empty state
-  const shouldShowLoader = paginationLoading && (!allPartnerships || allPartnerships.length === 0);
-  const shouldShowEmpty = !paginationLoading && (!allPartnerships || allPartnerships.length === 0);
+  const shouldShowLoader =
+    paginationLoading && (!allPartnerships || allPartnerships.length === 0);
+  const shouldShowEmpty =
+    !paginationLoading && (!allPartnerships || allPartnerships.length === 0);
 
   return (
-    <AnimatedSection className="py-20 relative">
+    <AnimatedSection id="partnerships" className="py-20 relative">
       {/* Content */}
       <div className="relative z-10">
         {/* Section Header */}
-        <motion.div 
+        <motion.div
           className="text-center mb-16"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -227,14 +231,18 @@ const PaginatedPartnershipsSection = () => {
 
         {shouldShowEmpty && (
           <div className="text-center py-12">
-            <p className="text-gray-400 text-lg">No partnerships available at the moment.</p>
+            <p className="text-gray-400 text-lg">
+              No partnerships available at the moment.
+            </p>
           </div>
         )}
 
         {error && (
           <div className="text-center py-8">
-            <p className="text-red-400 mb-4">Error loading partnerships: {error}</p>
-            <button 
+            <p className="text-red-400 mb-4">
+              Error loading partnerships: {error}
+            </p>
+            <button
               onClick={() => {
                 dispatch(fetchPublicPartnerships());
               }}
@@ -262,7 +270,7 @@ const PaginatedPartnershipsSection = () => {
                         onClick={isRTL ? handleNext : handlePrevious}
                         disabled={isRTL ? isNextDisabled : isPrevDisabled}
                         className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-[#65a30d]/80 hover:bg-[#65a30d] text-white p-3 rounded-full shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#65a30d]/80"
-                        style={{ marginLeft: '-20px' }}
+                        style={{ marginLeft: "-20px" }}
                       >
                         <ChevronLeft size={24} />
                       </button>
@@ -271,7 +279,7 @@ const PaginatedPartnershipsSection = () => {
                         onClick={isRTL ? handlePrevious : handleNext}
                         disabled={isRTL ? isPrevDisabled : isNextDisabled}
                         className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-[#65a30d]/80 hover:bg-[#65a30d] text-white p-3 rounded-full shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#65a30d]/80"
-                        style={{ marginRight: '-20px' }}
+                        style={{ marginRight: "-20px" }}
                       >
                         <ChevronRight size={24} />
                       </button>
@@ -279,28 +287,39 @@ const PaginatedPartnershipsSection = () => {
                   )}
 
                   {/* Partnerships Container with Smooth Sliding Carousel */}
-                  <div 
-                    className="overflow-hidden" 
+                  <div
+                    className="overflow-hidden"
                     ref={containerRef}
-                    style={{ paddingRight: '20px', paddingLeft: '20px' }} // Account for button spacing
+                    style={{ paddingRight: "20px", paddingLeft: "20px" }} // Account for button spacing
                   >
                     <motion.div
-                      className={`flex space-x-6 ${displayPartnerships.length <= 5 ? 'justify-center' : ''}`}
+                      className={`flex space-x-6 ${
+                        displayPartnerships.length <= 5 ? "justify-center" : ""
+                      }`}
                       animate={{
-                        x: displayPartnerships.length <= 5 ? 0 : (isRTL ? currentTranslation : -currentTranslation),
+                        x:
+                          displayPartnerships.length <= 5
+                            ? 0
+                            : isRTL
+                            ? currentTranslation
+                            : -currentTranslation,
                       }}
-                      transition={{ duration: 0.5, ease: 'easeInOut' }}
+                      transition={{ duration: 0.5, ease: "easeInOut" }}
                     >
                       {displayPartnerships.map((partnership, index) => (
                         <motion.div
                           key={partnership.id || index}
-                          className={`flex-shrink-0 w-80 ${index === displayPartnerships.length - 1 ? 'mr-6' : ''}`}
+                          className={`flex-shrink-0 w-80 ${
+                            index === displayPartnerships.length - 1
+                              ? "mr-6"
+                              : ""
+                          }`}
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{
                             duration: 0.4,
                             delay: index * 0.05,
-                            ease: 'easeOut',
+                            ease: "easeOut",
                           }}
                         >
                           <GlassCard item={partnership} index={index} />
@@ -309,7 +328,6 @@ const PaginatedPartnershipsSection = () => {
                     </motion.div>
                   </div>
                 </div>
-                
               </>
             )}
           </div>

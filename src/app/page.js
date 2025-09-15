@@ -284,7 +284,7 @@ const Header = () => {
     t.nav.contact,
   ];
 
-  const scrollToSection = (sectionId) => {
+  const scrollToSection = (sectionId, isMobile = false) => {
     // Map section names to their actual IDs
     const sectionMap = {
       [t.nav.home.toLowerCase()]: "home",
@@ -301,10 +301,38 @@ const Header = () => {
 
     const actualId = sectionMap[sectionId.toLowerCase()];
     const element = document.getElementById(actualId);
+
     if (element) {
-      element.scrollIntoView({
+      // Add a small delay for mobile to ensure menu closes first
+      const scrollDelay = isMobile ? 100 : 0;
+
+      setTimeout(() => {
+        // Calculate offset for fixed header (approximately 80px)
+        const headerOffset = 80;
+        const elementPosition = element.offsetTop - headerOffset;
+
+        window.scrollTo({
+          top: elementPosition,
+          behavior: "smooth",
+        });
+      }, scrollDelay);
+    } else {
+      console.warn(
+        `Section with ID "${actualId}" not found for navigation item "${sectionId}"`
+      );
+    }
+  };
+
+  // Helper function for direct section scrolling (used in footer)
+  const scrollToElement = (elementId) => {
+    const element = document.getElementById(elementId);
+    if (element) {
+      const headerOffset = 80;
+      const elementPosition = element.offsetTop - headerOffset;
+
+      window.scrollTo({
+        top: elementPosition,
         behavior: "smooth",
-        block: "start",
       });
     }
   };
@@ -327,7 +355,7 @@ const Header = () => {
               className="h-10 w-auto"
             />
           </motion.div>
-          
+
           {/* Desktop Navigation - More compact and elegant */}
           <nav className="hidden lg:flex items-center space-x-1">
             {navLinks.map((link) => (
@@ -349,18 +377,20 @@ const Header = () => {
               </button>
             ))}
           </nav>
-          
+
           {/* Right Side Controls - More compact */}
           <div className="hidden lg:flex items-center space-x-3">
             <LanguageSwitcher />
             <button
-              onClick={() => window.open("https://wa.me/201067726594", "_blank")}
+              onClick={() =>
+                window.open("https://wa.me/201067726594", "_blank")
+              }
               className="bg-[#65a30d] text-white py-2 px-4 rounded-lg hover:bg-[#84cc16] transition-all duration-300 transform hover:scale-105 shadow-lg shadow-[#65a30d]/20 text-sm font-medium"
             >
               {t.nav.getInTouch}
             </button>
           </div>
-          
+
           {/* Mobile Menu Button - More compact */}
           <div className="lg:hidden flex items-center space-x-2">
             <LanguageSwitcher />
@@ -373,7 +403,7 @@ const Header = () => {
           </div>
         </div>
       </header>
-      
+
       {/* Mobile Menu - Improved styling */}
       <div
         className={`fixed inset-0 bg-black/95 backdrop-blur-xl z-[100] transform ${
@@ -381,7 +411,7 @@ const Header = () => {
         } transition-transform duration-300 ease-in-out lg:hidden`}
       >
         <div className="flex justify-end p-4">
-          <button 
+          <button
             onClick={() => setIsMenuOpen(false)}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
           >
@@ -399,7 +429,7 @@ const Header = () => {
                 } else if (link === t.nav.career) {
                   window.location.href = "/careers";
                 } else {
-                  scrollToSection(link.toLowerCase());
+                  scrollToSection(link.toLowerCase(), true);
                 }
               }}
               className="text-gray-200 text-xl font-medium hover:text-[#65a30d] transition-colors duration-300 cursor-pointer py-3 px-6 rounded-lg hover:bg-white/5 w-full text-center"
@@ -417,7 +447,7 @@ const Header = () => {
 const HeroSection = () => {
   const { language } = useLanguage();
   const t = translations[language];
-  
+
   return (
     <section
       id="home"
@@ -470,12 +500,11 @@ const HeroSection = () => {
   );
 };
 
-
 // --- Who Are We Section ---
 const WhoAreWeSection = () => {
   const { language } = useLanguage();
   const t = translations[language];
-  
+
   return (
     <AnimatedSection id="about" className="py-20 md:py-28">
       <div className="container mx-auto px-6">
@@ -489,14 +518,15 @@ const WhoAreWeSection = () => {
             <div className="absolute -inset-2 border-2 border-[#65a30d]/30 rounded-lg -z-10 transform rotate-2"></div>
           </motion.div>
           <motion.div variants={itemVariants}>
-            <h2 className="text-4xl font-bold text-gray-100 mb-4">{t.about.title}</h2>
+            <h2 className="text-4xl font-bold text-gray-100 mb-4">
+              {t.about.title}
+            </h2>
             <div className="w-20 h-1 bg-[#65a30d] mb-6"></div>
-            <p className="text-lg text-gray-400 mb-4">
-              {t.about.description1}
-            </p>
-            <p className="text-gray-400 mb-6">
-              {t.about.description2}
-            </p>
+            <p className="text-lg text-gray-400 mb-4">{t.about.description1}</p>
+            <p className="text-gray-400 mb-4">{t.about.description2}</p>
+            <p className="text-gray-400 mb-4">{t.about.description3}</p>
+            <p className="text-gray-400 mb-4">{t.about.description4}</p>
+            <p className="text-gray-400 mb-6">{t.about.description5}</p>
           </motion.div>
         </div>
       </div>
@@ -508,9 +538,12 @@ const WhoAreWeSection = () => {
 const CertificationsSection = () => {
   const { language } = useLanguage();
   const t = translations[language];
-  
+
   const logos = [
-    { name: t.certifications.items.iso9001, icon: <Award className="h-10 w-10 text-[#65a30d]" /> },
+    {
+      name: t.certifications.items.iso9001,
+      icon: <Award className="h-10 w-10 text-[#65a30d]" />,
+    },
     {
       name: t.certifications.items.organicCertified,
       icon: <Leaf className="h-10 w-10 text-[#65a30d]" />,
@@ -523,7 +556,10 @@ const CertificationsSection = () => {
       name: t.certifications.items.fairTrade,
       icon: <Users className="h-10 w-10 text-[#65a30d]" />,
     },
-    { name: t.certifications.items.ecoCert, icon: <Sun className="h-10 w-10 text-[#65a30d]" /> },
+    {
+      name: t.certifications.items.ecoCert,
+      icon: <Sun className="h-10 w-10 text-[#65a30d]" />,
+    },
     {
       name: t.certifications.items.nonGmo,
       icon: <Wind className="h-10 w-10 text-[#65a30d]" />,
@@ -533,10 +569,13 @@ const CertificationsSection = () => {
 
   return (
     <AnimatedSection id="certifications" className="py-20 md:py-28">
-      <SectionTitle>{t.certifications?.title || "Our Certifications"}</SectionTitle>
+      <SectionTitle>
+        {t.certifications?.title || "Our Certifications"}
+      </SectionTitle>
       <div className="text-center mb-16">
         <p className="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-          {t.certifications?.description || "Our certifications demonstrate our commitment to quality and excellence."}
+          {t.certifications?.description ||
+            "Our certifications demonstrate our commitment to quality and excellence."}
         </p>
       </div>
       <div className="relative w-full overflow-hidden mask-gradient">
@@ -606,7 +645,9 @@ const CertificationsImageSlider = () => {
 
   return (
     <AnimatedSection className="py-16 bg-transparent">
-      <SectionTitle>{t.certifications.imageGallery || "Our Certification Gallery"}</SectionTitle>
+      <SectionTitle>
+        {t.certifications.imageGallery || "Our Certification Gallery"}
+      </SectionTitle>
 
       {loading ? (
         <div className="flex justify-center py-12">
@@ -840,7 +881,9 @@ const AwardsSliderSection = () => {
                       </p>
 
                       <div className="flex items-center space-x-2">
-                        <span className="text-xs text-gray-500">{t.awards.level}:</span>
+                        <span className="text-xs text-gray-500">
+                          {t.awards.level}:
+                        </span>
                         <span className="text-xs text-[#65a30d] font-semibold">
                           {award.level}
                         </span>
@@ -879,14 +922,14 @@ const GlassCard = ({
 }) => {
   const { language } = useLanguage();
   const t = translations[language];
-  
+
   const getStatusText = (status) => {
     if (status === "active") return t.partnerships.status.active;
     if (status === "completed") return t.partnerships.status.completed;
     if (status === "inactive") return t.partnerships.status.inactive;
     return status.charAt(0).toUpperCase() + status.slice(1);
   };
-  
+
   return (
     <motion.div
       variants={itemVariants}
@@ -897,7 +940,7 @@ const GlassCard = ({
         } else if (isPartnership && item.id) {
           window.location.href = `/partnerships/${item.id}`;
         } else if (isCompany && item.website) {
-          window.open(item.website, '_blank');
+          window.open(item.website, "_blank");
         }
       }}
     >
@@ -950,7 +993,7 @@ const sliderDragConstraints = { left: -1000, right: 0 };
 const ProductsSection = () => {
   const { language } = useLanguage();
   const t = translations[language];
-  
+
   const products = [
     {
       name: t.products.items.seeds.name,
@@ -1033,12 +1076,11 @@ const ProductsSection = () => {
   );
 };
 
-
 // --- Why Us Section ---
 const WhyUsSection = () => {
   const { language } = useLanguage();
   const t = translations[language];
-  
+
   const features = [
     {
       icon: <Leaf className="h-10 w-10 text-[#65a30d]" />,
@@ -1092,7 +1134,7 @@ const WhyUsSection = () => {
 const SpecializationSection = () => {
   const { language } = useLanguage();
   const t = translations[language];
-  
+
   const specializations = [
     {
       title: t.specializations.items.dripIrrigation.title,
@@ -1172,14 +1214,11 @@ const SpecializationSection = () => {
   );
 };
 
-
-
-
 // --- Footer Component ---
 const Footer = () => {
   const { language } = useLanguage();
   const t = translations[language];
-  
+
   return (
     <footer
       id="contact"
@@ -1193,217 +1232,163 @@ const Footer = () => {
               alt="MK Jojoba Logo"
               className="h-16 w-auto mx-auto mb-4"
             />
-            <p className="text-gray-400 max-w-xs">
-              {t.footer.tagline}
-            </p>
+            <p className="text-gray-400 max-w-xs">{t.footer.tagline}</p>
           </div>
           <div>
-            <h3 className="text-lg font-bold mb-4 text-gray-100">{t.footer.quickLinks}</h3>
-          <ul className="space-y-2">
-            <li>
-              <button
-                onClick={() => {
-                  const element = document.getElementById("home");
-                  if (element) {
-                    element.scrollIntoView({
-                      behavior: "smooth",
-                      block: "start",
-                    });
-                  }
-                }}
-                className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
-              >
-                Home
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  const element = document.getElementById("about");
-                  if (element) {
-                    element.scrollIntoView({
-                      behavior: "smooth",
-                      block: "start",
-                    });
-                  }
-                }}
-                className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
-              >
-                About Us
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  const element = document.getElementById("products");
-                  if (element) {
-                    element.scrollIntoView({
-                      behavior: "smooth",
-                      block: "start",
-                    });
-                  }
-                }}
-                className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
-              >
-                Products
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  const element = document.getElementById("projects");
-                  if (element) {
-                    element.scrollIntoView({
-                      behavior: "smooth",
-                      block: "start",
-                    });
-                  }
-                }}
-                className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
-              >
-                Projects
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  const element = document.getElementById("certifications");
-                  if (element) {
-                    element.scrollIntoView({
-                      behavior: "smooth",
-                      block: "start",
-                    });
-                  }
-                }}
-                className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
-              >
-                Certifications
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  const element = document.getElementById("awards-slider");
-                  if (element) {
-                    element.scrollIntoView({
-                      behavior: "smooth",
-                      block: "start",
-                    });
-                  }
-                }}
-                className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
-              >
-                Awards
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  const element = document.getElementById("companies");
-                  if (element) {
-                    element.scrollIntoView({
-                      behavior: "smooth",
-                      block: "start",
-                    });
-                  }
-                }}
-                className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
-              >
-                Companies
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  const element = document.getElementById("partnerships");
-                  if (element) {
-                    element.scrollIntoView({
-                      behavior: "smooth",
-                      block: "start",
-                    });
-                  }
-                }}
-                className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
-              >
-                Partnerships
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  const element = document.getElementById("press");
-                  if (element) {
-                    element.scrollIntoView({
-                      behavior: "smooth",
-                      block: "start",
-                    });
-                  }
-                }}
-                className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
-              >
-                Press
-              </button>
-            </li>
-            <li>
-              <Link
-                href="/careers"
-                className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
-              >
-                Career
-              </Link>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h3 className="text-lg font-bold mb-4 text-gray-100">{t.footer.contactUs}</h3>
-          <p className="text-gray-400 mb-2">{t.footer.location}</p>
-          <p className="text-gray-400 mb-2">info@mkgroup-eg.com</p>
-          <p className="text-gray-400 mb-4">+20 106 772 6594</p>
-          <button
-            onClick={() => window.open("https://wa.me/201067726594", "_blank")}
-            className="bg-[#65a30d] text-white py-2 px-4 rounded-full hover:bg-[#84cc16] transition-all duration-300 transform hover:scale-105 text-sm font-medium"
-          >
-            {t.footer.chatWhatsApp}
-          </button>
-        </div>
-        <div>
-          <h3 className="text-lg font-bold mb-4 text-gray-100">{t.footer.followUs}</h3>
-          <div className="flex space-x-4 justify-center md:justify-start">
-            <a
-              href="https://wa.me/201067726594"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-400 hover:text-[#65a30d] transition-colors"
+            <h3 className="text-lg font-bold mb-4 text-gray-100">
+              {t.footer.quickLinks}
+            </h3>
+            <ul className="space-y-2">
+              <li>
+                <button
+                  onClick={() => scrollToElement("home")}
+                  className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
+                >
+                  Home
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => scrollToElement("about")}
+                  className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
+                >
+                  About Us
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => scrollToElement("products")}
+                  className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
+                >
+                  Products
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => scrollToElement("projects")}
+                  className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
+                >
+                  Projects
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => scrollToElement("certifications")}
+                  className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
+                >
+                  Certifications
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => scrollToElement("awards-slider")}
+                  className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
+                >
+                  Awards
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => scrollToElement("companies")}
+                  className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
+                >
+                  Companies
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => scrollToElement("partnerships")}
+                  className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
+                >
+                  Partnerships
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => scrollToElement("press")}
+                  className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
+                >
+                  Press
+                </button>
+              </li>
+              <li>
+                <Link
+                  href="/careers"
+                  className="text-gray-400 hover:text-[#65a30d] transition-colors cursor-pointer"
+                >
+                  Career
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-lg font-bold mb-4 text-gray-100">
+              {t.footer.contactUs}
+            </h3>
+            <p className="text-gray-400 mb-2">{t.footer.location}</p>
+            <p className="text-gray-400 mb-2">info@mkgroup-eg.com</p>
+            <p className="text-gray-400 mb-4">+20 106 772 6594</p>
+            <button
+              onClick={() =>
+                window.open("https://wa.me/201067726594", "_blank")
+              }
+              className="bg-[#65a30d] text-white py-2 px-4 rounded-full hover:bg-[#84cc16] transition-all duration-300 transform hover:scale-105 text-sm font-medium"
             >
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" />
-              </svg>
-            </a>
-            <a
-              href="#"
-              className="text-gray-400 hover:text-[#65a30d] transition-colors"
-            >
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M22.46,6C21.69,6.35 20.86,6.58 20,6.69C20.88,6.16 21.56,5.32 21.88,4.31C21.05,4.81 20.13,5.16 19.16,5.36C18.37,4.5 17.26,4 16,4C13.65,4 11.73,5.92 11.73,8.29C11.73,8.63 11.77,8.96 11.84,9.27C8.28,9.09 5.11,7.38 3,4.79C2.63,5.42 2.42,6.16 2.42,6.94C2.42,8.43 3.17,9.75 4.33,10.5C3.62,10.5 2.96,10.3 2.38,10C2.38,10 2.38,10 2.38,10.03C2.38,12.11 3.86,13.85 5.82,14.24C5.46,14.34 5.08,14.39 4.69,14.39C4.42,14.39 4.15,14.36 3.89,14.31C4.43,16 6,17.26 7.89,17.29C6.43,18.45 4.58,19.13 2.56,19.13C2.22,19.13 1.88,19.11 1.54,19.07C3.44,20.29 5.7,21 8.12,21C16,21 20.33,14.46 20.33,8.79C20.33,8.6 20.33,8.42 20.32,8.23C21.16,7.63 21.88,6.87 22.46,6Z"></path>
-              </svg>
-            </a>
-            <a
-              href="#"
-              className="text-gray-400 hover:text-[#65a30d] transition-colors"
-            >
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M19,3H5C3.89,3 3,3.89 3,5V19C3,20.1 3.9,21 5,21H19C20.1,21 21,20.1 21,19V5C21,3.89 20.1,3 19,3M8.5,18H5.5V10H8.5V18M7,8.5C6.17,8.5 5.5,7.83 5.5,7C5.5,6.17 6.17,5.5 7,5.5C7.83,5.5 8.5,6.17 8.5,7C8.5,7.83 7.83,8.5 7,8.5M18.5,18H15.5V13.5C15.5,12.57 15.15,12.07 14.43,12.07C13.5,12.07 13,12.8 13,13.5V18H10V10H13V11.25C13.4,10.5 14.2,10 15.25,10C17.5,10 18.5,11.5 18.5,13.25V18Z"></path>
-              </svg>
-            </a>
+              {t.footer.chatWhatsApp}
+            </button>
+          </div>
+          <div>
+            <h3 className="text-lg font-bold mb-4 text-gray-100">
+              {t.footer.followUs}
+            </h3>
+            <div className="flex space-x-4 justify-center md:justify-start">
+              <a
+                href="https://wa.me/201067726594"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-[#65a30d] transition-colors"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" />
+                </svg>
+              </a>
+              <a
+                href="#"
+                className="text-gray-400 hover:text-[#65a30d] transition-colors"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M22.46,6C21.69,6.35 20.86,6.58 20,6.69C20.88,6.16 21.56,5.32 21.88,4.31C21.05,4.81 20.13,5.16 19.16,5.36C18.37,4.5 17.26,4 16,4C13.65,4 11.73,5.92 11.73,8.29C11.73,8.63 11.77,8.96 11.84,9.27C8.28,9.09 5.11,7.38 3,4.79C2.63,5.42 2.42,6.16 2.42,6.94C2.42,8.43 3.17,9.75 4.33,10.5C3.62,10.5 2.96,10.3 2.38,10C2.38,10 2.38,10 2.38,10.03C2.38,12.11 3.86,13.85 5.82,14.24C5.46,14.34 5.08,14.39 4.69,14.39C4.42,14.39 4.15,14.36 3.89,14.31C4.43,16 6,17.26 7.89,17.29C6.43,18.45 4.58,19.13 2.56,19.13C2.22,19.13 1.88,19.11 1.54,19.07C3.44,20.29 5.7,21 8.12,21C16,21 20.33,14.46 20.33,8.79C20.33,8.6 20.33,8.42 20.32,8.23C21.16,7.63 21.88,6.87 22.46,6Z"></path>
+                </svg>
+              </a>
+              <a
+                href="#"
+                className="text-gray-400 hover:text-[#65a30d] transition-colors"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M19,3H5C3.89,3 3,3.89 3,5V19C3,20.1 3.9,21 5,21H19C20.1,21 21,20.1 21,19V5C21,3.89 20.1,3 19,3M8.5,18H5.5V10H8.5V18M7,8.5C6.17,8.5 5.5,7.83 5.5,7C5.5,6.17 6.17,5.5 7,5.5C7.83,5.5 8.5,6.17 8.5,7C8.5,7.83 7.83,8.5 7,8.5M18.5,18H15.5V13.5C15.5,12.57 15.15,12.07 14.43,12.07C13.5,12.07 13,12.8 13,13.5V18H10V10H13V11.25C13.4,10.5 14.2,10 15.25,10C17.5,10 18.5,11.5 18.5,13.25V18Z"></path>
+                </svg>
+              </a>
+            </div>
           </div>
         </div>
+        <div className="mt-12 border-t border-gray-800 pt-8 text-center text-gray-500">
+          <p>
+            &copy; {new Date().getFullYear()} {t.footer.copyright}
+          </p>
+        </div>
       </div>
-      <div className="mt-12 border-t border-gray-800 pt-8 text-center text-gray-500">
-        <p>
-          &copy; {new Date().getFullYear()} {t.footer.copyright}
-        </p>
-      </div>
-    </div>
-  </footer>
+    </footer>
   );
-}
+};

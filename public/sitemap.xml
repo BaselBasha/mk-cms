@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <!-- Homepage -->
+  <url>
+    <loc>https://mkgroup-eg.com/</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://mkgroup-eg.com/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mkgroup-eg.com/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://mkgroup-eg.com/" />
+  </url>
+  
+  <!-- Projects Page -->
+  <url>
+    <loc>https://mkgroup-eg.com/projects</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://mkgroup-eg.com/projects" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mkgroup-eg.com/projects" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://mkgroup-eg.com/projects" />
+  </url>
+  
+  <!-- Partnerships Page -->
+  <url>
+    <loc>https://mkgroup-eg.com/partnerships</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://mkgroup-eg.com/partnerships" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mkgroup-eg.com/partnerships" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://mkgroup-eg.com/partnerships" />
+  </url>
+  
+  <!-- Press Page -->
+  <url>
+    <loc>https://mkgroup-eg.com/press</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://mkgroup-eg.com/press" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mkgroup-eg.com/press" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://mkgroup-eg.com/press" />
+  </url>
+  
+  <!-- Certifications Page -->
+  <url>
+    <loc>https://mkgroup-eg.com/certifications</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://mkgroup-eg.com/certifications" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mkgroup-eg.com/certifications" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://mkgroup-eg.com/certifications" />
+  </url>
+  
+  <!-- Awards Page -->
+  <url>
+    <loc>https://mkgroup-eg.com/awards</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://mkgroup-eg.com/awards" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mkgroup-eg.com/awards" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://mkgroup-eg.com/awards" />
+  </url>
+  
+  <!-- Careers Page -->
+  <url>
+    <loc>https://mkgroup-eg.com/careers</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://mkgroup-eg.com/careers" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mkgroup-eg.com/careers" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://mkgroup-eg.com/careers" />
+  </url>
+</urlset>
