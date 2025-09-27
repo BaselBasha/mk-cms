@@ -178,7 +178,15 @@ const PaginatedPressSection = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <h2 className="text-5xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-6">
+          <h2
+            className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-6 leading-tight py-4"
+            style={{
+              minHeight: "55px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             {t.latestNews}
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">

@@ -1,18 +1,17 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { useDispatch, useSelector } from 'react-redux';
-import Link from 'next/link';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { fetchPublicPartnerships } from '@/redux/partnershipsSlice';
-import LoaderSpinner from '@/components/LoaderSpinner';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { translations } from '@/locales/translations';
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchPublicPartnerships } from "@/redux/partnershipsSlice";
+import LoaderSpinner from "@/components/LoaderSpinner";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/locales/translations";
+import { ArrowLeft } from "lucide-react";
 
 // --- Glass Card Component for Partnerships ---
 const GlassCard = ({ item, index }) => {
   const { language } = useLanguage();
   const t = translations[language];
-  
+
   const getStatusText = (status) => {
     if (status === "active") return t.partnerships.status.active;
     if (status === "completed") return t.partnerships.status.completed;
@@ -38,7 +37,8 @@ const GlassCard = ({ item, index }) => {
         alt={item.name}
         className="absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-in-out group-hover:scale-110 opacity-40 group-hover:opacity-60"
         onError={(e) => {
-          e.target.src = "https://mkgroup-eg.com/wp-content/uploads/2024/05/NVU.png";
+          e.target.src =
+            "https://mkgroup-eg.com/wp-content/uploads/2024/05/NVU.png";
         }}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
@@ -49,13 +49,15 @@ const GlassCard = ({ item, index }) => {
         )}
         <p className="text-gray-300 line-clamp-2 mb-3">{item.description}</p>
         <div className="flex justify-between items-center">
-          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-            item.status === "active" 
-              ? "bg-green-500/20 text-green-400" 
-              : item.status === "completed"
-              ? "bg-blue-500/20 text-blue-400"
-              : "bg-gray-500/20 text-gray-400"
-          }`}>
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-medium ${
+              item.status === "active"
+                ? "bg-green-500/20 text-green-400"
+                : item.status === "completed"
+                ? "bg-blue-500/20 text-blue-400"
+                : "bg-gray-500/20 text-gray-400"
+            }`}
+          >
             {getStatusText(item.status)}
           </span>
           {item.priority && (
@@ -98,21 +100,31 @@ const AnimatedSection = ({ children, className = "", id }) => {
   );
 };
 
-// --- Main Paginated Partnerships Section ---
+// --- Section Title Component ---
+const SectionTitle = ({ children }) => (
+  <motion.h2
+    className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-16 text-center leading-tight py-4"
+    style={{
+      minHeight: "55px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+    initial={{ opacity: 0, y: 30 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.8 }}
+  >
+    {children}
+  </motion.h2>
+);
+
+// --- Main Infinite Scroll Partnerships Section ---
 const PaginatedPartnershipsSection = () => {
   const dispatch = useDispatch();
-  const { language } = useLanguage();
+  const { language, isRTL } = useLanguage();
   const t = translations[language];
-  const isRTL = language === "ar";
 
-  const [startIndex, setStartIndex] = useState(0);
   const [allPartnerships, setAllPartnerships] = useState([]);
-  const [containerWidth, setContainerWidth] = useState(0);
-
-  const containerRef = useRef(null);
-  const cardWidth = 320; // w-80 (320px)
-  const gap = 24; // space-x-6 (24px)
-  const stepSize = cardWidth + gap; // Distance to move per step
 
   const {
     publicItems: partnerships,
@@ -129,22 +141,8 @@ const PaginatedPartnershipsSection = () => {
   useEffect(() => {
     if (partnerships && partnerships.length > 0) {
       setAllPartnerships(partnerships);
-      setStartIndex(0);
     }
   }, [partnerships]);
-
-  // Handle container resize
-  useEffect(() => {
-    const handleResize = () => {
-      if (containerRef.current) {
-        setContainerWidth(containerRef.current.offsetWidth);
-      }
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   // Transform partnerships for display
   const displayPartnerships = allPartnerships.map((partnership) => {
@@ -172,31 +170,12 @@ const PaginatedPartnershipsSection = () => {
     };
   });
 
-  // Calculate how many cards can fit in the container
-  const cardsPerView =
-    containerWidth > 0 ? Math.max(1, Math.floor(containerWidth / stepSize)) : 1;
-  const totalContentWidth = displayPartnerships.length * stepSize - gap;
-  const maxShift = Math.max(0, totalContentWidth - containerWidth);
-  const maxStartIndex = Math.max(0, displayPartnerships.length - cardsPerView);
-
-  // Ensure startIndex doesn't exceed maxStartIndex
-  const validatedStartIndex = Math.min(startIndex, maxStartIndex);
-
-  // Navigation handlers
-  const handlePrevious = () => {
-    setStartIndex((prev) => Math.max(prev - 1, 0));
-  };
-
-  const handleNext = () => {
-    setStartIndex((prev) => Math.min(prev + 1, maxStartIndex));
-  };
-
-  // Calculate current translation using validated index
-  const currentTranslation = Math.min(validatedStartIndex * stepSize, maxShift);
-
-  // Check if navigation buttons should be disabled
-  const isPrevDisabled = validatedStartIndex <= 0;
-  const isNextDisabled = validatedStartIndex >= maxStartIndex;
+  // Duplicate for seamless scroll
+  const duplicated = [
+    ...displayPartnerships,
+    ...displayPartnerships,
+    ...displayPartnerships,
+  ];
 
   // Always render, show loading or empty state
   const shouldShowLoader =
@@ -205,146 +184,108 @@ const PaginatedPartnershipsSection = () => {
     !paginationLoading && (!allPartnerships || allPartnerships.length === 0);
 
   return (
-    <AnimatedSection id="partnerships" className="py-20 relative">
-      {/* Content */}
-      <div className="relative z-10">
-        {/* Section Header */}
-        <motion.div
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <h2 className="text-5xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-6">
-            {t.ourPartnerships}
-          </h2>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            {t.partnershipsDescription}
-          </p>
-        </motion.div>
+    <AnimatedSection
+      id="partnerships"
+      className="py-20 md:py-28 overflow-hidden bg-transparent"
+    >
+      <SectionTitle>{t.ourPartnerships}</SectionTitle>
 
-        {shouldShowLoader && (
-          <div className="flex justify-center py-12">
-            <LoaderSpinner size="lg" text="Loading partnerships..." />
-          </div>
-        )}
-
-        {shouldShowEmpty && (
-          <div className="text-center py-12">
-            <p className="text-gray-400 text-lg">
-              No partnerships available at the moment.
-            </p>
-          </div>
-        )}
-
-        {error && (
-          <div className="text-center py-8">
-            <p className="text-red-400 mb-4">
-              Error loading partnerships: {error}
-            </p>
-            <button
-              onClick={() => {
-                dispatch(fetchPublicPartnerships());
-              }}
-              className="px-6 py-2 bg-[#65a30d] text-white rounded-lg hover:bg-[#84cc16] transition-colors"
-            >
-              Retry
-            </button>
-          </div>
-        )}
-
-        {/* Partnerships Horizontal Scroll */}
-        {allPartnerships && allPartnerships.length > 0 && (
-          <div className="container mx-auto px-6">
-            {paginationLoading ? (
-              <div className="flex justify-center py-12">
-                <LoaderSpinner size="lg" text="Loading partnerships..." />
-              </div>
-            ) : (
-              <>
-                <div className="relative">
-                  {/* Navigation Buttons - only show if more than 5 elements */}
-                  {displayPartnerships.length > 5 && (
-                    <>
-                      <button
-                        onClick={isRTL ? handleNext : handlePrevious}
-                        disabled={isRTL ? isNextDisabled : isPrevDisabled}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-[#65a30d]/80 hover:bg-[#65a30d] text-white p-3 rounded-full shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#65a30d]/80"
-                        style={{ marginLeft: "-20px" }}
-                      >
-                        <ChevronLeft size={24} />
-                      </button>
-
-                      <button
-                        onClick={isRTL ? handlePrevious : handleNext}
-                        disabled={isRTL ? isPrevDisabled : isNextDisabled}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-[#65a30d]/80 hover:bg-[#65a30d] text-white p-3 rounded-full shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#65a30d]/80"
-                        style={{ marginRight: "-20px" }}
-                      >
-                        <ChevronRight size={24} />
-                      </button>
-                    </>
-                  )}
-
-                  {/* Partnerships Container with Smooth Sliding Carousel */}
-                  <div
-                    className="overflow-hidden"
-                    ref={containerRef}
-                    style={{ paddingRight: "20px", paddingLeft: "20px" }} // Account for button spacing
-                  >
-                    <motion.div
-                      className={`flex space-x-6 ${
-                        displayPartnerships.length <= 5 ? "justify-center" : ""
-                      }`}
-                      animate={{
-                        x:
-                          displayPartnerships.length <= 5
-                            ? 0
-                            : isRTL
-                            ? currentTranslation
-                            : -currentTranslation,
-                      }}
-                      transition={{ duration: 0.5, ease: "easeInOut" }}
-                    >
-                      {displayPartnerships.map((partnership, index) => (
-                        <motion.div
-                          key={partnership.id || index}
-                          className={`flex-shrink-0 w-80 ${
-                            index === displayPartnerships.length - 1
-                              ? "mr-6"
-                              : ""
-                          }`}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{
-                            duration: 0.4,
-                            delay: index * 0.05,
-                            ease: "easeOut",
-                          }}
-                        >
-                          <GlassCard item={partnership} index={index} />
-                        </motion.div>
-                      ))}
-                    </motion.div>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* View all button */}
-        <div className="flex justify-center mt-8">
-          <Link href="/partnerships">
-            <motion.button
-              className="px-8 py-4 bg-gradient-to-r from-[#65a30d] to-[#84cc16] text-white font-semibold rounded-full hover:shadow-lg hover:shadow-[#65a30d]/30 transition-all duration-300 hover:scale-105"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {t.viewAllPartnerships}
-            </motion.button>
-          </Link>
+      {shouldShowLoader && (
+        <div className="flex justify-center py-12">
+          <LoaderSpinner size="lg" text="Loading partnerships..." />
         </div>
+      )}
+
+      {shouldShowEmpty && (
+        <div className="text-center py-12">
+          <p className="text-gray-400">
+            No partnerships available at the moment.
+          </p>
+        </div>
+      )}
+
+      {error && (
+        <div className="text-center py-8">
+          <p className="text-red-400 mb-4">
+            Error loading partnerships: {error}
+          </p>
+          <button
+            onClick={() => {
+              dispatch(fetchPublicPartnerships());
+            }}
+            className="bg-[#65a30d] text-white px-6 py-2 rounded-lg hover:bg-[#84cc16] transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* Partnerships Horizontal Scroll */}
+      {allPartnerships && allPartnerships.length > 0 && (
+        <>
+          {paginationLoading ? (
+            <div className="flex justify-center py-12">
+              <LoaderSpinner size="lg" text="Loading partnerships..." />
+            </div>
+          ) : (
+            <>
+              <div className="mb-8"></div>
+              <div className="relative w-full overflow-hidden mask-gradient">
+                <motion.div
+                  className="flex"
+                  animate={{ x: ["0%", `-${100 / 3}%`] }}
+                  transition={{
+                    ease: "linear",
+                    duration: 20,
+                    repeat: Infinity,
+                  }}
+                  drag="x"
+                  dragConstraints={
+                    isRTL ? { left: 0, right: 1000 } : { left: -1000, right: 0 }
+                  }
+                  whileTap={{ cursor: "grabbing" }}
+                >
+                  {duplicated.map((partnership, i) => (
+                    <div key={i} className="flex-shrink-0 w-80 mx-6">
+                      <GlassCard item={partnership} index={i} />
+                    </div>
+                  ))}
+                </motion.div>
+              </div>
+              <style jsx>{`
+                .mask-gradient {
+                  -webkit-mask-image: linear-gradient(
+                    to right,
+                    transparent,
+                    black 20%,
+                    black 80%,
+                    transparent
+                  );
+                  mask-image: linear-gradient(
+                    to right,
+                    transparent,
+                    black 20%,
+                    black 80%,
+                    transparent
+                  );
+                }
+              `}</style>
+            </>
+          )}
+        </>
+      )}
+
+      {/* View all button */}
+      <div className="text-center mt-12">
+        <motion.a
+          href="/partnerships"
+          className="inline-flex items-center space-x-2 bg-[#65a30d] text-white px-8 py-3 rounded-full hover:bg-[#84cc16] transition-all duration-300 transform hover:scale-105 shadow-lg shadow-[#65a30d]/20"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <span>View All Partnerships</span>
+          <ArrowLeft className="w-4 h-4 rotate-180" />
+        </motion.a>
       </div>
     </AnimatedSection>
   );

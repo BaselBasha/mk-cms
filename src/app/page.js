@@ -36,7 +36,13 @@ import PaginatedPressSection from "@/components/PaginatedPressSection";
 // --- Section Title Component ---
 const SectionTitle = ({ children, className = "" }) => (
   <motion.h2
-    className={`text-5xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-16 text-center ${className}`}
+    className={`text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-16 text-center leading-tight py-4 ${className}`}
+    style={{
+      minHeight: "55px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
     initial={{ opacity: 0, y: 30 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.8 }}
@@ -155,7 +161,9 @@ export default function App() {
   const { language, isRTL } = useLanguage();
   const { publicItems: projects } = useSelector((state) => state.projects);
   const { publicItems: companies } = useSelector((state) => state.companies);
-  const { publicItems: partnerships } = useSelector((state) => state.partnerships);
+  const { publicItems: partnerships } = useSelector(
+    (state) => state.partnerships
+  );
   const { publicItems: pressArticles } = useSelector((state) => state.press);
   const { publicItems: certifications, loading: certificationsLoading } =
     useSelector((state) => state.certifications);
@@ -195,9 +203,9 @@ export default function App() {
   const hasAwards = awards && awards.length > 0;
 
   return (
-    <div 
+    <div
       className="bg-transparent text-gray-200 font-sans overflow-x-hidden relative w-full"
-      dir={isRTL ? 'rtl' : 'ltr'}
+      dir={isRTL ? "rtl" : "ltr"}
     >
       <ParticleBackground />
       <Header />
@@ -215,7 +223,6 @@ export default function App() {
         {hasCompanies && <PaginatedCompaniesSection />}
         {hasPartnerships && <PaginatedPartnershipsSection />}
         {hasPress && <PaginatedPressSection />}
-
       </main>
       <Footer />
     </div>
@@ -291,7 +298,7 @@ const Header = () => {
       [t.nav.about.toLowerCase()]: "about",
       [t.nav.products.toLowerCase()]: "products",
       [t.nav.projects.toLowerCase()]: "projects",
-      [t.nav.certifications.toLowerCase()]: "certifications",
+      [t.nav.certifications.toLowerCase()]: "certifications-gallery",
       [t.nav.awards.toLowerCase()]: "awards-slider",
       [t.nav.companies.toLowerCase()]: "companies",
       [t.nav.partnerships.toLowerCase()]: "partnerships",
@@ -363,7 +370,7 @@ const Header = () => {
                 key={link}
                 onClick={() => {
                   if (link === t.nav.contact) {
-                    window.open("https://wa.me/201067726594", "_blank");
+                    window.open("https://wa.me/201112777459", "_blank");
                   } else if (link === t.nav.career) {
                     window.location.href = "/careers";
                   } else {
@@ -383,7 +390,7 @@ const Header = () => {
             <LanguageSwitcher />
             <button
               onClick={() =>
-                window.open("https://wa.me/201067726594", "_blank")
+                window.open("https://wa.me/201112777459", "_blank")
               }
               className="bg-[#65a30d] text-white py-2 px-4 rounded-lg hover:bg-[#84cc16] transition-all duration-300 transform hover:scale-105 shadow-lg shadow-[#65a30d]/20 text-sm font-medium"
             >
@@ -425,7 +432,7 @@ const Header = () => {
               onClick={() => {
                 setIsMenuOpen(false);
                 if (link === t.nav.contact) {
-                  window.open("https://wa.me/201067726594", "_blank");
+                  window.open("https://wa.me/201112777459", "_blank");
                 } else if (link === t.nav.career) {
                   window.location.href = "/careers";
                 } else {
@@ -572,7 +579,7 @@ const CertificationsSection = () => {
       <SectionTitle>
         {t.certifications?.title || "Our Certifications"}
       </SectionTitle>
-      <div className="text-center mb-16">
+      <div className="text-center mb-20">
         <p className="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
           {t.certifications?.description ||
             "Our certifications demonstrate our commitment to quality and excellence."}
@@ -584,12 +591,12 @@ const CertificationsSection = () => {
           animate={{
             x: ["0%", `-${100 / (duplicatedLogos.length / logos.length)}%`],
           }}
-          transition={{ ease: "linear", duration: 40, repeat: Infinity }}
+          transition={{ ease: "linear", duration: 20, repeat: Infinity }}
         >
           {duplicatedLogos.map((logo, index) => (
             <div
               key={index}
-              className="flex-shrink-0 w-72 mx-4 flex items-center justify-center space-x-4 p-6 bg-white/5 border border-white/10 rounded-2xl"
+              className="flex-shrink-0 w-72 mx-6 flex items-center justify-center space-x-4 p-6 bg-white/5 border border-white/10 rounded-2xl"
             >
               {logo.icon}
               <span className="font-semibold text-gray-300 text-lg">
@@ -626,7 +633,7 @@ const CertificationsImageSlider = () => {
   const { publicItems: certifications, loading } = useSelector(
     (state) => state.certifications
   );
-  const { language } = useLanguage();
+  const { language, isRTL } = useLanguage();
   const t = translations[language];
 
   // Transform certifications for display
@@ -644,10 +651,14 @@ const CertificationsImageSlider = () => {
   const duplicated = [...certs, ...certs, ...certs];
 
   return (
-    <AnimatedSection className="py-16 bg-transparent">
+    <AnimatedSection
+      id="certifications-gallery"
+      className="py-16 bg-transparent"
+    >
       <SectionTitle>
         {t.certifications.imageGallery || "Our Certification Gallery"}
       </SectionTitle>
+      <div className="mb-8"></div>
 
       {loading ? (
         <div className="flex justify-center py-12">
@@ -659,9 +670,11 @@ const CertificationsImageSlider = () => {
             <motion.div
               className="flex items-center"
               animate={{ x: ["0%", `-${100 / 3}%`] }}
-              transition={{ ease: "linear", duration: 40, repeat: Infinity }}
+              transition={{ ease: "linear", duration: 20, repeat: Infinity }}
               drag="x"
-              dragConstraints={sliderDragConstraints}
+              dragConstraints={
+                isRTL ? { left: 0, right: 1000 } : { left: -1000, right: 0 }
+              }
               whileTap={{ cursor: "grabbing" }}
             >
               {duplicated.map((cert, i) => (
@@ -802,7 +815,7 @@ const AwardsSection = () => {
 // --- Awards Slider Section ---
 const AwardsSliderSection = () => {
   const { publicItems: awards, loading } = useSelector((state) => state.awards);
-  const { language } = useLanguage();
+  const { language, isRTL } = useLanguage();
   const t = translations[language];
 
   // Transform awards for slider display
@@ -819,94 +832,124 @@ const AwardsSliderSection = () => {
     image: award.image?.url || null,
   }));
 
+  // Duplicate for seamless scroll
+  const duplicated = [...sliderAwards, ...sliderAwards, ...sliderAwards];
+
   return (
-    <AnimatedSection id="awards-slider" className="py-20 md:py-28">
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-16">
-          <SectionTitle>{t.awards.featured}</SectionTitle>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto mt-6">
-            {t.awards.featuredSubtitle}
-          </p>
+    <AnimatedSection
+      id="awards-slider"
+      className="py-20 md:py-28 overflow-hidden bg-transparent"
+    >
+      <SectionTitle>{t.awards.featured}</SectionTitle>
+      <div className="mb-8"></div>
+
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#65a30d]"></div>
         </div>
+      ) : (
+        <>
+          <div className="relative w-full overflow-hidden mask-gradient">
+            <motion.div
+              className="flex"
+              animate={{ x: ["0%", `-${100 / 3}%`] }}
+              transition={{
+                ease: "linear",
+                duration: 20,
+                repeat: Infinity,
+              }}
+              drag="x"
+              dragConstraints={
+                isRTL ? { left: 0, right: 1000 } : { left: -1000, right: 0 }
+              }
+              whileTap={{ cursor: "grabbing" }}
+            >
+              {duplicated.map((award, i) => (
+                <div key={i} className="flex-shrink-0 w-80 mx-6">
+                  <Link href={`/awards/${award.id}`} className="block">
+                    <motion.div
+                      className="group relative flex-shrink-0 w-80 h-96 bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden shadow-lg cursor-pointer"
+                      whileHover={{ y: -10, scale: 1.05 }}
+                    >
+                      {award.image ? (
+                        <div className="relative h-48 overflow-hidden">
+                          <img
+                            src={award.image}
+                            alt={award.title}
+                            className="w-full h-full object-cover transition-all duration-700 ease-in-out group-hover:scale-110"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        </div>
+                      ) : (
+                        <div className="h-48 bg-gradient-to-br from-[#65a30d]/20 to-[#84cc16]/20 flex items-center justify-center">
+                          <Award className="h-16 w-16 text-[#65a30d]" />
+                        </div>
+                      )}
 
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#65a30d]"></div>
-          </div>
-        ) : (
-          <div className="relative">
-            <div className="flex space-x-6 overflow-x-auto pb-6 scrollbar-hide">
-              {sliderAwards.map((award, index) => (
-                <Link
-                  key={index}
-                  href={`/awards/${award.id}`}
-                  className="block"
-                >
-                  <motion.div
-                    variants={itemVariants}
-                    className="group relative flex-shrink-0 w-80 h-96 bg-black/20 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden shadow-lg cursor-pointer"
-                    whileHover={{ y: -10, scale: 1.05 }}
-                  >
-                    {award.image ? (
-                      <div className="relative h-48 overflow-hidden">
-                        <img
-                          src={award.image}
-                          alt={award.title}
-                          className="w-full h-full object-cover transition-all duration-700 ease-in-out group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                      <div className="p-6">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-sm text-[#65a30d] font-semibold bg-[#65a30d]/10 px-3 py-1 rounded-full">
+                            {award.category}
+                          </span>
+                          <span className="text-sm text-gray-400">
+                            {award.year}
+                          </span>
+                        </div>
+
+                        <h3 className="text-lg font-bold text-white mb-2 group-hover:text-[#65a30d] transition-colors duration-300">
+                          {award.title}
+                        </h3>
+
+                        <p className="text-sm text-gray-400 mb-3 line-clamp-2">
+                          {award.summary}
+                        </p>
+
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs text-gray-500">
+                            {t.awards.level}:
+                          </span>
+                          <span className="text-xs text-[#65a30d] font-semibold">
+                            {award.level}
+                          </span>
+                        </div>
                       </div>
-                    ) : (
-                      <div className="h-48 bg-gradient-to-br from-[#65a30d]/20 to-[#84cc16]/20 flex items-center justify-center">
-                        <Award className="h-16 w-16 text-[#65a30d]" />
-                      </div>
-                    )}
-
-                    <div className="p-6">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm text-[#65a30d] font-semibold bg-[#65a30d]/10 px-3 py-1 rounded-full">
-                          {award.category}
-                        </span>
-                        <span className="text-sm text-gray-400">
-                          {award.year}
-                        </span>
-                      </div>
-
-                      <h3 className="text-lg font-bold text-white mb-2 group-hover:text-[#65a30d] transition-colors duration-300">
-                        {award.title}
-                      </h3>
-
-                      <p className="text-sm text-gray-400 mb-3 line-clamp-2">
-                        {award.summary}
-                      </p>
-
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs text-gray-500">
-                          {t.awards.level}:
-                        </span>
-                        <span className="text-xs text-[#65a30d] font-semibold">
-                          {award.level}
-                        </span>
-                      </div>
-                    </div>
-                  </motion.div>
-                </Link>
+                    </motion.div>
+                  </Link>
+                </div>
               ))}
-            </div>
+            </motion.div>
           </div>
-        )}
+          <style jsx>{`
+            .mask-gradient {
+              -webkit-mask-image: linear-gradient(
+                to right,
+                transparent,
+                black 20%,
+                black 80%,
+                transparent
+              );
+              mask-image: linear-gradient(
+                to right,
+                transparent,
+                black 20%,
+                black 80%,
+                transparent
+              );
+            }
+          `}</style>
+        </>
+      )}
 
-        <div className="text-center mt-12">
-          <motion.a
-            href="/awards"
-            className="inline-flex items-center space-x-2 bg-[#65a30d] text-white px-8 py-3 rounded-full hover:bg-[#84cc16] transition-all duration-300 transform hover:scale-105 shadow-lg shadow-[#65a30d]/20"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <span>{t.awards.exploreAll}</span>
-            <ArrowLeft className="w-4 h-4 rotate-180" />
-          </motion.a>
-        </div>
+      <div className="text-center mt-12">
+        <motion.a
+          href="/awards"
+          className="inline-flex items-center space-x-2 bg-[#65a30d] text-white px-8 py-3 rounded-full hover:bg-[#84cc16] transition-all duration-300 transform hover:scale-105 shadow-lg shadow-[#65a30d]/20"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <span>{t.awards.exploreAll}</span>
+          <ArrowLeft className="w-4 h-4 rotate-180" />
+        </motion.a>
       </div>
     </AnimatedSection>
   );
@@ -986,12 +1029,9 @@ const GlassCard = ({
   );
 };
 
-// Utility for drag constraints
-const sliderDragConstraints = { left: -1000, right: 0 };
-
 // --- Products Section ---
 const ProductsSection = () => {
-  const { language } = useLanguage();
+  const { language, isRTL } = useLanguage();
   const t = translations[language];
 
   const products = [
@@ -1035,13 +1075,16 @@ const ProductsSection = () => {
       className="py-20 md:py-28 overflow-hidden bg-transparent"
     >
       <SectionTitle>{t.products.title}</SectionTitle>
+      <div className="mb-8"></div>
       <div className="relative w-full overflow-hidden mask-gradient">
         <motion.div
           className="flex"
           animate={{ x: ["0%", `-${100 / 3}%`] }}
-          transition={{ ease: "linear", duration: 40, repeat: Infinity }}
+          transition={{ ease: "linear", duration: 20, repeat: Infinity }}
           drag="x"
-          dragConstraints={sliderDragConstraints}
+          dragConstraints={
+            isRTL ? { left: 0, right: 1000 } : { left: -1000, right: 0 }
+          }
           whileTap={{ cursor: "grabbing" }}
         >
           {duplicated.map((p, i) => (
@@ -1132,7 +1175,7 @@ const WhyUsSection = () => {
 
 // --- Specialization Section ---
 const SpecializationSection = () => {
-  const { language } = useLanguage();
+  const { language, isRTL } = useLanguage();
   const t = translations[language];
 
   const specializations = [
@@ -1173,24 +1216,22 @@ const SpecializationSection = () => {
       className="py-20 md:py-28 overflow-hidden bg-transparent"
     >
       <SectionTitle>{t.specializations.title}</SectionTitle>
+      <div className="mb-8"></div>
       <div className="relative w-full overflow-hidden mask-gradient">
         <motion.div
           className="flex"
           animate={{ x: ["0%", `-${100 / 3}%`] }}
-          transition={{ ease: "linear", duration: 40, repeat: Infinity }}
+          transition={{ ease: "linear", duration: 20, repeat: Infinity }}
           drag="x"
-          dragConstraints={sliderDragConstraints}
+          dragConstraints={
+            isRTL ? { left: 0, right: 1000 } : { left: -1000, right: 0 }
+          }
           whileTap={{ cursor: "grabbing" }}
         >
           {duplicated.map((s, i) => (
             <GlassCard key={i} item={s} index={i} />
           ))}
         </motion.div>
-      </div>
-      <div className="flex justify-center mt-6">
-        <button className="bg-[#65a30d] text-white px-8 py-3 rounded-full font-semibold shadow hover:bg-[#84cc16] transition-all duration-300">
-          {t.specializations.showAll}
-        </button>
       </div>
       <style jsx>{`
         .mask-gradient {
@@ -1327,10 +1368,12 @@ const Footer = () => {
             </h3>
             <p className="text-gray-400 mb-2">{t.footer.location}</p>
             <p className="text-gray-400 mb-2">info@mkgroup-eg.com</p>
-            <p className="text-gray-400 mb-4">+20 106 772 6594</p>
+            <p className="text-gray-400 mb-4" dir="ltr">
+              +20 111 277 7459
+            </p>
             <button
               onClick={() =>
-                window.open("https://wa.me/201067726594", "_blank")
+                window.open("https://wa.me/201112777459", "_blank")
               }
               className="bg-[#65a30d] text-white py-2 px-4 rounded-full hover:bg-[#84cc16] transition-all duration-300 transform hover:scale-105 text-sm font-medium"
             >
@@ -1343,7 +1386,7 @@ const Footer = () => {
             </h3>
             <div className="flex space-x-4 justify-center md:justify-start">
               <a
-                href="https://wa.me/201067726594"
+                href="https://wa.me/201112777459"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-[#65a30d] transition-colors"
